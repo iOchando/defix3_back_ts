@@ -2,101 +2,312 @@ import nearAPI from "near-api-js";
 import { Request, Response } from "express";
 import dbConnect from "../config/postgres";
 import { validateDefixId } from "../helpers/utils";
+import { generateMnemonic } from 'bip39';
 
-const generateMnemonic = async (req: Request, res: Response) => {
-    try {
-        const { defixId } = req.body;
+import { createWalletBTC, isAddressBTC } from "../services/btc";
+import { createWalletETH, isAddressETH } from "../services/eth";
+import { createWalletNEAR, getIdNear, importWalletNEAR, isAddressNEAR } from "../services/near";
+import { createWalletTRON, isAddressTRON } from "../services/tron";
+import { createWalletBNB, isAddressBNB } from "../services/bnb";
 
-        if (!defixId || !defixId.includes(".defix3")) res.status(400).send();
-        
-        const resp: boolean = await validateDefixId(defixId.toLowerCase());
+import { Wallet } from "../interfaces/wallet.interface";
+import { Credential } from "../interfaces/credential.interface";
 
-        res.send(resp);
-    } catch (err) {
-        console.log(err);
-        res.status(500);
-        res.send({ err });
-    }
-};
+
+
+const generateMnemonicAPI = async (req: Request, res: Response) => {
+	try {
+		const { defixId } = req.body;
+
+		if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ")) return res.status(400).send();
+
+		const resp: boolean = await validateDefixId(defixId.toLowerCase());
+
+		if (resp) return res.status(400).send();
+
+		const mnemonic = await generateMnemonic();
+
+		res.send({ resp: "ok", mnemonic: mnemonic });
+	} catch (err) {
+		console.log(err);
+		res.status(500).send({ err });
+	}
+}
 
 const createWallet = async (req: Request, res: Response) => {
-    try {
-        const { defixId, mnemonic, email } = req.body;
+	try {
+		const { defixId, mnemonic, email } = req.body;
 
-        if (!defixId || !defixId.includes(".defix3") || !mnemonic) res.status(400).send();
+		if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ") || !mnemonic) return res.status(400).send();
 
-        let defixID = defixId.split(" ").join("")
-        
-        const exists: boolean = await validateDefixId(defixID.toLowerCase());
-    
-        if (!exists) {
-            //let mnemonic = bip39.generateMnemonic()
+		const exists: boolean = await validateDefixId(defixId.toLowerCase());
 
-            var wallet = {
-                defixId: defixID,
-                mnemonic: mnemonic
-            }
-            wallet.btc_credentials = await createWalletBTC(mnemonic)
+		if (!exists) {
 
-            // const save = await saveUser(defixID.toLowerCase(), wallet.btc_credentials, wallet.eth_credentials, wallet.near_credentials, wallet.tron_credentials, wallet.bnb_credentials)
-        
-            // if (save) {
-            //     if(email !== null) {
-            //         EnviarPhraseCorreo(mnemonic, defixID.toLowerCase(), email)
-            //     }
-            //     res.json(wallet)
-            // } else {
-            //     res.status(204).json()
-            // }
-        }
-        res.status(405).send()
-    } catch (err) {
-        console.log(err);
-        res.status(500);
-        res.send({ err });
-    }
-  };
+			const credentials: Array<Credential> = [];
 
-export { generateMnemonic, createWallet }
+			credentials.push(await createWalletBTC(mnemonic));
+			credentials.push(await createWalletETH(mnemonic));
+			credentials.push(await createWalletNEAR(mnemonic));
+			credentials.push(await createWalletTRON(mnemonic));
+			credentials.push(await createWalletBNB(mnemonic));
 
-/*
-const createWallet = async (req, res) => {
-    try {
-        const { defixId, mnemonic, email } = req.body
-        const defixID = defixId.split(" ").join("")
-        const response = await validateDefixId(defixId.toLowerCase())
+			const wallet: Wallet = {
+				defixId: defixId,
+				mnemonic: mnemonic,
+				credentials: credentials
+			};
 
-        if (response === false) {
-            //let mnemonic = bip39.generateMnemonic()
+			const nearId = await getIdNear(mnemonic)
 
-            var wallet = {}
-            wallet.defixId = defixID.toLowerCase()
-            wallet.mnemonic = mnemonic
-            wallet.btc_credentials = await createWalletBTC(mnemonic)
-            wallet.eth_credentials = await createWalletETH(mnemonic)
-            wallet.near_credentials = await createWalletNEAR(mnemonic)
-            wallet.dai_credentials = wallet.eth_credentials
-            wallet.usdt_credentials = wallet.eth_credentials
-            wallet.usdc_credentials = wallet.eth_credentials
-            wallet.tron_credentials = await createWalletTRON(mnemonic)
-            wallet.bnb_credentials = wallet.eth_credentials
+			const save = await saveUser(nearId, wallet)
 
-            const save = await saveUser(defixID.toLowerCase(), wallet.btc_credentials, wallet.eth_credentials, wallet.near_credentials, wallet.tron_credentials, wallet.bnb_credentials)
-        
-            if (save) {
-                if(email !== null) {
-                    EnviarPhraseCorreo(mnemonic, defixID.toLowerCase(), email)
-                }
-                res.json(wallet)
-            } else {
-                res.status(204).json()
-            }
-        } else {
-            res.status(204).json()
-        }
-    } catch (error) {
-        console.log(error)
-        res.status(400).json()
-    }
+			if (save) {
+				if (await validateEmail(email)) {
+					// EnviarPhraseCorreo(mnemonic, defixID.toLowerCase(), email)
+					console.log("envia correo")
+				}
+				return res.send(wallet)
+			}
+			return res.status(400).json()
+		}
+		res.status(405).send()
+	} catch (err) {
+		console.log(err);
+		res.status(500).send({ err });
+	}
+};
+
+const importWallet = async (req: Request, res: Response) => {
+	try {
+		const { mnemonic } = req.body
+
+		if (!mnemonic) return res.status(400).json()
+
+		const nearId = await getIdNear(mnemonic)
+
+		const conexion = await dbConnect()
+
+		const response = await conexion.query("select * \
+																					from users where \
+																					import_id = $1\
+																					", [nearId])
+
+		if (response.rows.length === 0) return res.status(400).json()
+
+		let responseAccount = response.rows[0]
+
+		const defixId = responseAccount.defix_id;
+
+		const addressNEAR = await conexion.query("select * \
+																					from addresses where \
+																					defix_id = $1 and name = 'NEAR'\
+																					", [defixId]);
+
+		const nearAddress = addressNEAR.rows[0].address;
+
+		const credentials: Array<Credential> = [];
+
+		credentials.push(await createWalletBTC(mnemonic));
+		credentials.push(await createWalletETH(mnemonic));
+		credentials.push(await importWalletNEAR(nearAddress, mnemonic));
+		credentials.push(await createWalletTRON(mnemonic));
+		credentials.push(await createWalletBNB(mnemonic));
+
+		const wallet: Wallet = {
+			defixId: defixId,
+			mnemonic: mnemonic,
+			credentials: credentials
+		};
+
+		const addressTRON = await conexion.query("select * \
+																					from addresses where \
+																					defix_id = $1 and name = 'TRON'\
+																					", [defixId])
+
+		// Crypto news
+
+		if (addressTRON.rows.length === 0) {
+			console.log("NO TIENE CUENTRA TRON")
+			const addresstron = credentials.find(element => element.name === 'TRON')
+			if (addresstron) {
+				await conexion.query(`insert into addresses
+																	(defix_id, name, address)
+																	values ($1, $2, $3)`, [defixId, 'TRON', addresstron.address])
+			}
+
+		}
+
+		const addressBNB = await conexion.query("select * \
+																					from addresses where \
+																					defix_id = $1 and name = 'BNB'\
+																					", [defixId])
+
+		if (addressBNB.rows.length === 0) {
+			console.log("NO TIENE CUENTRA BNB")
+			const addressbnb = credentials.find(element => element.name === 'BNB')
+			if (addressbnb) {
+				await conexion.query(`insert into addresses
+																	(defix_id, name, address)
+																	values ($1, $2, $3)`, [defixId, 'BNB', addressbnb.address])
+			}
+		}
+
+		// End
+
+		const resultados = await conexion.query("select * \
+																									from users where \
+																									defix_id = $1\
+																									", [defixId])
+
+		if (resultados.rows.length === 0) {
+			await conexion.query(`insert into users
+									(defix_id, dosfa, secret, import_id)
+									values ($1, false, null, $2)`, [defixId, nearId])
+		}
+
+		let result
+		await conexion.query("update users\
+															set close_sessions = $1 where\
+															defix_id = $2\
+															", [false, defixId])
+			.then(() => {
+				result = true
+			}).catch(() => {
+				result = false
+			})
+
+		if (!result) return res.status(400).send()
+
+		res.send(wallet)
+	} catch (error) {
+		res.status(400).send()
+	}
 }
-*/
+
+const importFromMnemonic = async (req: Request, res: Response) => {
+	try {
+		const { defixId, mnemonic } = req.body
+
+		if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ") || !mnemonic) return res.status(400).send();
+
+		const exists: boolean = await validateDefixId(defixId.toLowerCase());
+
+		if (!exists) {
+			const credentials: Array<Credential> = [];
+
+			credentials.push(await createWalletBTC(mnemonic));
+			credentials.push(await createWalletETH(mnemonic));
+			credentials.push(await createWalletNEAR(mnemonic));
+			credentials.push(await createWalletTRON(mnemonic));
+			credentials.push(await createWalletBNB(mnemonic));
+
+			const wallet: Wallet = {
+				defixId: defixId,
+				mnemonic: mnemonic,
+				credentials: credentials
+			};
+
+			const nearId = await getIdNear(mnemonic)
+
+			const save = await saveUser(nearId, wallet)
+
+			if (save) {
+				return res.send(wallet)
+			}
+			return res.status(400).json()
+		}
+		res.status(405).send()
+	} catch (err) {
+		console.log(err);
+		res.status(500).send({ err });
+	}
+};
+
+const getUsers = async (req: Request, res: Response) => {
+	try { 
+			const conexion = await dbConnect()
+			const response = await conexion.query("select defix_id \
+																					from users")
+			res.send(response.rows)
+	} catch (error) {
+			res.status(400).send(error)
+	}
+}
+
+// UTILS
+
+const validateAddress = async (req: Request, res: Response) => {
+	try {
+			const { address, coin } = req.body
+			if (!address || !coin) return res.status(400).send()
+
+			if (coin === 'BTC'){ 
+				return res.send(await isAddressBTC(address))
+			}
+			else if (coin === 'NEAR'){ 
+				return res.send(await isAddressNEAR(address))
+			}
+			else if (coin === 'ETH'){ 
+				return res.send(await isAddressETH(address))
+			}
+			else if (coin === 'BNB'){ 
+				return res.send(await isAddressBNB(address))
+			}    
+			else if (coin === 'TRON'){ 
+				return res.send(await isAddressTRON(address))
+			}  
+			res.status(400).send()
+	} catch (error) {
+			res.status(400).send({"error": error})
+	}
+}
+
+const validateEmail = (email: string) => {
+	if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3,4})+$/.test(email)) {
+		return true
+	} else {
+		return false
+	}
+}
+
+const saveUser = async (nearId: string, wallet: Wallet) => {
+	try {
+		const conexion = await dbConnect()
+		const result: boolean = await conexion.query(`insert into users
+				(defix_id, dosfa, secret, import_id)
+				values ($1, false, null, $2)`, [wallet.defixId, nearId])
+			.then(async () => {
+				for (let credential of wallet.credentials) {
+					await conexion.query(`insert into addresses
+														(defix_id, name, address)
+														values ($1, $2, $3)`, [wallet.defixId, credential.name, credential.address])
+				}
+				return true
+			}).catch(() => {
+				return false
+			})
+
+		if (result) return true
+		return false
+	} catch (error) {
+		return false
+	}
+}
+
+const validateDefixIdAPI = async (req: Request, res: Response) => {
+	try {
+		const { defixId } = req.body;
+
+		if (!defixId || !defixId.includes(".defix3") || !defixId.includes(" ")) res.status(400).send();
+
+		const resp: boolean = await validateDefixId(defixId.toLowerCase());
+
+		res.send(resp);
+	} catch (err) {
+		console.log(err);
+		res.status(500).send({ err });
+	}
+}
+
+export { generateMnemonicAPI, createWallet, validateDefixIdAPI, importWallet, importFromMnemonic, validateAddress, getUsers }
