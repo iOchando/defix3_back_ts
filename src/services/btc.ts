@@ -20,8 +20,8 @@ const createWalletBTC = async (mnemonic: string) => {
 		network = networks.bitcoin; //use networks.testnet networks.bitcoin for testnet
 		path = `m/49'/0'/0'/0`; // Use m/49'/1'/0'/0 for testnet mainnet `m/49'/0'/0'/0
 	} else {
-		network = networks.testnet; //use networks.testnet networks.bitcoin for testnet
-		path = `m/49'/1/0'/0`; // Use m/49'/1'/0'/0 for testnet mainnet `m/49'/0'/0'/0
+		network = networks.testnet;
+		path = `m/49'/1/0'/0`;
 	}
 	
 	const seed = mnemonicToSeedSync(mnemonic);
@@ -36,10 +36,6 @@ const createWalletBTC = async (mnemonic: string) => {
 		pubkey: node.publicKey,
 		network: network,
 	}).address;
-
-	// if (typeof btcAddress !== "string") {
-	// 	return false;
-	// }
 
 	const credential: Credential = {
 		name: "BTC",

@@ -69,7 +69,7 @@ const createWallet = async (req: Request, res: Response) => {
 				}
 				return res.send(wallet)
 			}
-			return res.status(400).json()
+			return res.status(400).send()
 		}
 		res.status(405).send()
 	} catch (err) {
@@ -82,7 +82,7 @@ const importWallet = async (req: Request, res: Response) => {
 	try {
 		const { mnemonic } = req.body
 
-		if (!mnemonic) return res.status(400).json()
+		if (!mnemonic) return res.status(400).send()
 
 		const nearId = await getIdNear(mnemonic)
 
@@ -93,7 +93,7 @@ const importWallet = async (req: Request, res: Response) => {
 																					import_id = $1\
 																					", [nearId])
 
-		if (response.rows.length === 0) return res.status(400).json()
+		if (response.rows.length === 0) return res.status(400).send()
 
 		let responseAccount = response.rows[0]
 
@@ -215,7 +215,7 @@ const importFromMnemonic = async (req: Request, res: Response) => {
 			if (save) {
 				return res.send(wallet)
 			}
-			return res.status(400).json()
+			return res.status(400).send()
 		}
 		res.status(405).send()
 	} catch (err) {
@@ -225,13 +225,13 @@ const importFromMnemonic = async (req: Request, res: Response) => {
 };
 
 const getUsers = async (req: Request, res: Response) => {
-	try { 
-			const conexion = await dbConnect()
-			const response = await conexion.query("select defix_id \
+	try {
+		const conexion = await dbConnect()
+		const response = await conexion.query("select defix_id \
 																					from users")
-			res.send(response.rows)
+		res.send(response.rows)
 	} catch (error) {
-			res.status(400).send(error)
+		res.status(400).send(error)
 	}
 }
 
@@ -239,27 +239,27 @@ const getUsers = async (req: Request, res: Response) => {
 
 const validateAddress = async (req: Request, res: Response) => {
 	try {
-			const { address, coin } = req.body
-			if (!address || !coin) return res.status(400).send()
+		const { address, coin } = req.body
+		if (!address || !coin) return res.status(400).send()
 
-			if (coin === 'BTC'){ 
-				return res.send(await isAddressBTC(address))
-			}
-			else if (coin === 'NEAR'){ 
-				return res.send(await isAddressNEAR(address))
-			}
-			else if (coin === 'ETH'){ 
-				return res.send(await isAddressETH(address))
-			}
-			else if (coin === 'BNB'){ 
-				return res.send(await isAddressBNB(address))
-			}    
-			else if (coin === 'TRON'){ 
-				return res.send(await isAddressTRON(address))
-			}  
-			res.status(400).send()
+		if (coin === 'BTC') {
+			return res.send(await isAddressBTC(address))
+		}
+		else if (coin === 'NEAR') {
+			return res.send(await isAddressNEAR(address))
+		}
+		else if (coin === 'ETH') {
+			return res.send(await isAddressETH(address))
+		}
+		else if (coin === 'BNB') {
+			return res.send(await isAddressBNB(address))
+		}
+		else if (coin === 'TRON') {
+			return res.send(await isAddressTRON(address))
+		}
+		res.status(400).send()
 	} catch (error) {
-			res.status(400).send({"error": error})
+		res.status(400).send({ "error": error })
 	}
 }
 
