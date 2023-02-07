@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { getCryptos } from "../controllers/balance";
+import { getCryptos, getBalance } from "../controllers/balance";
 
 const router = Router();
 
@@ -45,5 +45,7 @@ const router = Router();
  *          description: Bad Request.
  */
 router.get("/get-cryptos", getCryptos);
+
+router.post("/get-balance/", getBalance);
 
 export { router };

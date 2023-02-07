@@ -47,3 +47,4 @@ exports.router = router;
  *          description: Bad Request.
  */
 router.get("/get-cryptos", balance_1.getCryptos);
+router.post("/get-balance/", balance_1.getBalance);

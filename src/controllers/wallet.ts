@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
 import dbConnect from "../config/postgres";
-import { validateDefixId } from "../helpers/utils";
+import { validateDefixId, validateEmail } from "../helpers/utils";
 import { generateMnemonic } from 'bip39';
 
-import { createWalletBTC, isAddressBTC } from "../services/btc";
-import { createWalletETH, isAddressETH } from "../services/eth";
-import { createWalletNEAR, getIdNear, importWalletNEAR, isAddressNEAR } from "../services/near";
-import { createWalletTRON, isAddressTRON } from "../services/tron";
-import { createWalletBNB, isAddressBNB } from "../services/bnb";
+import { createWalletBTC, isAddressBTC } from "../services/btc.services";
+import { createWalletETH, isAddressETH } from "../services/eth.services";
+import { createWalletNEAR, getIdNear, importWalletNEAR, isAddressNEAR } from "../services/near.services";
+import { createWalletTRON, isAddressTRON } from "../services/tron.services";
+import { createWalletBNB, isAddressBNB } from "../services/bsc.services";
 
 import { Wallet } from "../interfaces/wallet.interface";
 import { Credential } from "../interfaces/credential.interface";
@@ -79,22 +79,22 @@ const createWallet = async (req: Request, res: Response) => {
 
 const importWallet = async (req: Request, res: Response) => {
 	try {
-		const { mnemonic } = req.body
+		const { mnemonic } = req.body;
 
-		if (!mnemonic) return res.status(400).send()
+		if (!mnemonic) return res.status(400).send();
 
-		const nearId = await getIdNear(mnemonic)
+		const nearId = await getIdNear(mnemonic);
 
-		const conexion = await dbConnect()
+		const conexion = await dbConnect();
 
 		const response = await conexion.query("select * \
 																					from users where \
 																					import_id = $1\
-																					", [nearId])
+																					", [nearId]);
 
-		if (response.rows.length === 0) return res.status(400).send()
+		if (response.rows.length === 0) return res.status(400).send();
 
-		let responseAccount = response.rows[0]
+		let responseAccount = response.rows[0];
 
 		const defixId = responseAccount.defix_id;
 
@@ -122,7 +122,7 @@ const importWallet = async (req: Request, res: Response) => {
 		const addressTRON = await conexion.query("select * \
 																					from addresses where \
 																					defix_id = $1 and name = 'TRON'\
-																					", [defixId])
+																					", [defixId]);
 
 		// Crypto news
 
@@ -259,14 +259,6 @@ const validateAddress = async (req: Request, res: Response) => {
 		res.status(400).send()
 	} catch (error) {
 		res.status(400).send({ "error": error })
-	}
-}
-
-const validateEmail = (email: string) => {
-	if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3,4})+$/.test(email)) {
-		return true
-	} else {
-		return false
 	}
 }
 

@@ -56,6 +56,8 @@ const getBalanceNEAR = async (address: string) => {
   try {
     const response: boolean = await validateNearId(address);
 
+    let balanceTotal = 0
+
     if (response) {
       const keyStore = new keyStores.InMemoryKeyStore();
       const near = new Near(CONFIG(keyStore));
@@ -66,25 +68,16 @@ const getBalanceNEAR = async (address: string) => {
       const valueStorage = Math.pow(10, 19);
       const valueYocto = Math.pow(10, 24);
       const storage = (balanceAccount.storage_usage * valueStorage) / valueYocto;
-      const item = {
-        coin: "NEAR",
-        balance: (Number(balanceAccount.amount) / valueYocto) - storage - 0.05
+      balanceTotal = (Number(balanceAccount.amount) / valueYocto) - storage - 0.05
+      if (balanceTotal === null || balanceTotal < 0) {
+        balanceTotal = 0;
       };
-      if (item.balance === null || item.balance < 0) {
-        item.balance = 0;
-      };
-      return item;
+      return balanceTotal;
     } else {
-      return {
-        coin: "NEAR",
-        balance: 0
-      };
+      return balanceTotal;
     };
   } catch (error) {
-    return {
-      coin: "NEAR",
-      balance: 0
-    };
+    return 0
   };
 };
 

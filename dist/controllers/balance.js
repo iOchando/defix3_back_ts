@@ -12,10 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCryptos = void 0;
+exports.getBalance = exports.getCryptos = void 0;
 const postgres_1 = __importDefault(require("../config/postgres"));
-const btc_1 = require("../services/btc");
-const eth_1 = require("../services/eth");
+const btc_services_1 = require("../services/btc.services");
+const eth_services_1 = require("../services/eth.services");
+const near_services_1 = require("../services/near.services");
+const tron_services_1 = require("../services/tron.services");
+const bsc_services_1 = require("../services/bsc.services");
 const NETWORK = process.env.NETWORK;
 const getCryptos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -50,31 +53,77 @@ const getBalance = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const cryptos = yield getCryptosFn();
         const balances = [];
         for (let crypto of cryptos) {
-            const address = addresses.find(element => element.name === crypto.coin);
             const balanceCrypto = {
                 coin: crypto.coin,
+                blockchain: crypto.blockchain,
                 balance: 0,
                 tokens: []
             };
+            const addressItem = addresses.find(element => element.name === crypto.coin);
+            const address = addressItem.address || "";
             switch (crypto.coin) {
                 case "BTC": {
                     if (NETWORK === "mainnet") {
-                        balanceCrypto.balance = yield (0, btc_1.getBalanceBTC)(address);
+                        balanceCrypto.balance = yield (0, btc_services_1.getBalanceBTC)(address);
                     }
                     else {
-                        balanceCrypto.balance = yield (0, btc_1.getBalanceBTC_Cypher)(address);
+                        balanceCrypto.balance = yield (0, btc_services_1.getBalanceBTC_Cypher)(address);
                     }
                     break;
                 }
                 case "ETH": {
-                    balanceCrypto.balance = yield (0, eth_1.getBalanceETH)(address);
+                    balanceCrypto.balance = yield (0, eth_services_1.getBalanceETH)(address);
                     for (let token of crypto.tokens) {
                         const itemToken = {
                             coin: token.coin,
                             balance: 0,
                         };
-                        itemToken.balance = yield (0, eth_1.getBalanceTokenETH)(address, token.contract, token.decimals);
-                        // balanceCrypto.tokens.push(itemToken)
+                        itemToken.balance = yield (0, eth_services_1.getBalanceTokenETH)(address, token.contract, token.decimals);
+                        balanceCrypto.tokens.push(itemToken);
+                    }
+                    break;
+                }
+                case "NEAR": {
+                    balanceCrypto.balance = yield (0, near_services_1.getBalanceNEAR)(address);
+                    // for (let token of crypto.tokens) {
+                    // 	const itemToken: Balance = {
+                    // 		coin: token.coin,
+                    // 		balance: 0,
+                    // 	}
+                    // 	itemToken.balance = await getBalanceTokenETH(address, token.contract, token.decimals)
+                    // 	balanceCrypto.tokens.push(itemToken)
+                    // }
+                    break;
+                }
+                case "BNB": {
+                    if (!address) {
+                        balanceCrypto.balance = 0;
+                        break;
+                    }
+                    balanceCrypto.balance = yield (0, bsc_services_1.getBalanceBNB)(address);
+                    for (let token of crypto.tokens) {
+                        const itemToken = {
+                            coin: token.coin,
+                            balance: 0,
+                        };
+                        itemToken.balance = yield (0, bsc_services_1.getBalanceTokenBSC)(address, token.contract, token.decimals);
+                        balanceCrypto.tokens.push(itemToken);
+                    }
+                    break;
+                }
+                case "TRON": {
+                    if (!address) {
+                        balanceCrypto.balance = 0;
+                        break;
+                    }
+                    balanceCrypto.balance = yield (0, tron_services_1.getBalanceTRON)(address);
+                    for (let token of crypto.tokens) {
+                        const itemToken = {
+                            coin: token.coin,
+                            balance: 0,
+                        };
+                        itemToken.balance = yield (0, tron_services_1.getBalanceTokenTRON)(address, token.contract, token.decimals);
+                        balanceCrypto.tokens.push(itemToken);
                     }
                     break;
                 }
@@ -83,63 +132,54 @@ const getBalance = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     break;
                 }
             }
+            balances.push(balanceCrypto);
         }
-        // let balanceTRON
-        // if (addresstron) {
-        // 	balanceTRON = await getBalanceTRON(addresstron.address)
-        // 	allBalances.push(balanceTRON)
-        // } else {
-        // 	balanceTRON = { coin: 'TRON', balance: 0 }
-        // 	allBalances.push(balanceTRON)
-        // }
-        // let balanceBNB
-        // if (addressbnb) {
-        // 	balanceBNB = await getBalanceBNB(addressbnb.address)
-        // 	allBalances.push(balanceBNB)
-        // } else {
-        // 	balanceBNB = { coin: 'BNB', balance: 0 }
-        // 	allBalances.push(balanceBNB)
-        // }
-        // const resultado = await conexion.query("select * \
-        // 																					from balance where \
-        // 																					defix_id = $1\
-        // 																					", [defixId])
-        // if (resultado.rows[0]) {
-        // 	const result = await conexion.query("update balance\
-        // 													set btc = $1, eth = $2, near = $3, usdt = $4, usdc = $5, dai = $6, tron = $7, bnb = $8 where\
-        // 													defix_id = $9\
-        // 													", [balanceBTC.balance, balanceETH.balance, balanceNEAR.balance, balanceUSDT.balance, balanceUSDC.balance, balanceDAI.balance, balanceTRON.balance, balanceBNB.balance, defixId])
-        // 		.then(() => {
-        // 			return true
-        // 		}).catch((error) => {
-        // 			return false
-        // 		})
-        // 	if (result === true) {
-        // 		res.json(allBalances)
-        // 	} else {
-        // 		res.status(500).json()
-        // 	}
-        // } else {
-        // 	const result = await conexion.query(`insert into balance
-        // 													(defix_id, btc, eth, near, usdt, usdc, dai, tron, bnb)
-        // 													values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`, [defixId, balanceBTC.balance, balanceETH.balance, balanceNEAR.balance, balanceUSDT.balance, balanceUSDC.balance, balanceDAI.balance, balanceTRON.balance, balanceBNB.balance])
-        // 		.then(() => {
-        // 			return true
-        // 		}).catch(() => {
-        // 			return false
-        // 		})
-        // 	if (result === true) {
-        // 		res.json(allBalances)
-        // 	} else {
-        // 		res.status(204).json()
-        // 	}
-        // }
+        res.send(balances);
+        balanceDataBaseFn(defixId, balances);
     }
     catch (error) {
-        res.status(404).json();
+        res.status(404).send();
     }
 });
+exports.getBalance = getBalance;
 // UTILS
+const balanceDataBaseFn = (defixId, balances) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const conexion = yield (0, postgres_1.default)();
+        for (let balance of balances) {
+            const resultado = yield conexion.query("select * from balances where defix_id = $1 and blockchain = $2 and coin = $3", [defixId, balance.blockchain, balance.coin]);
+            if (resultado.rows.length === 0) {
+                yield conexion.query(`insert into balances
+		 													(defix_id, blockchain, coin, balance)
+		 													values ($1, $2, $3, $4)`, [defixId, balance.blockchain, balance.coin, balance.balance]);
+            }
+            else {
+                yield conexion.query("update balances\
+		 													set balance = $1 where\
+		 													defix_id = $2 and blockchain = $3 and coin = $4 \
+		 													", [balance.balance, defixId, balance.blockchain, balance.coin]);
+            }
+            for (let token of balance.tokens) {
+                const resultado = yield conexion.query("select * from balances where defix_id = $1 and blockchain = $2 and coin = $3", [defixId, balance.blockchain, token.coin]);
+                if (resultado.rows.length === 0) {
+                    yield conexion.query(`insert into balances
+														 (defix_id, blockchain, coin, balance)
+														 values ($1, $2, $3, $4)`, [defixId, balance.blockchain, token.coin, token.balance]);
+                }
+                else {
+                    yield conexion.query("update balances\
+																 set balance = $1 where\
+																 defix_id = $2 and blockchain = $3 and coin = $4 \
+																 ", [token.balance, defixId, balance.blockchain, token.coin]);
+                }
+            }
+        }
+    }
+    catch (error) {
+        console.log(error);
+    }
+    ;
+});
 const getCryptosFn = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const conexion = yield (0, postgres_1.default)();

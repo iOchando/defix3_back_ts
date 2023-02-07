@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.router = void 0;
+const express_1 = require("express");
+const _2fa_1 = require("../controllers/2fa");
+const router = (0, express_1.Router)();
+exports.router = router;
+router.post('/generar-2fa/', _2fa_1.generar2fa);
+router.post('/activar-2fa/', _2fa_1.activar2fa);
+router.post('/desactivar-2fa/', _2fa_1.desactivar2fa);
+router.post('/status-2fa/', _2fa_1.status2fa);

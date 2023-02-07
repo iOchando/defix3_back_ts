@@ -16,11 +16,11 @@ exports.getUsers = exports.validateAddress = exports.importFromMnemonic = export
 const postgres_1 = __importDefault(require("../config/postgres"));
 const utils_1 = require("../helpers/utils");
 const bip39_1 = require("bip39");
-const btc_1 = require("../services/btc");
-const eth_1 = require("../services/eth");
-const near_1 = require("../services/near");
-const tron_1 = require("../services/tron");
-const bnb_1 = require("../services/bnb");
+const btc_services_1 = require("../services/btc.services");
+const eth_services_1 = require("../services/eth.services");
+const near_services_1 = require("../services/near.services");
+const tron_services_1 = require("../services/tron.services");
+const bsc_services_1 = require("../services/bsc.services");
 const generateMnemonicAPI = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { defixId } = req.body;
@@ -46,20 +46,20 @@ const createWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const exists = yield (0, utils_1.validateDefixId)(defixId.toLowerCase());
         if (!exists) {
             const credentials = [];
-            credentials.push(yield (0, btc_1.createWalletBTC)(mnemonic));
-            credentials.push(yield (0, eth_1.createWalletETH)(mnemonic));
-            credentials.push(yield (0, near_1.createWalletNEAR)(mnemonic));
-            credentials.push(yield (0, tron_1.createWalletTRON)(mnemonic));
-            credentials.push(yield (0, bnb_1.createWalletBNB)(mnemonic));
+            credentials.push(yield (0, btc_services_1.createWalletBTC)(mnemonic));
+            credentials.push(yield (0, eth_services_1.createWalletETH)(mnemonic));
+            credentials.push(yield (0, near_services_1.createWalletNEAR)(mnemonic));
+            credentials.push(yield (0, tron_services_1.createWalletTRON)(mnemonic));
+            credentials.push(yield (0, bsc_services_1.createWalletBNB)(mnemonic));
             const wallet = {
                 defixId: defixId,
                 mnemonic: mnemonic,
                 credentials: credentials
             };
-            const nearId = yield (0, near_1.getIdNear)(mnemonic);
+            const nearId = yield (0, near_services_1.getIdNear)(mnemonic);
             const save = yield saveUser(nearId, wallet);
             if (save) {
-                if (yield validateEmail(email)) {
+                if (yield (0, utils_1.validateEmail)(email)) {
                     // EnviarPhraseCorreo(mnemonic, defixID.toLowerCase(), email)
                     console.log("envia correo");
                 }
@@ -80,7 +80,7 @@ const importWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const { mnemonic } = req.body;
         if (!mnemonic)
             return res.status(400).send();
-        const nearId = yield (0, near_1.getIdNear)(mnemonic);
+        const nearId = yield (0, near_services_1.getIdNear)(mnemonic);
         const conexion = yield (0, postgres_1.default)();
         const response = yield conexion.query("select * \
 																					from users where \
@@ -96,11 +96,11 @@ const importWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 																					", [defixId]);
         const nearAddress = addressNEAR.rows[0].address;
         const credentials = [];
-        credentials.push(yield (0, btc_1.createWalletBTC)(mnemonic));
-        credentials.push(yield (0, eth_1.createWalletETH)(mnemonic));
-        credentials.push(yield (0, near_1.importWalletNEAR)(nearAddress, mnemonic));
-        credentials.push(yield (0, tron_1.createWalletTRON)(mnemonic));
-        credentials.push(yield (0, bnb_1.createWalletBNB)(mnemonic));
+        credentials.push(yield (0, btc_services_1.createWalletBTC)(mnemonic));
+        credentials.push(yield (0, eth_services_1.createWalletETH)(mnemonic));
+        credentials.push(yield (0, near_services_1.importWalletNEAR)(nearAddress, mnemonic));
+        credentials.push(yield (0, tron_services_1.createWalletTRON)(mnemonic));
+        credentials.push(yield (0, bsc_services_1.createWalletBNB)(mnemonic));
         const wallet = {
             defixId: defixId,
             mnemonic: mnemonic,
@@ -170,17 +170,17 @@ const importFromMnemonic = (req, res) => __awaiter(void 0, void 0, void 0, funct
         const exists = yield (0, utils_1.validateDefixId)(defixId.toLowerCase());
         if (!exists) {
             const credentials = [];
-            credentials.push(yield (0, btc_1.createWalletBTC)(mnemonic));
-            credentials.push(yield (0, eth_1.createWalletETH)(mnemonic));
-            credentials.push(yield (0, near_1.createWalletNEAR)(mnemonic));
-            credentials.push(yield (0, tron_1.createWalletTRON)(mnemonic));
-            credentials.push(yield (0, bnb_1.createWalletBNB)(mnemonic));
+            credentials.push(yield (0, btc_services_1.createWalletBTC)(mnemonic));
+            credentials.push(yield (0, eth_services_1.createWalletETH)(mnemonic));
+            credentials.push(yield (0, near_services_1.createWalletNEAR)(mnemonic));
+            credentials.push(yield (0, tron_services_1.createWalletTRON)(mnemonic));
+            credentials.push(yield (0, bsc_services_1.createWalletBNB)(mnemonic));
             const wallet = {
                 defixId: defixId,
                 mnemonic: mnemonic,
                 credentials: credentials
             };
-            const nearId = yield (0, near_1.getIdNear)(mnemonic);
+            const nearId = yield (0, near_services_1.getIdNear)(mnemonic);
             const save = yield saveUser(nearId, wallet);
             if (save) {
                 return res.send(wallet);
@@ -215,19 +215,19 @@ const validateAddress = (req, res) => __awaiter(void 0, void 0, void 0, function
         if (!address || !coin)
             return res.status(400).send();
         if (coin === 'BTC') {
-            return res.send(yield (0, btc_1.isAddressBTC)(address));
+            return res.send(yield (0, btc_services_1.isAddressBTC)(address));
         }
         else if (coin === 'NEAR') {
-            return res.send(yield (0, near_1.isAddressNEAR)(address));
+            return res.send(yield (0, near_services_1.isAddressNEAR)(address));
         }
         else if (coin === 'ETH') {
-            return res.send(yield (0, eth_1.isAddressETH)(address));
+            return res.send(yield (0, eth_services_1.isAddressETH)(address));
         }
         else if (coin === 'BNB') {
-            return res.send(yield (0, bnb_1.isAddressBNB)(address));
+            return res.send(yield (0, bsc_services_1.isAddressBNB)(address));
         }
         else if (coin === 'TRON') {
-            return res.send(yield (0, tron_1.isAddressTRON)(address));
+            return res.send(yield (0, tron_services_1.isAddressTRON)(address));
         }
         res.status(400).send();
     }
@@ -236,14 +236,6 @@ const validateAddress = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.validateAddress = validateAddress;
-const validateEmail = (email) => {
-    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3,4})+$/.test(email)) {
-        return true;
-    }
-    else {
-        return false;
-    }
-};
 const saveUser = (nearId, wallet) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const conexion = yield (0, postgres_1.default)();

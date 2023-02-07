@@ -42,21 +42,45 @@ const isAddressTRON = async (address: string) => {
 
 const getBalanceTRON = async (address: string) => {
   try {
-    const item = {coin: 'TRON', balance: 0};
+    let balanceTotal = 0
     const balance = await tronWeb.trx.getBalance(address);
     if (balance) {
       let value = Math.pow(10, 6);
-      item.balance = balance / value;
-      if (item.balance === null) {
-        item.balance = 0;
+      balanceTotal = balance / value;
+      if (!balanceTotal) {
+        balanceTotal = 0;
       };
-      return item;
+      return balanceTotal;
     } else {
-      return item;
+      return balanceTotal;
     };
   } catch (error) {
-    return error;
+    return 0;
   };
 };
 
-export { createWalletTRON, isAddressTRON, getBalanceTRON };
+const getBalanceTokenTRON = async (address: string, srcContract: string, decimals: number) => {
+  try {
+    tronWeb.setAddress(srcContract);
+    const contract = await tronWeb.contract().at(srcContract);
+
+    const balance = await contract.balanceOf(address).call();
+
+    let balanceTotal = 0
+
+    if (balance) {
+      let value = Math.pow(10, decimals)
+      balanceTotal = balance / value
+      if (!balanceTotal) {
+        balanceTotal = 0
+      }
+      return balanceTotal
+    } else {
+      return balanceTotal
+    }
+  } catch (error) {
+    return 0
+  }
+}
+
+export { createWalletTRON, isAddressTRON, getBalanceTRON, getBalanceTokenTRON };

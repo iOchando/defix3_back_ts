@@ -12,8 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CONFIG = exports.validateDefixId = void 0;
+exports.validateEmail = exports.validateMnemonicDefix = exports.CONFIG = exports.validateDefixId = void 0;
 const postgres_1 = __importDefault(require("../config/postgres"));
+const near_services_1 = require("../services/near.services");
 const NETWORK = process.env.NETWORK;
 const validateDefixId = (defixId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -33,6 +34,38 @@ const validateDefixId = (defixId) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.validateDefixId = validateDefixId;
+const validateMnemonicDefix = (defixId, mnemonic) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const conexion = yield (0, postgres_1.default)();
+        const response = yield conexion.query("select * \
+                                          from users where \
+                                          defix_id = $1\
+                                          ", [defixId]);
+        if (response.rows.length > 0) {
+            const id = yield (0, near_services_1.getIdNear)(mnemonic);
+            const defixAccount = response.rows[0];
+            if (defixAccount.import_id === id) {
+                return true;
+            }
+            return false;
+        }
+        return false;
+    }
+    catch (err) {
+        console.log(err);
+        return false;
+    }
+});
+exports.validateMnemonicDefix = validateMnemonicDefix;
+const validateEmail = (email) => {
+    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3,4})+$/.test(email)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+};
+exports.validateEmail = validateEmail;
 function CONFIG(keyStores) {
     switch (NETWORK) {
         case 'mainnet':
