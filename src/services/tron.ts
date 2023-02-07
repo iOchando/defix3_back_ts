@@ -11,8 +11,8 @@ const fullNode = new HttpProvider(FULL_NODE);
 const solidityNode = new HttpProvider(SOLIDITY_NODE);
 const eventServer = new HttpProvider(EVENT_SERVER);
 
-const tronWeb = new TronWeb(fullNode,solidityNode,eventServer);
-tronWeb.setHeader({"TRON-PRO-API-KEY": TRON_PRO_API_KEY});
+const tronWeb = new TronWeb(fullNode, solidityNode, eventServer);
+tronWeb.setHeader({ "TRON-PRO-API-KEY": TRON_PRO_API_KEY });
 
 import { Credential } from "../interfaces/credential.interface";
 
@@ -21,9 +21,9 @@ const createWalletTRON = async (mnemonic: string) => {
   let privateKey;
 
   if (account.privateKey.indexOf('0x') === 0) {
-      privateKey = account.privateKey.slice(2);
+    privateKey = account.privateKey.slice(2);
   } else {
-      privateKey = account.privateKey;
+    privateKey = account.privateKey;
   }
 
   const credential: Credential = {
@@ -40,4 +40,23 @@ const isAddressTRON = async (address: string) => {
   return is_address;
 };
 
-export { createWalletTRON, isAddressTRON };
+const getBalanceTRON = async (address: string) => {
+  try {
+    const item = {coin: 'TRON', balance: 0};
+    const balance = await tronWeb.trx.getBalance(address);
+    if (balance) {
+      let value = Math.pow(10, 6);
+      item.balance = balance / value;
+      if (item.balance === null) {
+        item.balance = 0;
+      };
+      return item;
+    } else {
+      return item;
+    };
+  } catch (error) {
+    return error;
+  };
+};
+
+export { createWalletTRON, isAddressTRON, getBalanceTRON };

@@ -52,4 +52,57 @@ const isAddressNEAR = async (address: string) => {
   return is_address;
 };
 
-export { createWalletNEAR, getIdNear, importWalletNEAR, isAddressNEAR };
+const getBalanceNEAR = async (address: string) => {
+  try {
+    const response: boolean = await validateNearId(address);
+
+    if (response) {
+      const keyStore = new keyStores.InMemoryKeyStore();
+      const near = new Near(CONFIG(keyStore));
+
+      const account = new Account(near.connection, address);
+
+      const balanceAccount = await account.state();
+      const valueStorage = Math.pow(10, 19);
+      const valueYocto = Math.pow(10, 24);
+      const storage = (balanceAccount.storage_usage * valueStorage) / valueYocto;
+      const item = {
+        coin: "NEAR",
+        balance: (Number(balanceAccount.amount) / valueYocto) - storage - 0.05
+      };
+      if (item.balance === null || item.balance < 0) {
+        item.balance = 0;
+      };
+      return item;
+    } else {
+      return {
+        coin: "NEAR",
+        balance: 0
+      };
+    };
+  } catch (error) {
+    return {
+      coin: "NEAR",
+      balance: 0
+    };
+  };
+};
+
+const validateNearId = async (address: string) => {
+  try {
+    const keyStore = new keyStores.InMemoryKeyStore();
+    const near = new Near(CONFIG(keyStore));
+    const account = new Account(near.connection, address);
+    const response = await account.state()
+      .then((response) => {
+        return true;
+      }).catch((error) => {
+        return false;
+      });
+    return response;
+  } catch (error) {
+    return false;
+  };
+};
+
+export { createWalletNEAR, getIdNear, importWalletNEAR, isAddressNEAR, getBalanceNEAR };

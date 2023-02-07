@@ -1,4 +1,3 @@
-import nearAPI from "near-api-js";
 import { Request, Response } from "express";
 import dbConnect from "../config/postgres";
 import { validateDefixId } from "../helpers/utils";
@@ -226,14 +225,14 @@ const importFromMnemonic = async (req: Request, res: Response) => {
 
 const getUsers = async (req: Request, res: Response) => {
 	try {
-		const conexion = await dbConnect()
+		const conexion = await dbConnect();
 		const response = await conexion.query("select defix_id \
-																					from users")
-		res.send(response.rows)
+																					from users");
+		res.send(response.rows);
 	} catch (error) {
-		res.status(400).send(error)
-	}
-}
+		res.status(400).send(error);
+	};
+};
 
 // UTILS
 
