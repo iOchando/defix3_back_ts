@@ -122,7 +122,7 @@ router.post('/import-wallet/', importWallet);
 /**
  * Post track
  * @openapi
- * /validate-defix3:
+ * /validate-defix3/:
  *    post:
  *      tags:
  *        - Wallet
@@ -209,7 +209,7 @@ router.get('/get-users', getUsers)
 /**
  * Post track
  * @openapi
- * /validate-address:
+ * /validate-address/:
  *    post:
  *      tags:
  *        - Wallet
