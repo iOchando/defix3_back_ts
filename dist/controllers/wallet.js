@@ -271,8 +271,8 @@ const saveUser = (nearId, wallet) => __awaiter(void 0, void 0, void 0, function*
 const validateDefixIdAPI = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { defixId } = req.body;
-        if (!defixId || !defixId.includes(".defix3") || !defixId.includes(" "))
-            res.status(400).send();
+        if (!defixId || !defixId.includes(".defix3") || defixId.includes(" "))
+            return res.status(400).send();
         const resp = yield (0, utils_1.validateDefixId)(defixId.toLowerCase());
         res.send(resp);
     }

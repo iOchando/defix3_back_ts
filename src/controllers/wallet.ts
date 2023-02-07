@@ -298,7 +298,7 @@ const validateDefixIdAPI = async (req: Request, res: Response) => {
 	try {
 		const { defixId } = req.body;
 
-		if (!defixId || !defixId.includes(".defix3") || !defixId.includes(" ")) res.status(400).send();
+		if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ")) return res.status(400).send();
 
 		const resp: boolean = await validateDefixId(defixId.toLowerCase());
 
