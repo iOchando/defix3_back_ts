@@ -78,4 +78,42 @@ const getBalanceTokenETH = async (address: string, srcContract: string, decimals
   }
 }
 
-export { createWalletETH, isAddressETH, getBalanceETH, getBalanceTokenETH };
+async function transactionETH(fromAddress: string, privateKey: string, toAddress: string, coin: string, amount: number) {
+  try {
+    const balance = await getBalanceETH(fromAddress);
+    if (balance < amount) {
+      console.log('Error: No tienes suficientes fondos para realizar la transferencia');
+      return false;
+    }
+    
+    const gasPrice = await web3.eth.getGasPrice();
+    const gasLimit = 21000;
+    const nonce = await web3.eth.getTransactionCount(fromAddress);
+    
+    const rawTransaction = {
+      from: fromAddress,
+      to: toAddress,
+      value: web3.utils.toHex(web3.utils.toWei(amount.toString(), 'ether')),
+      gasPrice: web3.utils.toHex(gasPrice),
+      gasLimit: web3.utils.toHex(gasLimit),
+      nonce: nonce
+    };
+    
+    const signedTransaction = await web3.eth.accounts.signTransaction(rawTransaction, privateKey);
+
+    if (!signedTransaction.rawTransaction) return false 
+
+    const transactionHash = await web3.eth.sendSignedTransaction(signedTransaction.rawTransaction);
+
+    if (!transactionHash.transactionHash) return false 
+    
+    return transactionHash.transactionHash as string;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
+
+
+
+export { createWalletETH, isAddressETH, getBalanceETH, getBalanceTokenETH, transactionETH };

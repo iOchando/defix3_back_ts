@@ -19,12 +19,13 @@ const _2fa_1 = require("./2fa");
 const crypto_1 = require("../helpers/crypto");
 const setEmailData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { defixId } = req.body;
-    (0, _2fa_1.status2faFn)(defixId).then((respStatus) => {
+    const DefixId = defixId.toLowerCase();
+    (0, _2fa_1.status2faFn)(DefixId).then((respStatus) => {
         switch (respStatus) {
             case true:
                 {
                     const { code } = req.body;
-                    (0, _2fa_1.validarCode2fa)(code, defixId).then((respValidacion) => {
+                    (0, _2fa_1.validarCode2fa)(code, DefixId).then((respValidacion) => {
                         console.log(respValidacion);
                         switch (respValidacion) {
                             case true: {
@@ -106,10 +107,11 @@ exports.getEmailData = getEmailData;
 const closeAllSessions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { defixId, seedPhrase } = req.body;
+        const DefixId = defixId.toLowerCase();
         const mnemonic = (0, crypto_1.decrypt)(seedPhrase);
         if (!mnemonic)
             return res.status(400).send();
-        const response = yield (0, utils_1.validateMnemonicDefix)(defixId, mnemonic);
+        const response = yield (0, utils_1.validateMnemonicDefix)(DefixId, mnemonic);
         if (!response)
             return res.status(400).send();
         var result;
@@ -117,7 +119,7 @@ const closeAllSessions = (req, res) => __awaiter(void 0, void 0, void 0, functio
         yield conexion.query("update users\
 															set close_sessions = $1 where\
 															defix_id = $2\
-															", [true, defixId])
+															", [true, DefixId])
             .then(() => {
             result = true;
         }).catch(() => {
@@ -133,14 +135,14 @@ exports.closeAllSessions = closeAllSessions;
 const getCloseAllSesions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { defixId } = req.body;
-        const response = yield (0, utils_1.validateDefixId)(defixId);
+        const response = yield (0, utils_1.validateDefixId)(defixId.toLowerCase());
         if (!response)
             return res.status(400).send();
         const conexion = yield (0, postgres_1.default)();
         const resultados = yield conexion.query("select close_sessions \
 																									from users where \
 																									defix_id = $1\
-																									", [defixId]);
+																									", [defixId.toLowerCase()]);
         res.send(resultados.rows[0].close_sessions);
     }
     catch (error) {

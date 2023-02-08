@@ -22,12 +22,14 @@ const eth_services_1 = require("../services/eth.services");
 const near_services_1 = require("../services/near.services");
 const tron_services_1 = require("../services/tron.services");
 const bsc_services_1 = require("../services/bsc.services");
+const mail_1 = require("../helpers/mail");
 const generateMnemonicAPI = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { defixId } = req.body;
         if (!defixId || !defixId.includes(".defix3") || defixId.includes(" "))
             return res.status(400).send();
-        const resp = yield (0, utils_1.validateDefixId)(defixId.toLowerCase());
+        const DefixId = defixId.toLowerCase();
+        const resp = yield (0, utils_1.validateDefixId)(DefixId);
         if (resp)
             return res.status(400).send();
         const mnemonic = yield (0, bip39_1.generateMnemonic)();
@@ -61,6 +63,7 @@ const createWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const mnemonic = (0, crypto_1.decrypt)(seedPhrase);
         if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ") || !mnemonic)
             return res.status(400).send();
+        const DefixId = defixId.toLowerCase();
         const exists = yield (0, utils_1.validateDefixId)(defixId.toLowerCase());
         if (!exists) {
             const credentials = [];
@@ -70,7 +73,7 @@ const createWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             credentials.push(yield (0, tron_services_1.createWalletTRON)(mnemonic));
             credentials.push(yield (0, bsc_services_1.createWalletBNB)(mnemonic));
             const wallet = {
-                defixId: defixId,
+                defixId: DefixId,
                 mnemonic: mnemonic,
                 credentials: credentials
             };
@@ -78,7 +81,7 @@ const createWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             const save = yield saveUser(nearId, wallet);
             if (save) {
                 if (yield (0, utils_1.validateEmail)(email)) {
-                    // EnviarPhraseCorreo(mnemonic, defixID.toLowerCase(), email)
+                    (0, mail_1.EnviarPhraseCorreo)(mnemonic, DefixId, email);
                     console.log("envia correo");
                 }
                 const enc = JSON.stringify(wallet);
@@ -110,7 +113,7 @@ const importWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         if (response.rows.length === 0)
             return res.status(400).send();
         let responseAccount = response.rows[0];
-        const defixId = responseAccount.defix_id;
+        const defixId = responseAccount.defix_id.toLowerCase();
         const addressNEAR = yield conexion.query("select * \
 																					from addresses where \
 																					defix_id = $1 and name = 'NEAR'\
@@ -189,6 +192,7 @@ const importFromMnemonic = (req, res) => __awaiter(void 0, void 0, void 0, funct
         const mnemonic = (0, crypto_1.decrypt)(seedPhrase);
         if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ") || !mnemonic)
             return res.status(400).send();
+        const DefixId = defixId.toLowerCase();
         const exists = yield (0, utils_1.validateDefixId)(defixId.toLowerCase());
         if (!exists) {
             const credentials = [];
@@ -198,7 +202,7 @@ const importFromMnemonic = (req, res) => __awaiter(void 0, void 0, void 0, funct
             credentials.push(yield (0, tron_services_1.createWalletTRON)(mnemonic));
             credentials.push(yield (0, bsc_services_1.createWalletBNB)(mnemonic));
             const wallet = {
-                defixId: defixId,
+                defixId: DefixId,
                 mnemonic: mnemonic,
                 credentials: credentials
             };

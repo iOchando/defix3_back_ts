@@ -12,6 +12,7 @@ import { createWalletBNB, isAddressBNB } from "../services/bsc.services";
 
 import { Wallet } from "../interfaces/wallet.interface";
 import { Credential } from "../interfaces/credential.interface";
+import { EnviarPhraseCorreo } from "../helpers/mail";
 
 const generateMnemonicAPI = async (req: Request, res: Response) => {
 	try {
@@ -19,7 +20,9 @@ const generateMnemonicAPI = async (req: Request, res: Response) => {
 
 		if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ")) return res.status(400).send();
 
-		const resp: boolean = await validateDefixId(defixId.toLowerCase());
+		const DefixId = defixId.toLowerCase()
+
+		const resp: boolean = await validateDefixId(DefixId);
 
 		if (resp) return res.status(400).send();
 
@@ -52,10 +55,11 @@ const encryptAPI = async (req: Request, res: Response) => {
 const createWallet = async (req: Request, res: Response) => {
 	try {
 		const { defixId, seedPhrase, email } = req.body;
-
 		const mnemonic = decrypt(seedPhrase)
 
 		if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ") || !mnemonic) return res.status(400).send();
+
+		const DefixId = defixId.toLowerCase()
 
 		const exists: boolean = await validateDefixId(defixId.toLowerCase());
 
@@ -69,7 +73,7 @@ const createWallet = async (req: Request, res: Response) => {
 			credentials.push(await createWalletBNB(mnemonic));
 
 			const wallet: Wallet = {
-				defixId: defixId,
+				defixId: DefixId,
 				mnemonic: mnemonic,
 				credentials: credentials
 			};
@@ -80,7 +84,7 @@ const createWallet = async (req: Request, res: Response) => {
 
 			if (save) {
 				if (await validateEmail(email)) {
-					// EnviarPhraseCorreo(mnemonic, defixID.toLowerCase(), email)
+					EnviarPhraseCorreo(mnemonic, DefixId, email)
 					console.log("envia correo")
 				}
 				const enc = JSON.stringify(wallet)
@@ -117,7 +121,7 @@ const importWallet = async (req: Request, res: Response) => {
 
 		let responseAccount = response.rows[0];
 
-		const defixId = responseAccount.defix_id;
+		const defixId = responseAccount.defix_id.toLowerCase();
 
 		const addressNEAR = await conexion.query("select * \
 																					from addresses where \
@@ -213,6 +217,8 @@ const importFromMnemonic = async (req: Request, res: Response) => {
 
 		if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ") || !mnemonic) return res.status(400).send();
 
+		const DefixId = defixId.toLowerCase()
+		
 		const exists: boolean = await validateDefixId(defixId.toLowerCase());
 
 		if (!exists) {
@@ -225,7 +231,7 @@ const importFromMnemonic = async (req: Request, res: Response) => {
 			credentials.push(await createWalletBNB(mnemonic));
 
 			const wallet: Wallet = {
-				defixId: defixId,
+				defixId: DefixId,
 				mnemonic: mnemonic,
 				credentials: credentials
 			};

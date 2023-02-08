@@ -12,11 +12,76 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCryptosFn = exports.ADDRESS_VAULT = exports.GET_COMISION = exports.validateEmail = exports.validateMnemonicDefix = exports.CONFIG = exports.validateDefixId = void 0;
+exports.getCryptosFn = exports.ADDRESS_VAULT = exports.GET_COMISION = exports.validateEmail = exports.validateMnemonicDefix = exports.CONFIG = exports.validateDefixId = exports.getAddressUser = exports.saveTransaction = void 0;
 const postgres_1 = __importDefault(require("../config/postgres"));
 const near_services_1 = require("../services/near.services");
 const axios_1 = __importDefault(require("axios"));
 const NETWORK = process.env.NETWORK;
+function saveTransaction(fromDefix, toDefix, coin, amount, fromAddress, toAddress, hash, tipo) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            let date_ob = new Date();
+            let date = ("0" + date_ob.getDate()).slice(-2);
+            let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
+            let year = date_ob.getFullYear();
+            let hours = date_ob.getHours();
+            let minutes = date_ob.getMinutes();
+            let seconds = date_ob.getSeconds();
+            let date_time = (year + "-" + month + "-" + date + " " + hours + ":" + minutes + ":" + seconds);
+            let dateFech = (year + "-" + month + "-" + date);
+            const conexion = yield (0, postgres_1.default)();
+            const response = yield conexion.query(`insert into transactions
+      (from_defix, from_address, to_defix, to_address, coin, value, date_time, date_fech ,date_year, date_month, hash, tipo)
+      values
+      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`, [fromDefix, fromAddress, toDefix, toAddress, coin, String(amount), String(date_time), String(dateFech), String(year), String(month), hash, tipo])
+                .then(() => {
+                const transaction = {
+                    from_defix: fromDefix,
+                    from_address: fromAddress,
+                    to_defix: toDefix,
+                    to_address: toAddress,
+                    coin: coin,
+                    value: String(amount),
+                    date_time: String(date_time),
+                    date_fech: String(dateFech),
+                    date_year: String(year),
+                    date_month: String(month),
+                    hash: hash,
+                    tipo: tipo
+                };
+                return transaction;
+            }).catch((error) => {
+                return false;
+            });
+            return response;
+        }
+        catch (error) {
+            return false;
+        }
+    });
+}
+exports.saveTransaction = saveTransaction;
+function getAddressUser(defixId, blockchain) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const conexion = yield (0, postgres_1.default)();
+            const resultados = yield conexion.query("select * \
+                                          from addresses where \
+                                          defix_id = $1 and name = $2\
+                                          ", [defixId, blockchain]);
+            if (resultados.rows.length > 0) {
+                return resultados.rows[0].address || false;
+            }
+            else {
+                return false;
+            }
+        }
+        catch (error) {
+            return false;
+        }
+    });
+}
+exports.getAddressUser = getAddressUser;
 const validateDefixId = (defixId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const conexion = yield (0, postgres_1.default)();

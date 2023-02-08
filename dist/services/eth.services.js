@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getBalanceTokenETH = exports.getBalanceETH = exports.isAddressETH = exports.createWalletETH = void 0;
+exports.transactionETH = exports.getBalanceTokenETH = exports.getBalanceETH = exports.isAddressETH = exports.createWalletETH = void 0;
 const ethers_1 = require("ethers");
 const web3_1 = __importDefault(require("web3"));
 const minabi_1 = require("../helpers/minabi");
@@ -83,3 +83,37 @@ const getBalanceTokenETH = (address, srcContract, decimals) => __awaiter(void 0,
     }
 });
 exports.getBalanceTokenETH = getBalanceTokenETH;
+function transactionETH(fromAddress, privateKey, toAddress, coin, amount) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const balance = yield getBalanceETH(fromAddress);
+            if (balance < amount) {
+                console.log('Error: No tienes suficientes fondos para realizar la transferencia');
+                return false;
+            }
+            const gasPrice = yield web3.eth.getGasPrice();
+            const gasLimit = 21000;
+            const nonce = yield web3.eth.getTransactionCount(fromAddress);
+            const rawTransaction = {
+                from: fromAddress,
+                to: toAddress,
+                value: web3.utils.toHex(web3.utils.toWei(amount.toString(), 'ether')),
+                gasPrice: web3.utils.toHex(gasPrice),
+                gasLimit: web3.utils.toHex(gasLimit),
+                nonce: nonce
+            };
+            const signedTransaction = yield web3.eth.accounts.signTransaction(rawTransaction, privateKey);
+            if (!signedTransaction.rawTransaction)
+                return false;
+            const transactionHash = yield web3.eth.sendSignedTransaction(signedTransaction.rawTransaction);
+            if (!transactionHash.transactionHash)
+                return false;
+            return transactionHash.transactionHash;
+        }
+        catch (error) {
+            console.error(error);
+            return false;
+        }
+    });
+}
+exports.transactionETH = transactionETH;

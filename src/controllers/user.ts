@@ -7,11 +7,13 @@ import { encrypt, decrypt } from "../helpers/crypto";
 const setEmailData = async (req: Request, res: Response) => {
 	const { defixId } = req.body
 
-	status2faFn(defixId).then((respStatus) => {
+	const DefixId = defixId.toLowerCase()
+
+	status2faFn(DefixId).then((respStatus) => {
 		switch (respStatus) {
 			case true: {
 				const { code } = req.body;
-				validarCode2fa(code, defixId).then((respValidacion) => {
+				validarCode2fa(code, DefixId).then((respValidacion) => {
 					console.log(respValidacion);
 					switch (respValidacion) {
 						case true: {
@@ -94,10 +96,12 @@ const closeAllSessions = async (req: Request, res: Response) => {
 	try {
 		const { defixId, seedPhrase } = req.body
 
+		const DefixId = defixId.toLowerCase()
+
 		const mnemonic = decrypt(seedPhrase)
 		if (!mnemonic) return res.status(400).send() 
 
-		const response = await validateMnemonicDefix(defixId, mnemonic)
+		const response = await validateMnemonicDefix(DefixId, mnemonic)
 
 		if (!response) return res.status(400).send()
 
@@ -107,7 +111,7 @@ const closeAllSessions = async (req: Request, res: Response) => {
 		await conexion.query("update users\
 															set close_sessions = $1 where\
 															defix_id = $2\
-															", [true, defixId])
+															", [true, DefixId])
 			.then(() => {
 				result = true
 			}).catch(() => {
@@ -124,7 +128,7 @@ const getCloseAllSesions = async (req: Request, res: Response) => {
 	try {
 		const { defixId } = req.body
 
-		const response = await validateDefixId(defixId)
+		const response = await validateDefixId(defixId.toLowerCase())
 
 		if (!response) return res.status(400).send()
 		const conexion = await dbConnect()
@@ -132,7 +136,7 @@ const getCloseAllSesions = async (req: Request, res: Response) => {
 		const resultados = await conexion.query("select close_sessions \
 																									from users where \
 																									defix_id = $1\
-																									", [defixId])
+																									", [defixId.toLowerCase()])
 		res.send(resultados.rows[0].close_sessions)
 
 	} catch (error) {
