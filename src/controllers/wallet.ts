@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import dbConnect from "../config/postgres";
-import { validateDefixId, validateEmail } from "../helpers/utils";
+import { validateDefixId, validateEmail, getCryptosFn } from "../helpers/utils";
+import { encrypt, decrypt } from "../helpers/crypto";
 import { generateMnemonic } from 'bip39';
 
 import { createWalletBTC, isAddressBTC } from "../services/btc.services";
@@ -11,8 +12,6 @@ import { createWalletBNB, isAddressBNB } from "../services/bsc.services";
 
 import { Wallet } from "../interfaces/wallet.interface";
 import { Credential } from "../interfaces/credential.interface";
-
-
 
 const generateMnemonicAPI = async (req: Request, res: Response) => {
 	try {
@@ -26,7 +25,24 @@ const generateMnemonicAPI = async (req: Request, res: Response) => {
 
 		const mnemonic = await generateMnemonic();
 
-		res.send({ resp: "ok", mnemonic: mnemonic });
+		res.send({ mnemonic: mnemonic });
+	} catch (err) {
+		console.log(err);
+		res.status(500).send({ err });
+	}
+}
+
+const encryptAPI = async (req: Request, res: Response) => {
+	try {
+		const { text } = req.body;
+
+		if (!text) return res.status(400).send();
+
+		const resp = encrypt(text);
+
+		if (!resp) return res.status(400).send();
+
+		res.send(resp);
 	} catch (err) {
 		console.log(err);
 		res.status(500).send({ err });
@@ -35,14 +51,15 @@ const generateMnemonicAPI = async (req: Request, res: Response) => {
 
 const createWallet = async (req: Request, res: Response) => {
 	try {
-		const { defixId, mnemonic, email } = req.body;
+		const { defixId, seedPhrase, email } = req.body;
+
+		const mnemonic = decrypt(seedPhrase)
 
 		if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ") || !mnemonic) return res.status(400).send();
 
 		const exists: boolean = await validateDefixId(defixId.toLowerCase());
 
 		if (!exists) {
-
 			const credentials: Array<Credential> = [];
 
 			credentials.push(await createWalletBTC(mnemonic));
@@ -66,7 +83,9 @@ const createWallet = async (req: Request, res: Response) => {
 					// EnviarPhraseCorreo(mnemonic, defixID.toLowerCase(), email)
 					console.log("envia correo")
 				}
-				return res.send(wallet)
+				const enc = JSON.stringify(wallet)
+				const walletres = encrypt(enc)
+				return res.send(walletres)
 			}
 			return res.status(400).send()
 		}
@@ -79,7 +98,9 @@ const createWallet = async (req: Request, res: Response) => {
 
 const importWallet = async (req: Request, res: Response) => {
 	try {
-		const { mnemonic } = req.body;
+		const { seedPhrase } = req.body;
+
+		const mnemonic = decrypt(seedPhrase)
 
 		if (!mnemonic) return res.status(400).send();
 
@@ -186,7 +207,9 @@ const importWallet = async (req: Request, res: Response) => {
 
 const importFromMnemonic = async (req: Request, res: Response) => {
 	try {
-		const { defixId, mnemonic } = req.body
+		const { defixId, seedPhrase } = req.body
+
+		const mnemonic = decrypt(seedPhrase)
 
 		if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ") || !mnemonic) return res.status(400).send();
 
@@ -217,6 +240,59 @@ const importFromMnemonic = async (req: Request, res: Response) => {
 			return res.status(400).send()
 		}
 		res.status(405).send()
+	} catch (err) {
+		console.log(err);
+		res.status(500).send({ err });
+	}
+};
+
+const validatePK = async (privateKey: string) => {
+	try {
+		
+	} catch (error) {
+		return false
+	}
+}
+
+const importFromPK = async (req: Request, res: Response) => {
+	try {
+		const { pkEncrypt } = req.body
+
+		const privateKey = decrypt(pkEncrypt)
+
+		// if (!privateKey) return res.status(400).send();
+
+		const cryptos = await getCryptosFn()
+
+		console.log(cryptos)
+
+		// const exists: boolean = await validateDefixId(defixId.toLowerCase());
+
+		// if (!exists) {
+		// 	const credentials: Array<Credential> = [];
+
+		// 	credentials.push(await createWalletBTC(mnemonic));
+		// 	credentials.push(await createWalletETH(mnemonic));
+		// 	credentials.push(await createWalletNEAR(mnemonic));
+		// 	credentials.push(await createWalletTRON(mnemonic));
+		// 	credentials.push(await createWalletBNB(mnemonic));
+
+		// 	const wallet: Wallet = {
+		// 		defixId: defixId,
+		// 		mnemonic: mnemonic,
+		// 		credentials: credentials
+		// 	};
+
+		// 	const nearId = await getIdNear(mnemonic)
+
+		// 	const save = await saveUser(nearId, wallet)
+
+		// 	if (save) {
+		// 		return res.send(wallet)
+		// 	}
+		// 	return res.status(400).send()
+		// }
+		// res.status(405).send()
 	} catch (err) {
 		console.log(err);
 		res.status(500).send({ err });
@@ -301,4 +377,4 @@ const validateDefixIdAPI = async (req: Request, res: Response) => {
 	}
 }
 
-export { generateMnemonicAPI, createWallet, validateDefixIdAPI, importWallet, importFromMnemonic, validateAddress, getUsers }
+export { encryptAPI, generateMnemonicAPI, createWallet, validateDefixIdAPI, importWallet, importFromMnemonic, validateAddress, getUsers, importFromPK }

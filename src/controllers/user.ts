@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import dbConnect from "../config/postgres";
 import { validateDefixId, validateMnemonicDefix } from "../helpers/utils";
 import { status2faFn, validarCode2fa } from "./2fa";
+import { encrypt, decrypt } from "../helpers/crypto";
 
 const setEmailData = async (req: Request, res: Response) => {
 	const { defixId } = req.body
@@ -37,7 +38,10 @@ const setEmailData = async (req: Request, res: Response) => {
 
 async function EjecutarsetEmailData(req: Request, res: Response) {
 	try {
-		const { defixId, mnemonic, email, flag_send, flag_receive, flag_dex, flag_fiat, name, last_name, legal_document, type_document } = req.body
+		const { defixId, seedPhrase, email, flag_send, flag_receive, flag_dex, flag_fiat, name, last_name, legal_document, type_document } = req.body
+
+		const mnemonic = decrypt(seedPhrase)
+		if (!mnemonic) return res.status(400).send() 
 
 		const response = await validateMnemonicDefix(defixId, mnemonic)
 		var result
@@ -88,7 +92,10 @@ const getEmailData = async (req: Request, res: Response) => {
 
 const closeAllSessions = async (req: Request, res: Response) => {
 	try {
-		const { defixId, mnemonic } = req.body
+		const { defixId, seedPhrase } = req.body
+
+		const mnemonic = decrypt(seedPhrase)
+		if (!mnemonic) return res.status(400).send() 
 
 		const response = await validateMnemonicDefix(defixId, mnemonic)
 

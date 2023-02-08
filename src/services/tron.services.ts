@@ -83,4 +83,23 @@ const getBalanceTokenTRON = async (address: string, srcContract: string, decimal
   }
 }
 
+// const swapTRON = async () => {
+//   const walletAddress = 'TU DIRECCIÓN DE BILLETERA TRON';
+
+//   // Contrato que implementa el "swap"
+//   const swapContractAddress = 'DIRECCIÓN DEL CONTRATO DE "SWAP"';
+
+//   // Instancia del contrato de "swap"
+//   const swapContract = tronWeb.contract(swapContractAddress, [
+//     // AQUÍ VAN LOS ABIs (INTERFAZ DE CONTRATO) DEL CONTRATO DE "SWAP"
+//   ]);
+
+//   // Ejecuta la función de "swap" del contrato
+//   swapContract.swap(tokenIn, tokenOut, walletAddress).send({
+//     from: walletAddress,
+//     callValue: 0,
+//   }).then(console.log)
+//     .catch(console.error);
+// }
+
 export { createWalletTRON, isAddressTRON, getBalanceTRON, getBalanceTokenTRON };

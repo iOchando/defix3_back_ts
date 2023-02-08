@@ -1,7 +1,12 @@
 import { Request, Response, Router } from "express";
-import { generateMnemonicAPI, createWallet, validateDefixIdAPI, importWallet, importFromMnemonic, validateAddress, getUsers } from "../controllers/wallet";
+import { importFromPK, encryptAPI, generateMnemonicAPI, createWallet, validateDefixIdAPI, importWallet, importFromMnemonic, validateAddress, getUsers } from "../controllers/wallet";
 
 const router = Router();
+
+router.post("/encrypt/", encryptAPI);
+importFromPK
+
+router.post("/import-from-pk/", importFromPK);
 
 /**
  * Post track

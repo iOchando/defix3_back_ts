@@ -17,9 +17,13 @@ const postgres_1 = __importDefault(require("../config/postgres"));
 const otplib_1 = require("otplib");
 const qrcode_1 = __importDefault(require("qrcode"));
 const utils_1 = require("../helpers/utils");
+const crypto_1 = require("../helpers/crypto");
 const generar2fa = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { defixId, mnemonic } = req.body;
+        const { defixId, seedPhrase } = req.body;
+        const mnemonic = (0, crypto_1.decrypt)(seedPhrase);
+        if (!mnemonic)
+            return res.status(400).send();
         const validate = yield (0, utils_1.validateMnemonicDefix)(defixId, mnemonic);
         if (!validate)
             return res.status(400).send();
@@ -76,7 +80,10 @@ const generar2fa = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.generar2fa = generar2fa;
 const activar2fa = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { defixId, mnemonic, code } = req.body;
+        const { defixId, seedPhrase, code } = req.body;
+        const mnemonic = (0, crypto_1.decrypt)(seedPhrase);
+        if (!mnemonic)
+            return res.status(400).send();
         const response = yield (0, utils_1.validateMnemonicDefix)(defixId, mnemonic);
         if (!response)
             return res.status(400).send();

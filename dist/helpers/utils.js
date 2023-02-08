@@ -12,9 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateEmail = exports.validateMnemonicDefix = exports.CONFIG = exports.validateDefixId = void 0;
+exports.getCryptosFn = exports.ADDRESS_VAULT = exports.GET_COMISION = exports.validateEmail = exports.validateMnemonicDefix = exports.CONFIG = exports.validateDefixId = void 0;
 const postgres_1 = __importDefault(require("../config/postgres"));
 const near_services_1 = require("../services/near.services");
+const axios_1 = __importDefault(require("axios"));
 const NETWORK = process.env.NETWORK;
 const validateDefixId = (defixId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -91,3 +92,58 @@ function CONFIG(keyStores) {
     }
 }
 exports.CONFIG = CONFIG;
+function ADDRESS_VAULT(coin) {
+    switch (coin) {
+        case 'BTC':
+            return process.env.VAULT_BTC;
+        case 'NEAR':
+            return process.env.VAULT_NEAR;
+        case 'ETH':
+            return process.env.VAULT_ETH;
+        case 'TRON':
+            return process.env.VAULT_TRON;
+        case 'BNB':
+            return process.env.VAULT_BNB;
+        default:
+            throw new Error(`Unconfigured environment '${coin}'`);
+    }
+}
+exports.ADDRESS_VAULT = ADDRESS_VAULT;
+function GET_COMISION(coin) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const url = process.env.URL_DJANGO + "api/v1/get-comision/" + coin;
+            const result = axios_1.default.get(url)
+                .then(function (response) {
+                return response.data;
+            })
+                .catch(function (xhr) {
+                return false;
+            });
+            return result;
+        }
+        catch (error) {
+            return false;
+        }
+    });
+}
+exports.GET_COMISION = GET_COMISION;
+const getCryptosFn = () => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const conexion = yield (0, postgres_1.default)();
+        const cryptocurrencys = yield conexion.query("select * from backend_cryptocurrency");
+        const cryptos = [];
+        for (let cryptocurrency of cryptocurrencys.rows) {
+            const tokens = yield conexion.query("select * from backend_token where cryptocurrency_id = $1", [cryptocurrency.id]);
+            cryptocurrency.tokens = tokens.rows;
+            cryptos.push(cryptocurrency);
+        }
+        return cryptos;
+    }
+    catch (error) {
+        console.log(error);
+        return [];
+    }
+    ;
+});
+exports.getCryptosFn = getCryptosFn;

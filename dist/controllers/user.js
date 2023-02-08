@@ -16,6 +16,7 @@ exports.getEmailData = exports.setEmailData = exports.closeAllSessions = exports
 const postgres_1 = __importDefault(require("../config/postgres"));
 const utils_1 = require("../helpers/utils");
 const _2fa_1 = require("./2fa");
+const crypto_1 = require("../helpers/crypto");
 const setEmailData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { defixId } = req.body;
     (0, _2fa_1.status2faFn)(defixId).then((respStatus) => {
@@ -54,7 +55,10 @@ exports.setEmailData = setEmailData;
 function EjecutarsetEmailData(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { defixId, mnemonic, email, flag_send, flag_receive, flag_dex, flag_fiat, name, last_name, legal_document, type_document } = req.body;
+            const { defixId, seedPhrase, email, flag_send, flag_receive, flag_dex, flag_fiat, name, last_name, legal_document, type_document } = req.body;
+            const mnemonic = (0, crypto_1.decrypt)(seedPhrase);
+            if (!mnemonic)
+                return res.status(400).send();
             const response = yield (0, utils_1.validateMnemonicDefix)(defixId, mnemonic);
             var result;
             if (legal_document == !null) {
@@ -101,7 +105,10 @@ const getEmailData = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.getEmailData = getEmailData;
 const closeAllSessions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { defixId, mnemonic } = req.body;
+        const { defixId, seedPhrase } = req.body;
+        const mnemonic = (0, crypto_1.decrypt)(seedPhrase);
+        if (!mnemonic)
+            return res.status(400).send();
         const response = yield (0, utils_1.validateMnemonicDefix)(defixId, mnemonic);
         if (!response)
             return res.status(400).send();

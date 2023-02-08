@@ -1,6 +1,7 @@
 import dbConnect from "../config/postgres";
 import { getIdNear } from "../services/near.services";
 import { Pool } from "pg";
+import axios from "axios";
 
 const NETWORK = process.env.NETWORK;
 
@@ -78,4 +79,57 @@ function CONFIG(keyStores: any) {
   }
 }
 
-export { validateDefixId, CONFIG, validateMnemonicDefix, validateEmail };
+function ADDRESS_VAULT (coin: string) {
+  switch (coin) {
+    case 'BTC':
+      return process.env.VAULT_BTC
+    case 'NEAR':
+      return process.env.VAULT_NEAR
+    case 'ETH':
+      return process.env.VAULT_ETH
+    case 'TRON':
+      return process.env.VAULT_TRON     
+    case 'BNB':
+      return process.env.VAULT_BNB    
+    default:
+      throw new Error(`Unconfigured environment '${coin}'`)
+  }
+}
+
+async function GET_COMISION(coin: string) { 
+  try {
+      const url = process.env.URL_DJANGO + "api/v1/get-comision/" + coin
+      const result = axios.get(url)
+          .then(function (response) {
+              return response.data
+          })
+          .catch(function (xhr) {
+              return false
+          });
+      return result
+  } catch (error) {
+      return false
+  }
+}
+
+const getCryptosFn = async () => {
+	try {
+		const conexion = await dbConnect();
+		const cryptocurrencys = await conexion.query("select * from backend_cryptocurrency");
+
+		const cryptos = []
+
+		for (let cryptocurrency of cryptocurrencys.rows) {
+			const tokens = await conexion.query("select * from backend_token where cryptocurrency_id = $1", [cryptocurrency.id]);
+			cryptocurrency.tokens = tokens.rows
+			cryptos.push(cryptocurrency)
+		}
+
+		return cryptos
+	} catch (error) {
+		console.log(error)
+		return []
+	};
+};
+
+export { validateDefixId, CONFIG, validateMnemonicDefix, validateEmail, GET_COMISION, ADDRESS_VAULT, getCryptosFn };

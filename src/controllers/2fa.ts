@@ -3,10 +3,15 @@ import dbConnect from "../config/postgres";
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
 import { validateMnemonicDefix } from "../helpers/utils";
+import { encrypt, decrypt } from "../helpers/crypto";
 
 const generar2fa = async (req: Request, res: Response) => {
   try {
-    const { defixId, mnemonic } = req.body
+    const { defixId, seedPhrase } = req.body
+
+    const mnemonic = decrypt(seedPhrase)
+    if (!mnemonic) return res.status(400).send() 
+
     const validate = await validateMnemonicDefix(defixId, mnemonic)
 
     if (!validate) return res.status(400).send()
@@ -62,7 +67,10 @@ const generar2fa = async (req: Request, res: Response) => {
 
 const activar2fa = async (req: Request, res: Response) => {
   try {
-    const { defixId, mnemonic, code } = req.body
+    const { defixId, seedPhrase, code } = req.body
+
+    const mnemonic = decrypt(seedPhrase)
+    if (!mnemonic) return res.status(400).send() 
     const response = await validateMnemonicDefix(defixId, mnemonic)
 
     if (!response) return res.status(400).send()

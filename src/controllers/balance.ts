@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import dbConnect from "../config/postgres";
-import { validateDefixId } from "../helpers/utils";
+import { validateDefixId, getCryptosFn } from "../helpers/utils";
 
 import { getBalanceBTC, getBalanceBTC_Cypher } from "../services/btc.services";
 import { getBalanceETH, getBalanceTokenETH } from "../services/eth.services";
@@ -186,26 +186,6 @@ const balanceDataBaseFn = async (defixId: string, balances: BalanceCrypto[]) => 
 		}
 	} catch (error) {
 		console.log(error)
-	};
-};
-
-const getCryptosFn = async () => {
-	try {
-		const conexion = await dbConnect();
-		const cryptocurrencys = await conexion.query("select * from backend_cryptocurrency");
-
-		const cryptos = []
-
-		for (let cryptocurrency of cryptocurrencys.rows) {
-			const tokens = await conexion.query("select * from backend_token where cryptocurrency_id = $1", [cryptocurrency.id]);
-			cryptocurrency.tokens = tokens.rows
-			cryptos.push(cryptocurrency)
-		}
-
-		return cryptos
-	} catch (error) {
-		console.log(error)
-		return []
 	};
 };
 

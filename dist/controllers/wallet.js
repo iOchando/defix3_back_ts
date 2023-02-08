@@ -12,9 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUsers = exports.validateAddress = exports.importFromMnemonic = exports.importWallet = exports.validateDefixIdAPI = exports.createWallet = exports.generateMnemonicAPI = void 0;
+exports.importFromPK = exports.getUsers = exports.validateAddress = exports.importFromMnemonic = exports.importWallet = exports.validateDefixIdAPI = exports.createWallet = exports.generateMnemonicAPI = exports.encryptAPI = void 0;
 const postgres_1 = __importDefault(require("../config/postgres"));
 const utils_1 = require("../helpers/utils");
+const crypto_1 = require("../helpers/crypto");
 const bip39_1 = require("bip39");
 const btc_services_1 = require("../services/btc.services");
 const eth_services_1 = require("../services/eth.services");
@@ -30,7 +31,7 @@ const generateMnemonicAPI = (req, res) => __awaiter(void 0, void 0, void 0, func
         if (resp)
             return res.status(400).send();
         const mnemonic = yield (0, bip39_1.generateMnemonic)();
-        res.send({ resp: "ok", mnemonic: mnemonic });
+        res.send({ mnemonic: mnemonic });
     }
     catch (err) {
         console.log(err);
@@ -38,9 +39,26 @@ const generateMnemonicAPI = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.generateMnemonicAPI = generateMnemonicAPI;
+const encryptAPI = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { text } = req.body;
+        if (!text)
+            return res.status(400).send();
+        const resp = (0, crypto_1.encrypt)(text);
+        if (!resp)
+            return res.status(400).send();
+        res.send(resp);
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).send({ err });
+    }
+});
+exports.encryptAPI = encryptAPI;
 const createWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { defixId, mnemonic, email } = req.body;
+        const { defixId, seedPhrase, email } = req.body;
+        const mnemonic = (0, crypto_1.decrypt)(seedPhrase);
         if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ") || !mnemonic)
             return res.status(400).send();
         const exists = yield (0, utils_1.validateDefixId)(defixId.toLowerCase());
@@ -63,7 +81,9 @@ const createWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                     // EnviarPhraseCorreo(mnemonic, defixID.toLowerCase(), email)
                     console.log("envia correo");
                 }
-                return res.send(wallet);
+                const enc = JSON.stringify(wallet);
+                const walletres = (0, crypto_1.encrypt)(enc);
+                return res.send(walletres);
             }
             return res.status(400).send();
         }
@@ -77,7 +97,8 @@ const createWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.createWallet = createWallet;
 const importWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { mnemonic } = req.body;
+        const { seedPhrase } = req.body;
+        const mnemonic = (0, crypto_1.decrypt)(seedPhrase);
         if (!mnemonic)
             return res.status(400).send();
         const nearId = yield (0, near_services_1.getIdNear)(mnemonic);
@@ -164,7 +185,8 @@ const importWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.importWallet = importWallet;
 const importFromMnemonic = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { defixId, mnemonic } = req.body;
+        const { defixId, seedPhrase } = req.body;
+        const mnemonic = (0, crypto_1.decrypt)(seedPhrase);
         if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ") || !mnemonic)
             return res.status(400).send();
         const exists = yield (0, utils_1.validateDefixId)(defixId.toLowerCase());
@@ -195,6 +217,48 @@ const importFromMnemonic = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.importFromMnemonic = importFromMnemonic;
+const validatePK = (privateKey) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+    }
+    catch (error) {
+        return false;
+    }
+});
+const importFromPK = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { pkEncrypt } = req.body;
+        const privateKey = (0, crypto_1.decrypt)(pkEncrypt);
+        // if (!privateKey) return res.status(400).send();
+        const cryptos = yield (0, utils_1.getCryptosFn)();
+        console.log(cryptos);
+        // const exists: boolean = await validateDefixId(defixId.toLowerCase());
+        // if (!exists) {
+        // 	const credentials: Array<Credential> = [];
+        // 	credentials.push(await createWalletBTC(mnemonic));
+        // 	credentials.push(await createWalletETH(mnemonic));
+        // 	credentials.push(await createWalletNEAR(mnemonic));
+        // 	credentials.push(await createWalletTRON(mnemonic));
+        // 	credentials.push(await createWalletBNB(mnemonic));
+        // 	const wallet: Wallet = {
+        // 		defixId: defixId,
+        // 		mnemonic: mnemonic,
+        // 		credentials: credentials
+        // 	};
+        // 	const nearId = await getIdNear(mnemonic)
+        // 	const save = await saveUser(nearId, wallet)
+        // 	if (save) {
+        // 		return res.send(wallet)
+        // 	}
+        // 	return res.status(400).send()
+        // }
+        // res.status(405).send()
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).send({ err });
+    }
+});
+exports.importFromPK = importFromPK;
 const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const conexion = yield (0, postgres_1.default)();

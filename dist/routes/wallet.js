@@ -5,6 +5,9 @@ const express_1 = require("express");
 const wallet_1 = require("../controllers/wallet");
 const router = (0, express_1.Router)();
 exports.router = router;
+router.post("/encrypt/", wallet_1.encryptAPI);
+wallet_1.importFromPK;
+router.post("/import-from-pk/", wallet_1.importFromPK);
 /**
  * Post track
  * @openapi

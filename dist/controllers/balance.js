@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getBalance = exports.getCryptos = void 0;
 const postgres_1 = __importDefault(require("../config/postgres"));
+const utils_1 = require("../helpers/utils");
 const btc_services_1 = require("../services/btc.services");
 const eth_services_1 = require("../services/eth.services");
 const near_services_1 = require("../services/near.services");
@@ -50,7 +51,7 @@ const getBalance = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (resultados.rows.length === 0)
             return res.status(405).send();
         const addresses = resultados.rows;
-        const cryptos = yield getCryptosFn();
+        const cryptos = yield (0, utils_1.getCryptosFn)();
         const balances = [];
         for (let crypto of cryptos) {
             const balanceCrypto = {
@@ -177,24 +178,6 @@ const balanceDataBaseFn = (defixId, balances) => __awaiter(void 0, void 0, void 
     }
     catch (error) {
         console.log(error);
-    }
-    ;
-});
-const getCryptosFn = () => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const conexion = yield (0, postgres_1.default)();
-        const cryptocurrencys = yield conexion.query("select * from backend_cryptocurrency");
-        const cryptos = [];
-        for (let cryptocurrency of cryptocurrencys.rows) {
-            const tokens = yield conexion.query("select * from backend_token where cryptocurrency_id = $1", [cryptocurrency.id]);
-            cryptocurrency.tokens = tokens.rows;
-            cryptos.push(cryptocurrency);
-        }
-        return cryptos;
-    }
-    catch (error) {
-        console.log(error);
-        return [];
     }
     ;
 });
