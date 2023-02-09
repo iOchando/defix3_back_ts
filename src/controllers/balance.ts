@@ -117,7 +117,7 @@ const getBalance = async (req: Request, res: Response) => {
 					}
 					break;
 				}
-				case "TRON": {
+				case "TRX": {
 					if (!address) { balanceCrypto.balance = 0; break; }
 					balanceCrypto.balance = await getBalanceTRON(address)
 					for (let token of crypto.tokens) {

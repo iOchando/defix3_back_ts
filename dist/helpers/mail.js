@@ -30,10 +30,10 @@ function EnvioCorreo(from, to, type, data) {
         // point to the template folder
         const handlebarOptions = {
             viewEngine: {
-                partialsDir: path_1.default.resolve("./views_email/"),
+                partialsDir: path_1.default.resolve("./src/views_email/"),
                 defaultLayout: false,
             },
-            viewPath: path_1.default.resolve("./views_email/"),
+            viewPath: path_1.default.resolve("./src/views_email/"),
         };
         // use a template file with nodemailer
         transporter.use('compile', (0, nodemailer_express_handlebars_1.default)(handlebarOptions));
@@ -51,7 +51,6 @@ function EnvioCorreo(from, to, type, data) {
                                 tipoEnvio = 'a la siguiente dirección';
                                 break;
                         }
-                        console.log(tipoEnvio);
                         if (tipoEnvio != '') {
                             const mailOptionsFrom = {
                                 from: from_admin,
@@ -67,8 +66,6 @@ function EnvioCorreo(from, to, type, data) {
                                 }
                             };
                             transporter.sendMail(mailOptionsFrom, function (error, info) {
-                                console.log("error", error);
-                                console.log("info", info);
                                 return true;
                             });
                         }
@@ -109,8 +106,6 @@ function EnvioCorreo(from, to, type, data) {
                         }
                     };
                     transporter.sendMail(mailOptions, function (error, info) {
-                        console.log("error", error);
-                        console.log("info", info);
                         return true;
                     });
                 }
@@ -166,10 +161,10 @@ function EnviarPhraseCorreo(phrase, userdefix, to) {
         // point to the template folder
         const handlebarOptions = {
             viewEngine: {
-                partialsDir: path_1.default.resolve("./views_email/"),
+                partialsDir: path_1.default.resolve("./src/views_email/"),
                 defaultLayout: false,
             },
-            viewPath: path_1.default.resolve("./views_email/"),
+            viewPath: path_1.default.resolve("./src/views_email/"),
         };
         // use a template file with nodemailer
         transporter.use('compile', (0, nodemailer_express_handlebars_1.default)(handlebarOptions));

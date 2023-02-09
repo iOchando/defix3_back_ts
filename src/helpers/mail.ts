@@ -17,10 +17,10 @@ async function EnvioCorreo(from: any, to: any, type: any, data: any) {
   // point to the template folder
   const handlebarOptions: NodemailerExpressHandlebarsOptions = {
     viewEngine: {
-      partialsDir: path.resolve("./views_email/"),
+      partialsDir: path.resolve("./src/views_email/"),
       defaultLayout: false,
     },
-    viewPath: path.resolve("./views_email/"),
+    viewPath: path.resolve("./src/views_email/"),
   };
   // use a template file with nodemailer
   transporter.use('compile', hbs(handlebarOptions))
@@ -37,8 +37,6 @@ async function EnvioCorreo(from: any, to: any, type: any, data: any) {
           case 'wallet': tipoEnvio = 'a la siguiente dirección';
             break;
         }
-
-        console.log(tipoEnvio)
         if (tipoEnvio != '') {
           const mailOptionsFrom = {
             from: from_admin,
@@ -54,8 +52,6 @@ async function EnvioCorreo(from: any, to: any, type: any, data: any) {
             }
           }
           transporter.sendMail(mailOptionsFrom, function (error, info) {
-            console.log("error", error)
-            console.log("info", info)
             return true
           });
         }
@@ -96,8 +92,6 @@ async function EnvioCorreo(from: any, to: any, type: any, data: any) {
         }
       }
       transporter.sendMail(mailOptions, function (error, info) {
-        console.log("error", error)
-        console.log("info", info)
         return true
       });
     }
@@ -149,10 +143,10 @@ async function EnviarPhraseCorreo(phrase: string, userdefix: string, to: string)
   // point to the template folder
   const handlebarOptions: NodemailerExpressHandlebarsOptions = {
     viewEngine: {
-        partialsDir: path.resolve("./views_email/"),
+        partialsDir: path.resolve("./src/views_email/"),
         defaultLayout: false,
     },
-    viewPath: path.resolve("./views_email/"),
+    viewPath: path.resolve("./src/views_email/"),
   };
 
   // use a template file with nodemailer

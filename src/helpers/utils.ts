@@ -155,7 +155,7 @@ function ADDRESS_VAULT(coin: string) {
       return process.env.VAULT_NEAR
     case 'ETH':
       return process.env.VAULT_ETH
-    case 'TRON':
+    case 'TRX':
       return process.env.VAULT_TRON
     case 'BNB':
       return process.env.VAULT_BNB

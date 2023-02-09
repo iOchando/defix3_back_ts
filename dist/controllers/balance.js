@@ -112,7 +112,7 @@ const getBalance = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     }
                     break;
                 }
-                case "TRON": {
+                case "TRX": {
                     if (!address) {
                         balanceCrypto.balance = 0;
                         break;

@@ -132,16 +132,16 @@ const importWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         };
         const addressTRON = yield conexion.query("select * \
 																					from addresses where \
-																					defix_id = $1 and name = 'TRON'\
+																					defix_id = $1 and name = 'TRX'\
 																					", [defixId]);
         // Crypto news
         if (addressTRON.rows.length === 0) {
-            console.log("NO TIENE CUENTRA TRON");
-            const addresstron = credentials.find(element => element.name === 'TRON');
+            console.log("NO TIENE CUENTRA TRX");
+            const addresstron = credentials.find(element => element.name === 'TRX');
             if (addresstron) {
                 yield conexion.query(`insert into addresses
 																	(defix_id, name, address)
-																	values ($1, $2, $3)`, [defixId, 'TRON', addresstron.address]);
+																	values ($1, $2, $3)`, [defixId, 'TRX', addresstron.address]);
             }
         }
         const addressBNB = yield conexion.query("select * \
@@ -294,7 +294,7 @@ const validateAddress = (req, res) => __awaiter(void 0, void 0, void 0, function
         else if (coin === 'BNB') {
             return res.send(yield (0, bsc_services_1.isAddressBNB)(address));
         }
-        else if (coin === 'TRON') {
+        else if (coin === 'TRX') {
             return res.send(yield (0, tron_services_1.isAddressTRON)(address));
         }
         res.status(400).send();

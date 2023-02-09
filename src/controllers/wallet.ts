@@ -146,18 +146,18 @@ const importWallet = async (req: Request, res: Response) => {
 
 		const addressTRON = await conexion.query("select * \
 																					from addresses where \
-																					defix_id = $1 and name = 'TRON'\
+																					defix_id = $1 and name = 'TRX'\
 																					", [defixId]);
 
 		// Crypto news
 
 		if (addressTRON.rows.length === 0) {
-			console.log("NO TIENE CUENTRA TRON")
-			const addresstron = credentials.find(element => element.name === 'TRON')
+			console.log("NO TIENE CUENTRA TRX")
+			const addresstron = credentials.find(element => element.name === 'TRX')
 			if (addresstron) {
 				await conexion.query(`insert into addresses
 																	(defix_id, name, address)
-																	values ($1, $2, $3)`, [defixId, 'TRON', addresstron.address])
+																	values ($1, $2, $3)`, [defixId, 'TRX', addresstron.address])
 			}
 
 		}
@@ -218,7 +218,7 @@ const importFromMnemonic = async (req: Request, res: Response) => {
 		if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ") || !mnemonic) return res.status(400).send();
 
 		const DefixId = defixId.toLowerCase()
-		
+
 		const exists: boolean = await validateDefixId(defixId.toLowerCase());
 
 		if (!exists) {
@@ -254,7 +254,7 @@ const importFromMnemonic = async (req: Request, res: Response) => {
 
 const validatePK = async (privateKey: string) => {
 	try {
-		
+
 	} catch (error) {
 		return false
 	}
@@ -335,7 +335,7 @@ const validateAddress = async (req: Request, res: Response) => {
 		else if (coin === 'BNB') {
 			return res.send(await isAddressBNB(address))
 		}
-		else if (coin === 'TRON') {
+		else if (coin === 'TRX') {
 			return res.send(await isAddressTRON(address))
 		}
 		res.status(400).send()

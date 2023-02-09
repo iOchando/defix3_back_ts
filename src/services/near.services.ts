@@ -4,6 +4,7 @@ const nearSEED = require("near-seed-phrase");
 import { Credential } from "../interfaces/credential.interface";
 import { CONFIG, GET_COMISION, ADDRESS_VAULT } from "../helpers/utils";
 import { BufferN } from "bitcoinjs-lib/src/types";
+import BN from 'bn.js'
 
 const NETWORK = process.env.NETWORK || 'testnet';
 const ETHERSCAN = process.env.ETHERSCAN;
@@ -116,10 +117,10 @@ async function transactionNEAR(
 
     if (!amountInYocto) return false
 
-    const response = await account.sendMoney(toAddress, BufferN(amountInYocto));
+    const response = await account.sendMoney(toAddress, new BN(amountInYocto));
 
     if (for_vaultYocto !== '0' && vault_address && for_vaultYocto) {
-      await account.sendMoney(vault_address, BufferN(for_vaultYocto));
+      await account.sendMoney(vault_address, new BN(for_vaultYocto));
     }
 
     if (!response.transaction.hash) return false

@@ -17,7 +17,7 @@ const near_api_js_1 = require("near-api-js");
 const axios_1 = __importDefault(require("axios"));
 const nearSEED = require("near-seed-phrase");
 const utils_1 = require("../helpers/utils");
-const types_1 = require("bitcoinjs-lib/src/types");
+const bn_js_1 = __importDefault(require("bn.js"));
 const NETWORK = process.env.NETWORK || 'testnet';
 const ETHERSCAN = process.env.ETHERSCAN;
 const createWalletNEAR = (mnemonic) => __awaiter(void 0, void 0, void 0, function* () {
@@ -111,9 +111,9 @@ function transactionNEAR(fromAddress, privateKey, toAddress, coin, amount) {
                 return false;
             if (!amountInYocto)
                 return false;
-            const response = yield account.sendMoney(toAddress, (0, types_1.BufferN)(amountInYocto));
+            const response = yield account.sendMoney(toAddress, new bn_js_1.default(amountInYocto));
             if (for_vaultYocto !== '0' && vault_address && for_vaultYocto) {
-                yield account.sendMoney(vault_address, (0, types_1.BufferN)(for_vaultYocto));
+                yield account.sendMoney(vault_address, new bn_js_1.default(for_vaultYocto));
             }
             if (!response.transaction.hash)
                 return false;

@@ -5,20 +5,18 @@ import { encrypt, decrypt } from "../helpers/crypto";
 import { generateMnemonic } from 'bip39';
 
 import { createWalletBTC, isAddressBTC } from "../services/btc.services";
-import { transactionETH } from "../services/eth.services";
+import { transactionETH, transactionTokenETH } from "../services/eth.services";
 import { transactionNEAR } from "../services/near.services";
-import { createWalletTRON, isAddressTRON } from "../services/tron.services";
-import { createWalletBNB, isAddressBNB } from "../services/bsc.services";
+import { transactionTRON, transactionTokenTRON } from "../services/tron.services";
+import { transactionBNB, transactionTokenBNB } from "../services/bsc.services";
 
 import { Wallet } from "../interfaces/wallet.interface";
 import { Credential } from "../interfaces/credential.interface";
-
-import { minAbi } from "../helpers/minabi";
 import { EnvioCorreo, getEmailFlagFN } from "../helpers/mail";
 
 
 
-async function Ejecutartransaction(req: Request, res: Response) {
+async function transaction(req: Request, res: Response) {
   try {
     const { fromDefix, pkEncrypt, toDefix, coin, amount, blockchain } = req.body
     let transactionHash, fromAddress, toAddress, tipoEnvio;
@@ -34,7 +32,7 @@ async function Ejecutartransaction(req: Request, res: Response) {
     }
 
     if (toDefix.includes(".defix3")) {
-      fromAddress = await getAddressUser(fromDefix, blockchain)
+      toAddress = await getAddressUser(toDefix, blockchain)
       tipoEnvio = "user"
     } else {
       toAddress = toDefix
@@ -46,23 +44,27 @@ async function Ejecutartransaction(req: Request, res: Response) {
     const srcContract = await getTokenContract(coin, blockchain)
 
     if (blockchain === "BTC") {
-    //  transactionHash = await transactionBTC(fromDefix, fromAddress, privateKey, toDefix, toAddress, coin, amount, tipoEnvio)
+      //  transactionHash = await transactionBTC(fromDefix, fromAddress, privateKey, toDefix, toAddress, coin, amount, tipoEnvio)
     } else if (blockchain === "NEAR") {
       transactionHash = await transactionNEAR(fromAddress, privateKey, toAddress, coin, amount)
     } else if (blockchain === "ETH") {
-      if (srcContract) {
-       // transactionHash = await transactionTokenETH(fromDefix, fromAddress, privateKey, toDefix, toAddress, coin, amount, tipoEnvio)
+      if (coin == "ETH" && !srcContract) {
+        transactionHash = await transactionETH(fromAddress, privateKey, toAddress, coin, amount)
       } else {
-      //  transactionHash = await transactionETH(fromAddress, privateKey, toAddress, coin, amount)
+        transactionHash = await transactionTokenETH(fromAddress, privateKey, toAddress, amount, srcContract)
       }
-    } else if (blockchain === "TRON") {
-      if (srcContract) {
-       //  transactionHash = await transactionTokenTRON(fromDefix, fromAddress, privateKey, toDefix, toAddress, coin, amount, tipoEnvio)
+    } else if (blockchain === "TRX") {
+      if (coin == "TRX" && !srcContract) {
+        transactionHash = await transactionTRON(fromAddress, privateKey, toAddress, coin, amount)
       } else {
-        // transactionHash = await transactionTRON(fromDefix, fromAddress, privateKey, toDefix, toAddress, coin, amount, tipoEnvio)
+        transactionHash = await transactionTokenTRON(fromAddress, privateKey, toAddress, amount, srcContract)
       }
     } else if (blockchain === "BNB") {
-      // transactionHash = await transactionBNB(fromDefix, fromAddress, privateKey, toDefix, toAddress, coin, amount, tipoEnvio)
+      if (coin == "BNB" && !srcContract) {
+        transactionHash = await transactionBNB(fromAddress, privateKey, toAddress, coin, amount)
+      } else {
+        transactionHash = await transactionTokenBNB(fromAddress, privateKey, toAddress, amount, srcContract)
+      }
     } else {
       transactionHash = false
     }
@@ -78,7 +80,7 @@ async function Ejecutartransaction(req: Request, res: Response) {
         tipoEnvio: tipoEnvio
       };
       EnvioCorreo(resSend, resReceive, 'envio', item);
-      
+
       const transaction = await saveTransaction(
         fromDefix,
         toDefix,
@@ -169,3 +171,5 @@ const getTokenContract = async (token: string, blockchain: string) => {
 //     }
 //   })
 // }
+
+export {transaction}
