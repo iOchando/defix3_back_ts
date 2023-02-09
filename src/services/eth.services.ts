@@ -164,7 +164,7 @@ async function transactionTokenETH(fromAddress: string, privateKey: string, toAd
     let fee = Number(web3.utils.fromWei(String(55000 * wei), 'gwei'))
 
     const resp_comision = await GET_COMISION(srcToken.coin)
-    const vault_address = await ADDRESS_VAULT(srcToken.coin)
+    const vault_address = await ADDRESS_VAULT(srcToken.blockchain)
 
     const comision = resp_comision.transfer / 100
 
