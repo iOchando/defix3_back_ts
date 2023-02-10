@@ -147,7 +147,7 @@ function transactionTokenBNB(fromAddress, privateKey, toAddress, amount, srcToke
             let wei = response.data.result.SafeGasPrice;
             let fee = Number(web3BSC.utils.fromWei(String(55000 * wei), 'gwei'));
             const resp_comision = yield (0, utils_1.GET_COMISION)(srcToken.coin);
-            const vault_address = yield (0, utils_1.ADDRESS_VAULT)(srcToken.coin);
+            const vault_address = yield (0, utils_1.ADDRESS_VAULT)(srcToken.blockchain);
             const comision = resp_comision.transfer / 100;
             let amount_vault = Number((fee * comision).toFixed(18));
             if (amount_vault !== 0 && vault_address) {
