@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
-import dbConnect from "../config/postgres";
 import { validateDefixId, validateMnemonicDefix } from "../helpers/utils";
 import { status2faFn, validarCode2fa } from "./2fa";
 import { encrypt, decrypt } from "../helpers/crypto";
+import { User } from "../entities/user.entity";
+import AppDataSource from "../config/data.source";
+import dataSource from "../config/data.source";
 
 const setEmailData = async (req: Request, res: Response) => {
 	const { defixId } = req.body
@@ -45,28 +47,32 @@ async function EjecutarsetEmailData(req: Request, res: Response) {
 		const mnemonic = decrypt(seedPhrase)
 		if (!mnemonic) return res.status(400).send() 
 
+		const user = await User.findOneBy({defix_id: defixId})
+		if (!user) return res.status(400).send() 
+
 		const response = await validateMnemonicDefix(defixId, mnemonic)
-		var result
 
 		if (legal_document == ! null) {
 			if (type_document == ! "v" && type_document == ! "j") {
-				return res.status(204).json({ respuesta: "Error tipo de documento" })
+				return res.status(400).send({ response: "Error tipo de documento" })
 			}
 		}
 
 		if (!response) return res.status(400).send()
 
-		const conexion = await dbConnect()
-		await conexion.query("update users\
-                                set email = $1, flag_send = $2, flag_receive = $3, flag_dex = $4, flag_fiat = $5, name = $6, last_name = $7, legal_document = $8, type_document=$9 where\
-                                defix_id = $10\
-                                ", [email, flag_send, flag_receive, flag_dex, flag_fiat, name, last_name, legal_document, type_document, defixId])
-			.then(() => {
-				result = true
-			}).catch(() => {
-				result = false
-			})
-		return res.json({ respuesta: "ok", data: result })
+		await User.update({defix_id: user.defix_id}, {
+			email: email,
+			name: name,
+			lastname: last_name,
+			legal_document: legal_document,
+			type_document: type_document,
+			flag_send: flag_send,
+			flag_receive: flag_receive,
+			flag_dex: flag_dex,
+			flag_fiat: flag_fiat
+		})
+
+		res.status(200).send()
 
 	} catch (error) {
 		return res.status(500).send()
@@ -76,17 +82,16 @@ async function EjecutarsetEmailData(req: Request, res: Response) {
 const getEmailData = async (req: Request, res: Response) => {
 	try {
 		const { defixId } = req.body
-		const response = await validateDefixId(defixId)
 
-		if (!response) return res.status(400).send()
+		const userData = await dataSource
+    .createQueryBuilder(User, "user")
+		.select(["user.defix_id", "user.email", "user.flag_send", "user.flag_receive", "user.flag_dex", "user.flag_fiat", "user.name", "user.lastname", "user.legal_document", "user.type_document", "user.dosfa"])
+    .where("user.defix_id = :defixId", { defixId: defixId })
+    .getOne()
 
-		const conexion = await dbConnect()
+		if (!userData) return res.status(400).send()
 
-		const resultados = await conexion.query("select email, flag_send, flag_receive, flag_dex, flag_fiat, name, last_name, legal_document, type_document, dosfa \
-                                                    from users where \
-                                                    defix_id = $1\
-                                                    ", [defixId])
-		res.send(resultados.rows[0])
+		res.send(userData)
 	} catch (error) {
 		return res.status(500).send()
 	}
@@ -98,28 +103,24 @@ const closeAllSessions = async (req: Request, res: Response) => {
 
 		const DefixId = defixId.toLowerCase()
 
+		const user = await User.findOneBy({defix_id: DefixId})
+		if (!user) return res.status(400).send() 
+
 		const mnemonic = decrypt(seedPhrase)
 		if (!mnemonic) return res.status(400).send() 
 
 		const response = await validateMnemonicDefix(DefixId, mnemonic)
 
-		if (!response) return res.status(400).send()
+		console.log(response)
 
-		var result
+		if (!response) return res.status(404).send()
 
-		const conexion = await dbConnect()
-		await conexion.query("update users\
-															set close_sessions = $1 where\
-															defix_id = $2\
-															", [true, DefixId])
-			.then(() => {
-				result = true
-			}).catch(() => {
-				result = false
-			})
-		res.json(result)
+		const result = await User.update({defix_id: defixId}, {close_sessions: true})
+
+		res.send(result)
 
 	} catch (error) {
+		console.log(error)
 		return res.status(500).send()
 	}
 }
@@ -128,16 +129,10 @@ const getCloseAllSesions = async (req: Request, res: Response) => {
 	try {
 		const { defixId } = req.body
 
-		const response = await validateDefixId(defixId.toLowerCase())
+		const user = await User.findOneBy({defix_id: defixId.toLowerCase()})
+		if (!user) return res.status(400).send() 
 
-		if (!response) return res.status(400).send()
-		const conexion = await dbConnect()
-
-		const resultados = await conexion.query("select close_sessions \
-																									from users where \
-																									defix_id = $1\
-																									", [defixId.toLowerCase()])
-		res.send(resultados.rows[0].close_sessions)
+		res.send(user.close_sessions)
 
 	} catch (error) {
 		return res.status(500).send()

@@ -8,18 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUsersDefix = void 0;
-const postgres_1 = __importDefault(require("../config/postgres"));
+const user_entity_1 = require("../entities/user.entity");
 const getUsersDefix = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const conexion = yield (0, postgres_1.default)();
-        const response = yield conexion.query("select defix_id \
-                                          from users");
-        res.send(response.rows);
+        const users = yield user_entity_1.User.find({ select: ["defix_id", "id"] });
+        res.send(users);
     }
     catch (error) {
         res.status(404).send();

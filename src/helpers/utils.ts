@@ -2,16 +2,18 @@ import dbConnect from "../config/postgres";
 import { getIdNear } from "../services/near.services";
 import { Pool } from "pg";
 import axios from "axios";
+import { User } from "../entities/user.entity";
+import { Address } from "../entities/addresses.entity";
 
 const NETWORK = process.env.NETWORK;
 
 async function saveTransaction(
-  fromDefix: string, 
+  fromDefix: string,
   toDefix: string, coin: string,
-  amount: number, 
-  fromAddress: string, 
+  amount: number,
+  fromAddress: string,
   toAddress: string,
-  hash: string, 
+  hash: string,
   tipo: string
 ) {
   try {
@@ -57,69 +59,47 @@ async function saveTransaction(
 
 async function getAddressUser(defixId: string, blockchain: string) {
   try {
-    const conexion = await dbConnect()
-    const resultados = await conexion.query("select * \
-                                          from addresses where \
-                                          defix_id = $1 and name = $2\
-                                          ", [defixId, blockchain])
+    const address = await Address.findOneBy({user: { defix_id: defixId}, name: blockchain})
 
-    if (resultados.rows.length > 0) {
-      return resultados.rows[0].address || false
-    } else {
-      return false
-    }
+    if (!address) return false
+
+    return address.address
   } catch (error) {
     return false
   }
 }
 
-const validateDefixId = async (defixId: String) => {
+const validateDefixId = async (defixId: string) => {
   try {
-    const conexion: Pool = await dbConnect();
-    const resultados = await conexion.query("select * \
-                                            from users where \
-                                            defix_id = $1\
-                                            ", [defixId]);
+    const user = await User.findOneBy({defix_id: defixId})
 
-    if (resultados.rows.length > 0) {
-      return true;
-    }
-    return false;
+		if (!user) return false;
+
+    return true;
   } catch (err) {
-    console.log(err);
     return false;
   }
 };
 
 const validateMnemonicDefix = async (defixId: string, mnemonic: string) => {
   try {
-    const conexion: Pool = await dbConnect();
-    const response = await conexion.query("select * \
-                                          from users where \
-                                          defix_id = $1\
-                                          ", [defixId]);
+    const user = await User.findOneBy({ defix_id: defixId })
+    if (!user) return false
 
-    if (response.rows.length > 0) {
-      const id = await getIdNear(mnemonic)
-      const defixAccount = response.rows[0]
-      if (defixAccount.import_id === id) {
-        return true
-      }
-      return false
+    const id = await getIdNear(mnemonic)
+
+    if (user.import_id === id) {
+      return true
     }
-    return false;
+    return false
   } catch (err) {
-    console.log(err);
     return false;
   }
 };
 
 const validateEmail = (email: string) => {
-  if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3,4})+$/.test(email)) {
-    return true
-  } else {
-    return false
-  }
+  const regex = /\S+@\S+\.\S+/;
+  return regex.test(email);
 }
 
 function CONFIG(keyStores: any) {

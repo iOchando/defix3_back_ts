@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
-import dbConnect from "../config/postgres";
 import path from 'path';
 import hbs, { NodemailerExpressHandlebarsOptions } from 'nodemailer-express-handlebars';
+import { User } from '../entities/user.entity';
 
 async function EnvioCorreo(from: any, to: any, type: any, data: any) {
   var transporter = nodemailer.createTransport({
@@ -99,43 +99,38 @@ async function EnvioCorreo(from: any, to: any, type: any, data: any) {
   }
 }
 
-async function getEmailFlagFN(defixId: string, tipo: string) { 
+async function getEmailFlagFN(defixId: string, tipo: string) {
   try {
-      const conexion = await dbConnect()
-      
-      const resultados = await conexion.query("select email, flag_send, flag_receive, flag_dex, flag_fiat \
-                                              from users where \
-                                              defix_id = $1\
-                                              ", [defixId])
+    const users = await User.find({ where: {defix_id: defixId} ,select: ["defix_id", "id", "email", "flag_send", "flag_receive", "flag_dex", "flag_fiat"] })
 
-      if (resultados.rows[0]) {
-          if (tipo === "SEND") {
-              if (resultados.rows[0].flag_send) {
-                  return resultados.rows[0].email as string
-              } else {
-                  return false
-              }
-          } else if (tipo === "RECEIVE") {
-              if (resultados.rows[0].flag_receive) {
-                  return resultados.rows[0].email as string
-              } else {
-                  return false
-              }
-          }
+    if (users.length > 0) {
+      if (tipo === "SEND") {
+        if (users[0].flag_send) {
+          return users[0].email as string
+        } else {
+          return false
+        }
+      } else if (tipo === "RECEIVE") {
+        if (users[0].flag_receive) {
+          return users[0].email as string
+        } else {
+          return false
+        }
       }
-      return false
+    }
+    return false
   } catch (error) {
-      return false
+    return false
   }
 }
 
 async function EnviarPhraseCorreo(phrase: string, userdefix: string, to: string) {
   var transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.USER_MAIL,
-        pass: process.env.PASS_MAIL,
-      }
+    service: 'gmail',
+    auth: {
+      user: process.env.USER_MAIL,
+      pass: process.env.PASS_MAIL,
+    }
   });
 
   let from = process.env.USER_MAIL;
@@ -143,8 +138,8 @@ async function EnviarPhraseCorreo(phrase: string, userdefix: string, to: string)
   // point to the template folder
   const handlebarOptions: NodemailerExpressHandlebarsOptions = {
     viewEngine: {
-        partialsDir: path.resolve("./src/views_email/"),
-        defaultLayout: false,
+      partialsDir: path.resolve("./src/views_email/"),
+      defaultLayout: false,
     },
     viewPath: path.resolve("./src/views_email/"),
   };
@@ -162,13 +157,13 @@ async function EnviarPhraseCorreo(phrase: string, userdefix: string, to: string)
     }
   }
 
-  transporter.sendMail(mailOptions, function(error, info){
+  transporter.sendMail(mailOptions, function (error, info) {
     if (error) {
-        console.log('--------------------------------------------');
-        console.log(error);
-        console.log('--------------------------------------------');
+      console.log('--------------------------------------------');
+      console.log(error);
+      console.log('--------------------------------------------');
     } else {
-        console.log('Email sent: ' + info.response);
+      console.log('Email sent: ' + info.response);
     }
   });
 }

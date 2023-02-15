@@ -9,18 +9,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const pg_1 = require("pg");
-// Coloca aquí tus credenciales
-function dbConnect() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const connectionData = {
-            user: process.env.USER_DB,
-            host: process.env.HOST_DB,
-            database: process.env.DATABASE,
-            password: process.env.PASSWORD_DB,
-            port: Number(process.env.PORT),
-        };
-        return new pg_1.Pool(connectionData);
-    });
+exports.migration1676474385095 = void 0;
+class migration1676474385095 {
+    constructor() {
+        this.name = 'migration1676474385095';
+    }
+    up(queryRunner) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield queryRunner.query(`CREATE TABLE "balances" ("id" SERIAL NOT NULL, "blockchain" character varying NOT NULL, "coin" character varying NOT NULL, "balance" double precision NOT NULL, CONSTRAINT "PK_74904758e813e401abc3d4261c2" PRIMARY KEY ("id"))`);
+        });
+    }
+    down(queryRunner) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield queryRunner.query(`DROP TABLE "balances"`);
+        });
+    }
 }
-exports.default = dbConnect;
+exports.migration1676474385095 = migration1676474385095;

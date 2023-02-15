@@ -8,12 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.importFromPK = exports.getUsers = exports.validateAddress = exports.importFromMnemonic = exports.importWallet = exports.validateDefixIdAPI = exports.createWallet = exports.generateMnemonicAPI = exports.encryptAPI = void 0;
-const postgres_1 = __importDefault(require("../config/postgres"));
 const utils_1 = require("../helpers/utils");
 const crypto_1 = require("../helpers/crypto");
 const bip39_1 = require("bip39");
@@ -23,6 +19,8 @@ const near_services_1 = require("../services/near.services");
 const tron_services_1 = require("../services/tron.services");
 const bsc_services_1 = require("../services/bsc.services");
 const mail_1 = require("../helpers/mail");
+const user_entity_1 = require("../entities/user.entity");
+const addresses_entity_1 = require("../entities/addresses.entity");
 const generateMnemonicAPI = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { defixId } = req.body;
@@ -84,9 +82,7 @@ const createWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                     (0, mail_1.EnviarPhraseCorreo)(mnemonic, DefixId, email);
                     console.log("envia correo");
                 }
-                const enc = JSON.stringify(wallet);
-                const walletres = (0, crypto_1.encrypt)(enc);
-                return res.send(walletres);
+                return res.send(wallet);
             }
             return res.status(400).send();
         }
@@ -105,20 +101,14 @@ const importWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         if (!mnemonic)
             return res.status(400).send();
         const nearId = yield (0, near_services_1.getIdNear)(mnemonic);
-        const conexion = yield (0, postgres_1.default)();
-        const response = yield conexion.query("select * \
-																					from users where \
-																					import_id = $1\
-																					", [nearId]);
-        if (response.rows.length === 0)
+        const user = yield user_entity_1.User.findOneBy({ import_id: nearId });
+        if (!user)
             return res.status(400).send();
-        let responseAccount = response.rows[0];
-        const defixId = responseAccount.defix_id.toLowerCase();
-        const addressNEAR = yield conexion.query("select * \
-																					from addresses where \
-																					defix_id = $1 and name = 'NEAR'\
-																					", [defixId]);
-        const nearAddress = addressNEAR.rows[0].address;
+        const defixId = user.defix_id.toLowerCase();
+        const addressNear = yield addresses_entity_1.Address.findOneBy({ user: { defix_id: user.defix_id }, name: "NEAR" });
+        if (!addressNear)
+            return res.status(400).send();
+        const nearAddress = addressNear.address;
         const credentials = [];
         credentials.push(yield (0, btc_services_1.createWalletBTC)(mnemonic));
         credentials.push(yield (0, eth_services_1.createWalletETH)(mnemonic));
@@ -130,55 +120,31 @@ const importWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             mnemonic: mnemonic,
             credentials: credentials
         };
-        const addressTRON = yield conexion.query("select * \
-																					from addresses where \
-																					defix_id = $1 and name = 'TRX'\
-																					", [defixId]);
+        const addressTRON = yield addresses_entity_1.Address.findOneBy({ user: { defix_id: user.defix_id }, name: "TRX" });
         // Crypto news
-        if (addressTRON.rows.length === 0) {
-            console.log("NO TIENE CUENTRA TRX");
+        if (!addressTRON) {
             const addresstron = credentials.find(element => element.name === 'TRX');
             if (addresstron) {
-                yield conexion.query(`insert into addresses
-																	(defix_id, name, address)
-																	values ($1, $2, $3)`, [defixId, 'TRX', addresstron.address]);
+                const address = new addresses_entity_1.Address();
+                address.user = user;
+                address.name = "TRX";
+                address.address = addresstron.address;
+                yield address.save();
             }
         }
-        const addressBNB = yield conexion.query("select * \
-																					from addresses where \
-																					defix_id = $1 and name = 'BNB'\
-																					", [defixId]);
-        if (addressBNB.rows.length === 0) {
-            console.log("NO TIENE CUENTRA BNB");
+        const addressBNB = yield addresses_entity_1.Address.findOneBy({ user: { defix_id: user.defix_id }, name: "BNB" });
+        if (!addressBNB) {
             const addressbnb = credentials.find(element => element.name === 'BNB');
             if (addressbnb) {
-                yield conexion.query(`insert into addresses
-																	(defix_id, name, address)
-																	values ($1, $2, $3)`, [defixId, 'BNB', addressbnb.address]);
+                const address = new addresses_entity_1.Address();
+                address.user = user;
+                address.name = "BNB";
+                address.address = addressbnb.address;
+                yield address.save();
             }
         }
         // End
-        const resultados = yield conexion.query("select * \
-																									from users where \
-																									defix_id = $1\
-																									", [defixId]);
-        if (resultados.rows.length === 0) {
-            yield conexion.query(`insert into users
-									(defix_id, dosfa, secret, import_id)
-									values ($1, false, null, $2)`, [defixId, nearId]);
-        }
-        let result;
-        yield conexion.query("update users\
-															set close_sessions = $1 where\
-															defix_id = $2\
-															", [false, defixId])
-            .then(() => {
-            result = true;
-        }).catch(() => {
-            result = false;
-        });
-        if (!result)
-            return res.status(400).send();
+        yield user_entity_1.User.update({ defix_id: user.defix_id }, { close_sessions: false });
         res.send(wallet);
     }
     catch (error) {
@@ -265,10 +231,8 @@ const importFromPK = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.importFromPK = importFromPK;
 const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const conexion = yield (0, postgres_1.default)();
-        const response = yield conexion.query("select defix_id \
-																					from users");
-        res.send(response.rows);
+        const users = yield user_entity_1.User.find({ select: ["defix_id", "id"] });
+        res.send(users);
     }
     catch (error) {
         res.status(400).send(error);
@@ -306,25 +270,25 @@ const validateAddress = (req, res) => __awaiter(void 0, void 0, void 0, function
 exports.validateAddress = validateAddress;
 const saveUser = (nearId, wallet) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const conexion = yield (0, postgres_1.default)();
-        const result = yield conexion.query(`insert into users
-				(defix_id, dosfa, secret, import_id)
-				values ($1, false, null, $2)`, [wallet.defixId, nearId])
-            .then(() => __awaiter(void 0, void 0, void 0, function* () {
-            for (let credential of wallet.credentials) {
-                yield conexion.query(`insert into addresses
-														(defix_id, name, address)
-														values ($1, $2, $3)`, [wallet.defixId, credential.name, credential.address]);
-            }
-            return true;
-        })).catch(() => {
+        const user = new user_entity_1.User();
+        user.defix_id = wallet.defixId;
+        user.import_id = nearId;
+        const resUser = yield user.save();
+        if (!resUser)
             return false;
-        });
-        if (result)
+        for (let credential of wallet.credentials) {
+            const address = new addresses_entity_1.Address();
+            address.user = user;
+            address.name = credential.name;
+            address.address = credential.address;
+            yield address.save();
+        }
+        if (resUser)
             return true;
         return false;
     }
     catch (error) {
+        console.log(error);
         return false;
     }
 });

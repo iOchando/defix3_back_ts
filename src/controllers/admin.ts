@@ -1,13 +1,11 @@
 import { Request, Response } from "express";
-import dbConnect from "../config/postgres";
+import { User } from "../entities/user.entity";
 
 const getUsersDefix = async (req: Request, res: Response) => {
   try {
-    const conexion = await dbConnect()
-    const response = await conexion.query("select defix_id \
-                                          from users")
+    const users = await User.find({ select: ["defix_id", "id"]})
 
-    res.send(response.rows)
+    res.send(users)
   } catch (error) {
     res.status(404).send()
   }

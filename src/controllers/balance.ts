@@ -12,6 +12,9 @@ import { Wallet } from "../interfaces/wallet.interface";
 import { Credential } from "../interfaces/credential.interface";
 import { BalanceCrypto } from "../interfaces/balance_crypto.interface";
 import { Balance } from "../interfaces/balance.interface";
+import { User } from "../entities/user.entity";
+import { Address } from "../entities/addresses.entity";
+import { Balances } from "../entities/balances.entity";
 
 const NETWORK = process.env.NETWORK;
 
@@ -30,7 +33,7 @@ const getCryptos = async (req: Request, res: Response) => {
 
 		res.send(cryptos)
 	} catch (error) {
-		console.log(error)
+		// console.log(error)
 		res.status(400).send()
 	};
 };
@@ -39,15 +42,9 @@ const getBalance = async (req: Request, res: Response) => {
 	try {
 		const { defixId } = req.body
 
-		const conexion = await dbConnect()
-		const resultados = await conexion.query("select * \
-																				from addresses where \
-																				defix_id = $1\
-																				", [defixId])
+		const addresses = await Address.find({ where: { user: { defix_id: defixId } } })
 
-		if (resultados.rows.length === 0) return res.status(405).send()
-
-		const addresses = resultados.rows
+		if (addresses.length === 0) return res.status(404).send()
 
 		const cryptos = await getCryptosFn()
 
@@ -62,6 +59,8 @@ const getBalance = async (req: Request, res: Response) => {
 			}
 
 			const addressItem = addresses.find(element => element.name === crypto.coin)
+
+			if (!addressItem) return res.status(404).send()
 
 			const address = addressItem.address || ""
 
@@ -152,35 +151,41 @@ const getBalance = async (req: Request, res: Response) => {
 
 const balanceDataBaseFn = async (defixId: string, balances: BalanceCrypto[]) => {
 	try {
-		const conexion = await dbConnect();
+		const user = await User.findOneBy({ defix_id: defixId })
+		if (!user) return false
 
 		for (let balance of balances) {
-			const resultado = await conexion.query("select * from balances where defix_id = $1 and blockchain = $2 and coin = $3", [defixId, balance.blockchain, balance.coin])
+			const balanceItem = await Balances.findOneBy({ user: { defix_id: defixId }, blockchain: balance.blockchain, coin: balance.coin })
 
-			if (resultado.rows.length === 0) {
-				await conexion.query(`insert into balances
-		 													(defix_id, blockchain, coin, balance)
-		 													values ($1, $2, $3, $4)`, [defixId, balance.blockchain, balance.coin, balance.balance])
-
+			if (!balanceItem) {
+				await Balances.create({
+					user: user,
+					blockchain: balance.blockchain,
+					coin: balance.coin,
+					balance: balance.balance
+				}).save()
 			} else {
-				await conexion.query("update balances\
-		 													set balance = $1 where\
-		 													defix_id = $2 and blockchain = $3 and coin = $4 \
-		 													", [balance.balance, defixId, balance.blockchain, balance.coin])
+				const update = await Balances.findOneBy({ user: { defix_id: defixId }, blockchain: balance.blockchain, coin: balance.coin })
+				if (!update) break
+				update.balance = balance.balance
+				update.save()
 			}
 
 			for (let token of balance.tokens) {
-				const resultado = await conexion.query("select * from balances where defix_id = $1 and blockchain = $2 and coin = $3", [defixId, balance.blockchain, token.coin])
+				const balanceToken = await Balances.findOneBy({ user: { id: user.id }, blockchain: balance.blockchain, coin: token.coin })
 
-				if (resultado.rows.length === 0) {
-					await conexion.query(`insert into balances
-														 (defix_id, blockchain, coin, balance)
-														 values ($1, $2, $3, $4)`, [defixId, balance.blockchain, token.coin, token.balance])
+				if (!balanceToken) {
+					await Balances.create({
+						user: user,
+						blockchain: balance.blockchain,
+						coin: token.coin,
+						balance: token.balance
+					}).save()
 				} else {
-					await conexion.query("update balances\
-																 set balance = $1 where\
-																 defix_id = $2 and blockchain = $3 and coin = $4 \
-																 ", [token.balance, defixId, balance.blockchain, token.coin])
+					const update = await Balances.findOneBy({ user: { defix_id: defixId }, blockchain: balance.blockchain, coin: token.coin })
+					if (!update) break
+					update.balance = token.balance
+					update.save()
 				}
 			}
 		}

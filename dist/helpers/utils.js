@@ -16,6 +16,8 @@ exports.getCryptosFn = exports.ADDRESS_VAULT = exports.GET_COMISION = exports.va
 const postgres_1 = __importDefault(require("../config/postgres"));
 const near_services_1 = require("../services/near.services");
 const axios_1 = __importDefault(require("axios"));
+const user_entity_1 = require("../entities/user.entity");
+const addresses_entity_1 = require("../entities/addresses.entity");
 const NETWORK = process.env.NETWORK;
 function saveTransaction(fromDefix, toDefix, coin, amount, fromAddress, toAddress, hash, tipo) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -64,17 +66,10 @@ exports.saveTransaction = saveTransaction;
 function getAddressUser(defixId, blockchain) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const conexion = yield (0, postgres_1.default)();
-            const resultados = yield conexion.query("select * \
-                                          from addresses where \
-                                          defix_id = $1 and name = $2\
-                                          ", [defixId, blockchain]);
-            if (resultados.rows.length > 0) {
-                return resultados.rows[0].address || false;
-            }
-            else {
+            const address = yield addresses_entity_1.Address.findOneBy({ user: { defix_id: defixId }, name: blockchain });
+            if (!address)
                 return false;
-            }
+            return address.address;
         }
         catch (error) {
             return false;
@@ -84,52 +79,35 @@ function getAddressUser(defixId, blockchain) {
 exports.getAddressUser = getAddressUser;
 const validateDefixId = (defixId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const conexion = yield (0, postgres_1.default)();
-        const resultados = yield conexion.query("select * \
-                                            from users where \
-                                            defix_id = $1\
-                                            ", [defixId]);
-        if (resultados.rows.length > 0) {
-            return true;
-        }
-        return false;
+        const user = yield user_entity_1.User.findOneBy({ defix_id: defixId });
+        if (!user)
+            return false;
+        return true;
     }
     catch (err) {
-        console.log(err);
         return false;
     }
 });
 exports.validateDefixId = validateDefixId;
 const validateMnemonicDefix = (defixId, mnemonic) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const conexion = yield (0, postgres_1.default)();
-        const response = yield conexion.query("select * \
-                                          from users where \
-                                          defix_id = $1\
-                                          ", [defixId]);
-        if (response.rows.length > 0) {
-            const id = yield (0, near_services_1.getIdNear)(mnemonic);
-            const defixAccount = response.rows[0];
-            if (defixAccount.import_id === id) {
-                return true;
-            }
+        const user = yield user_entity_1.User.findOneBy({ defix_id: defixId });
+        if (!user)
             return false;
+        const id = yield (0, near_services_1.getIdNear)(mnemonic);
+        if (user.import_id === id) {
+            return true;
         }
         return false;
     }
     catch (err) {
-        console.log(err);
         return false;
     }
 });
 exports.validateMnemonicDefix = validateMnemonicDefix;
 const validateEmail = (email) => {
-    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3,4})+$/.test(email)) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    const regex = /\S+@\S+\.\S+/;
+    return regex.test(email);
 };
 exports.validateEmail = validateEmail;
 function CONFIG(keyStores) {

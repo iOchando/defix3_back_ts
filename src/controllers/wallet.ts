@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import dbConnect from "../config/postgres";
 import { validateDefixId, validateEmail, getCryptosFn } from "../helpers/utils";
 import { encrypt, decrypt } from "../helpers/crypto";
 import { generateMnemonic } from 'bip39';
@@ -13,6 +12,9 @@ import { createWalletBNB, isAddressBNB } from "../services/bsc.services";
 import { Wallet } from "../interfaces/wallet.interface";
 import { Credential } from "../interfaces/credential.interface";
 import { EnviarPhraseCorreo } from "../helpers/mail";
+
+import { User } from "../entities/user.entity";
+import { Address } from "../entities/addresses.entity";
 
 const generateMnemonicAPI = async (req: Request, res: Response) => {
 	try {
@@ -87,9 +89,7 @@ const createWallet = async (req: Request, res: Response) => {
 					EnviarPhraseCorreo(mnemonic, DefixId, email)
 					console.log("envia correo")
 				}
-				const enc = JSON.stringify(wallet)
-				const walletres = encrypt(enc)
-				return res.send(walletres)
+				return res.send(wallet)
 			}
 			return res.status(400).send()
 		}
@@ -110,25 +110,17 @@ const importWallet = async (req: Request, res: Response) => {
 
 		const nearId = await getIdNear(mnemonic);
 
-		const conexion = await dbConnect();
+		const user = await User.findOneBy({import_id: nearId})
 
-		const response = await conexion.query("select * \
-																					from users where \
-																					import_id = $1\
-																					", [nearId]);
+		if (!user) return res.status(400).send();
 
-		if (response.rows.length === 0) return res.status(400).send();
+		const defixId = user.defix_id.toLowerCase();
 
-		let responseAccount = response.rows[0];
+		const addressNear = await Address.findOneBy({user: {defix_id: user.defix_id}, name: "NEAR"})
 
-		const defixId = responseAccount.defix_id.toLowerCase();
+		if (!addressNear) return res.status(400).send();
 
-		const addressNEAR = await conexion.query("select * \
-																					from addresses where \
-																					defix_id = $1 and name = 'NEAR'\
-																					", [defixId]);
-
-		const nearAddress = addressNEAR.rows[0].address;
+		const nearAddress = addressNear.address;
 
 		const credentials: Array<Credential> = [];
 
@@ -144,64 +136,36 @@ const importWallet = async (req: Request, res: Response) => {
 			credentials: credentials
 		};
 
-		const addressTRON = await conexion.query("select * \
-																					from addresses where \
-																					defix_id = $1 and name = 'TRX'\
-																					", [defixId]);
+		const addressTRON = await Address.findOneBy({user: {defix_id: user.defix_id}, name: "TRX"})
 
 		// Crypto news
 
-		if (addressTRON.rows.length === 0) {
-			console.log("NO TIENE CUENTRA TRX")
+		if (!addressTRON) {
 			const addresstron = credentials.find(element => element.name === 'TRX')
 			if (addresstron) {
-				await conexion.query(`insert into addresses
-																	(defix_id, name, address)
-																	values ($1, $2, $3)`, [defixId, 'TRX', addresstron.address])
+				const address = new Address()
+				address.user = user
+				address.name = "TRX"
+				address.address = addresstron.address
+				await address.save()
 			}
-
 		}
 
-		const addressBNB = await conexion.query("select * \
-																					from addresses where \
-																					defix_id = $1 and name = 'BNB'\
-																					", [defixId])
+		const addressBNB = await Address.findOneBy({user: {defix_id: user.defix_id}, name: "BNB"})
 
-		if (addressBNB.rows.length === 0) {
-			console.log("NO TIENE CUENTRA BNB")
+		if (!addressBNB) {
 			const addressbnb = credentials.find(element => element.name === 'BNB')
 			if (addressbnb) {
-				await conexion.query(`insert into addresses
-																	(defix_id, name, address)
-																	values ($1, $2, $3)`, [defixId, 'BNB', addressbnb.address])
+				const address = new Address()
+				address.user = user
+				address.name = "BNB"
+				address.address = addressbnb.address
+				await address.save()
 			}
 		}
-
 		// End
 
-		const resultados = await conexion.query("select * \
-																									from users where \
-																									defix_id = $1\
-																									", [defixId])
-
-		if (resultados.rows.length === 0) {
-			await conexion.query(`insert into users
-									(defix_id, dosfa, secret, import_id)
-									values ($1, false, null, $2)`, [defixId, nearId])
-		}
-
-		let result
-		await conexion.query("update users\
-															set close_sessions = $1 where\
-															defix_id = $2\
-															", [false, defixId])
-			.then(() => {
-				result = true
-			}).catch(() => {
-				result = false
-			})
-
-		if (!result) return res.status(400).send()
+		await User.update({defix_id: user.defix_id}, {close_sessions: false})
 
 		res.send(wallet)
 	} catch (error) {
@@ -307,10 +271,8 @@ const importFromPK = async (req: Request, res: Response) => {
 
 const getUsers = async (req: Request, res: Response) => {
 	try {
-		const conexion = await dbConnect();
-		const response = await conexion.query("select defix_id \
-																					from users");
-		res.send(response.rows);
+		const users = await User.find({ select: ["defix_id", "id"]})
+		res.send(users);
 	} catch (error) {
 		res.status(400).send(error);
 	};
@@ -346,24 +308,26 @@ const validateAddress = async (req: Request, res: Response) => {
 
 const saveUser = async (nearId: string, wallet: Wallet) => {
 	try {
-		const conexion = await dbConnect()
-		const result: boolean = await conexion.query(`insert into users
-				(defix_id, dosfa, secret, import_id)
-				values ($1, false, null, $2)`, [wallet.defixId, nearId])
-			.then(async () => {
-				for (let credential of wallet.credentials) {
-					await conexion.query(`insert into addresses
-														(defix_id, name, address)
-														values ($1, $2, $3)`, [wallet.defixId, credential.name, credential.address])
-				}
-				return true
-			}).catch(() => {
-				return false
-			})
+		const user = new User()
 
-		if (result) return true
+		user.defix_id = wallet.defixId
+		user.import_id = nearId
+
+		const resUser = await user.save()
+		if (!resUser) return false
+
+		for (let credential of wallet.credentials) {
+			const address = new Address()
+			address.user = user
+			address.name = credential.name
+			address.address = credential.address
+			await address.save()
+		}
+
+		if (resUser) return true
 		return false
 	} catch (error) {
+		console.log(error)
 		return false
 	}
 }

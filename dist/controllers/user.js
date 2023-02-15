@@ -13,10 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getEmailData = exports.setEmailData = exports.closeAllSessions = exports.getCloseAllSesions = void 0;
-const postgres_1 = __importDefault(require("../config/postgres"));
 const utils_1 = require("../helpers/utils");
 const _2fa_1 = require("./2fa");
 const crypto_1 = require("../helpers/crypto");
+const user_entity_1 = require("../entities/user.entity");
+const data_source_1 = __importDefault(require("../config/data.source"));
 const setEmailData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { defixId } = req.body;
     const DefixId = defixId.toLowerCase();
@@ -60,26 +61,29 @@ function EjecutarsetEmailData(req, res) {
             const mnemonic = (0, crypto_1.decrypt)(seedPhrase);
             if (!mnemonic)
                 return res.status(400).send();
+            const user = yield user_entity_1.User.findOneBy({ defix_id: defixId });
+            if (!user)
+                return res.status(400).send();
             const response = yield (0, utils_1.validateMnemonicDefix)(defixId, mnemonic);
-            var result;
             if (legal_document == !null) {
                 if (type_document == !"v" && type_document == !"j") {
-                    return res.status(204).json({ respuesta: "Error tipo de documento" });
+                    return res.status(400).send({ response: "Error tipo de documento" });
                 }
             }
             if (!response)
                 return res.status(400).send();
-            const conexion = yield (0, postgres_1.default)();
-            yield conexion.query("update users\
-                                set email = $1, flag_send = $2, flag_receive = $3, flag_dex = $4, flag_fiat = $5, name = $6, last_name = $7, legal_document = $8, type_document=$9 where\
-                                defix_id = $10\
-                                ", [email, flag_send, flag_receive, flag_dex, flag_fiat, name, last_name, legal_document, type_document, defixId])
-                .then(() => {
-                result = true;
-            }).catch(() => {
-                result = false;
+            yield user_entity_1.User.update({ defix_id: user.defix_id }, {
+                email: email,
+                name: name,
+                lastname: last_name,
+                legal_document: legal_document,
+                type_document: type_document,
+                flag_send: flag_send,
+                flag_receive: flag_receive,
+                flag_dex: flag_dex,
+                flag_fiat: flag_fiat
             });
-            return res.json({ respuesta: "ok", data: result });
+            res.status(200).send();
         }
         catch (error) {
             return res.status(500).send();
@@ -89,15 +93,14 @@ function EjecutarsetEmailData(req, res) {
 const getEmailData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { defixId } = req.body;
-        const response = yield (0, utils_1.validateDefixId)(defixId);
-        if (!response)
+        const userData = yield data_source_1.default
+            .createQueryBuilder(user_entity_1.User, "user")
+            .select(["user.defix_id", "user.email", "user.flag_send", "user.flag_receive", "user.flag_dex", "user.flag_fiat", "user.name", "user.lastname", "user.legal_document", "user.type_document", "user.dosfa"])
+            .where("user.defix_id = :defixId", { defixId: defixId })
+            .getOne();
+        if (!userData)
             return res.status(400).send();
-        const conexion = yield (0, postgres_1.default)();
-        const resultados = yield conexion.query("select email, flag_send, flag_receive, flag_dex, flag_fiat, name, last_name, legal_document, type_document, dosfa \
-                                                    from users where \
-                                                    defix_id = $1\
-                                                    ", [defixId]);
-        res.send(resultados.rows[0]);
+        res.send(userData);
     }
     catch (error) {
         return res.status(500).send();
@@ -108,26 +111,21 @@ const closeAllSessions = (req, res) => __awaiter(void 0, void 0, void 0, functio
     try {
         const { defixId, seedPhrase } = req.body;
         const DefixId = defixId.toLowerCase();
+        const user = yield user_entity_1.User.findOneBy({ defix_id: DefixId });
+        if (!user)
+            return res.status(400).send();
         const mnemonic = (0, crypto_1.decrypt)(seedPhrase);
         if (!mnemonic)
             return res.status(400).send();
         const response = yield (0, utils_1.validateMnemonicDefix)(DefixId, mnemonic);
+        console.log(response);
         if (!response)
-            return res.status(400).send();
-        var result;
-        const conexion = yield (0, postgres_1.default)();
-        yield conexion.query("update users\
-															set close_sessions = $1 where\
-															defix_id = $2\
-															", [true, DefixId])
-            .then(() => {
-            result = true;
-        }).catch(() => {
-            result = false;
-        });
-        res.json(result);
+            return res.status(404).send();
+        const result = yield user_entity_1.User.update({ defix_id: defixId }, { close_sessions: true });
+        res.send(result);
     }
     catch (error) {
+        console.log(error);
         return res.status(500).send();
     }
 });
@@ -135,15 +133,10 @@ exports.closeAllSessions = closeAllSessions;
 const getCloseAllSesions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { defixId } = req.body;
-        const response = yield (0, utils_1.validateDefixId)(defixId.toLowerCase());
-        if (!response)
+        const user = yield user_entity_1.User.findOneBy({ defix_id: defixId.toLowerCase() });
+        if (!user)
             return res.status(400).send();
-        const conexion = yield (0, postgres_1.default)();
-        const resultados = yield conexion.query("select close_sessions \
-																									from users where \
-																									defix_id = $1\
-																									", [defixId.toLowerCase()]);
-        res.send(resultados.rows[0].close_sessions);
+        res.send(user.close_sessions);
     }
     catch (error) {
         return res.status(500).send();

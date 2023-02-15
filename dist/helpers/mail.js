@@ -14,9 +14,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EnviarPhraseCorreo = exports.getEmailFlagFN = exports.EnvioCorreo = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
-const postgres_1 = __importDefault(require("../config/postgres"));
 const path_1 = __importDefault(require("path"));
 const nodemailer_express_handlebars_1 = __importDefault(require("nodemailer-express-handlebars"));
+const user_entity_1 = require("../entities/user.entity");
 function EnvioCorreo(from, to, type, data) {
     return __awaiter(this, void 0, void 0, function* () {
         var transporter = nodemailer_1.default.createTransport({
@@ -117,23 +117,19 @@ exports.EnvioCorreo = EnvioCorreo;
 function getEmailFlagFN(defixId, tipo) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const conexion = yield (0, postgres_1.default)();
-            const resultados = yield conexion.query("select email, flag_send, flag_receive, flag_dex, flag_fiat \
-                                              from users where \
-                                              defix_id = $1\
-                                              ", [defixId]);
-            if (resultados.rows[0]) {
+            const users = yield user_entity_1.User.find({ where: { defix_id: defixId }, select: ["defix_id", "id", "email", "flag_send", "flag_receive", "flag_dex", "flag_fiat"] });
+            if (users.length > 0) {
                 if (tipo === "SEND") {
-                    if (resultados.rows[0].flag_send) {
-                        return resultados.rows[0].email;
+                    if (users[0].flag_send) {
+                        return users[0].email;
                     }
                     else {
                         return false;
                     }
                 }
                 else if (tipo === "RECEIVE") {
-                    if (resultados.rows[0].flag_receive) {
-                        return resultados.rows[0].email;
+                    if (users[0].flag_receive) {
+                        return users[0].email;
                     }
                     else {
                         return false;

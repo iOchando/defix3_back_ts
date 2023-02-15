@@ -13,22 +13,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const axios_1 = __importDefault(require("axios"));
-// process.on('message', message => {
-//   // const lo = message as any
-//   const emits = eval(`(${message})`);
-//   console.log(emits)
-//   emits.emitToSockets()
-// })
+const process = require('process');
 const DemonFn = () => __awaiter(void 0, void 0, void 0, function* () {
-    const response = yield axios_1.default.get('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=tron%2Cbitcoin%2Cethereum%2Ctether%2Cbinancecoin%2Cusdc-coin%2Cdai&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=1h%2C24h%2C7d');
-    if (response.data) {
-        console.log(response.data);
+    try {
+        const response = yield axios_1.default.get('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=tron%2Cbitcoin%2Cethereum%2Ctether%2Cbinancecoin%2Cusdc-coin%2Cdai&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=1h%2C24h%2C7d');
+        if (response.data) {
+            // console.log(response.data)
+            process.send(response.data);
+        }
+    }
+    catch (error) {
+        // console.log("err")
     }
 });
 const startDemon = () => {
     DemonFn();
     setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
-        console.log('Demonio de Ranking');
+        // console.log('Demonio de Ranking');
         DemonFn();
     }), 60000);
 };

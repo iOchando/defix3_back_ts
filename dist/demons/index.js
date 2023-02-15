@@ -18,16 +18,11 @@ const cleanFileName = (fileName) => {
 const Demon = (routeDemon, io) => {
     console.log('Starting demon...');
     const demon = (0, child_process_1.fork)(routeDemon);
-    // const emitToSockets = (event: string, data: any, sockets: any = io) => {
-    //   console.log("entro")
-    //   sockets.sockets.emit(event, data);
-    // };
-    // const logData = () => {
-    //   console.log("Parent process received data:")
-    // };
-    // demon.send(serialize({ emitToSockets }));
+    demon.on("message", (message) => {
+        io.emit('getRanking', message);
+    });
     demon.on('exit', () => {
-        console.log('Demon died. Restarting demon ' + routeDemon);
+        // console.log('Demon died. Restarting demon ' + routeDemon);
         Demon(routeDemon, io);
     });
 };
@@ -35,7 +30,6 @@ const startDemons = (io) => {
     (0, fs_1.readdirSync)(PATH_ROUTER).filter((fileName) => {
         const cleanName = cleanFileName(fileName);
         if (cleanName !== "index") {
-            console.log(PATH_ROUTER);
             Demon(PATH_ROUTER + "/" + cleanName, io);
         }
     });

@@ -20,6 +20,9 @@ const eth_services_1 = require("../services/eth.services");
 const near_services_1 = require("../services/near.services");
 const tron_services_1 = require("../services/tron.services");
 const bsc_services_1 = require("../services/bsc.services");
+const user_entity_1 = require("../entities/user.entity");
+const addresses_entity_1 = require("../entities/addresses.entity");
+const balances_entity_1 = require("../entities/balances.entity");
 const NETWORK = process.env.NETWORK;
 const getCryptos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -34,7 +37,7 @@ const getCryptos = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.send(cryptos);
     }
     catch (error) {
-        console.log(error);
+        // console.log(error)
         res.status(400).send();
     }
     ;
@@ -43,14 +46,9 @@ exports.getCryptos = getCryptos;
 const getBalance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { defixId } = req.body;
-        const conexion = yield (0, postgres_1.default)();
-        const resultados = yield conexion.query("select * \
-																				from addresses where \
-																				defix_id = $1\
-																				", [defixId]);
-        if (resultados.rows.length === 0)
-            return res.status(405).send();
-        const addresses = resultados.rows;
+        const addresses = yield addresses_entity_1.Address.find({ where: { user: { defix_id: defixId } } });
+        if (addresses.length === 0)
+            return res.status(404).send();
         const cryptos = yield (0, utils_1.getCryptosFn)();
         const balances = [];
         for (let crypto of cryptos) {
@@ -61,6 +59,8 @@ const getBalance = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 tokens: []
             };
             const addressItem = addresses.find(element => element.name === crypto.coin);
+            if (!addressItem)
+                return res.status(404).send();
             const address = addressItem.address || "";
             switch (crypto.coin) {
                 case "BTC": {
@@ -146,32 +146,42 @@ exports.getBalance = getBalance;
 // UTILS
 const balanceDataBaseFn = (defixId, balances) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const conexion = yield (0, postgres_1.default)();
+        const user = yield user_entity_1.User.findOneBy({ defix_id: defixId });
+        if (!user)
+            return false;
         for (let balance of balances) {
-            const resultado = yield conexion.query("select * from balances where defix_id = $1 and blockchain = $2 and coin = $3", [defixId, balance.blockchain, balance.coin]);
-            if (resultado.rows.length === 0) {
-                yield conexion.query(`insert into balances
-		 													(defix_id, blockchain, coin, balance)
-		 													values ($1, $2, $3, $4)`, [defixId, balance.blockchain, balance.coin, balance.balance]);
+            const balanceItem = yield balances_entity_1.Balances.findOneBy({ user: { defix_id: defixId }, blockchain: balance.blockchain, coin: balance.coin });
+            if (!balanceItem) {
+                yield balances_entity_1.Balances.create({
+                    user: user,
+                    blockchain: balance.blockchain,
+                    coin: balance.coin,
+                    balance: balance.balance
+                }).save();
             }
             else {
-                yield conexion.query("update balances\
-		 													set balance = $1 where\
-		 													defix_id = $2 and blockchain = $3 and coin = $4 \
-		 													", [balance.balance, defixId, balance.blockchain, balance.coin]);
+                const update = yield balances_entity_1.Balances.findOneBy({ user: { defix_id: defixId }, blockchain: balance.blockchain, coin: balance.coin });
+                if (!update)
+                    break;
+                update.balance = balance.balance;
+                update.save();
             }
             for (let token of balance.tokens) {
-                const resultado = yield conexion.query("select * from balances where defix_id = $1 and blockchain = $2 and coin = $3", [defixId, balance.blockchain, token.coin]);
-                if (resultado.rows.length === 0) {
-                    yield conexion.query(`insert into balances
-														 (defix_id, blockchain, coin, balance)
-														 values ($1, $2, $3, $4)`, [defixId, balance.blockchain, token.coin, token.balance]);
+                const balanceToken = yield balances_entity_1.Balances.findOneBy({ user: { id: user.id }, blockchain: balance.blockchain, coin: token.coin });
+                if (!balanceToken) {
+                    yield balances_entity_1.Balances.create({
+                        user: user,
+                        blockchain: balance.blockchain,
+                        coin: token.coin,
+                        balance: token.balance
+                    }).save();
                 }
                 else {
-                    yield conexion.query("update balances\
-																 set balance = $1 where\
-																 defix_id = $2 and blockchain = $3 and coin = $4 \
-																 ", [token.balance, defixId, balance.blockchain, token.coin]);
+                    const update = yield balances_entity_1.Balances.findOneBy({ user: { defix_id: defixId }, blockchain: balance.blockchain, coin: token.coin });
+                    if (!update)
+                        break;
+                    update.balance = token.balance;
+                    update.save();
                 }
             }
         }

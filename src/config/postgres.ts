@@ -4,7 +4,7 @@ import { Pool, PoolConfig, Client} from "pg";
 async function dbConnect(): Promise<Pool> {
   const connectionData: PoolConfig = {
     user: process.env.USER_DB,
-    host: process.env.HOST,
+    host: process.env.HOST_DB,
     database: process.env.DATABASE,
     password: process.env.PASSWORD_DB,
     port: Number(process.env.PORT),

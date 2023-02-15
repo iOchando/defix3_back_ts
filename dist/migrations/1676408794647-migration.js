@@ -9,19 +9,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const socket_io_1 = require("socket.io");
-const startWebSocket = (server) => __awaiter(void 0, void 0, void 0, function* () {
-    const io = new socket_io_1.Server(server, {
-        cors: {
-            origin: "*",
-        }
-    });
-    // io.on("connection", (socket: Socket) => {
-    //   console.log('User ' + socket.id + ' connected');
-    // });
-    setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
-        io.emit('messageTest');
-    }), 5000);
-    return io;
-});
-exports.default = startWebSocket;
+exports.migration1676408794647 = void 0;
+class migration1676408794647 {
+    constructor() {
+        this.name = 'migration1676408794647';
+    }
+    up(queryRunner) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield queryRunner.query(`CREATE TABLE "suscribe" ("id" SERIAL NOT NULL, "email" character varying NOT NULL, CONSTRAINT "PK_aa95ed8913609aa79e402f712d7" PRIMARY KEY ("id"))`);
+        });
+    }
+    down(queryRunner) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield queryRunner.query(`DROP TABLE "suscribe"`);
+        });
+    }
+}
+exports.migration1676408794647 = migration1676408794647;

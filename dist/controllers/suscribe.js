@@ -8,37 +8,30 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setEmailSuscribe = void 0;
-const postgres_1 = __importDefault(require("../config/postgres"));
+const suscribe_entity_1 = require("../entities/suscribe.entity");
 const utils_1 = require("../helpers/utils");
 function setEmailSuscribe(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { email } = req.body;
-            var result;
+            console.log(email);
             if (yield (0, utils_1.validateEmail)(email)) {
-                const conexion = yield (0, postgres_1.default)();
-                yield conexion.query(`insert into suscribe
-                  (email)
-                  values ($1)`, [email])
-                    .then(() => {
-                    result = true;
-                }).catch(() => {
-                    result = false;
-                });
-                res.send({ respuesta: "ok", data: result });
+                const subs = new suscribe_entity_1.Suscribe();
+                subs.email = email;
+                const saved = yield subs.save();
+                if (saved)
+                    return res.send(true);
+                return res.status(400).send();
             }
             else {
-                res.status(400).send();
+                console.log("AQUI");
+                return res.status(400).send();
             }
         }
         catch (error) {
-            console.log(error);
-            res.status(500).send();
+            return res.status(500).send();
         }
     });
 }
