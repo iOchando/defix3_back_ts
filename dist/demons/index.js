@@ -22,7 +22,7 @@ const Demon = (routeDemon, io) => {
         io.emit('getRanking', message);
     });
     demon.on('exit', () => {
-        // console.log('Demon died. Restarting demon ' + routeDemon);
+        console.log('Demon died. Restarting demon ' + routeDemon);
         Demon(routeDemon, io);
     });
 };

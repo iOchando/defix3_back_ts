@@ -24,20 +24,21 @@ __decorate([
 ], Balances.prototype, "user", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: false
+        nullable: true
     }),
     __metadata("design:type", String)
 ], Balances.prototype, "blockchain", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: false
+        nullable: true
     }),
     __metadata("design:type", String)
 ], Balances.prototype, "coin", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: false,
-        type: "float"
+        nullable: true,
+        type: "float",
+        default: 0
     }),
     __metadata("design:type", Number)
 ], Balances.prototype, "balance", void 0);

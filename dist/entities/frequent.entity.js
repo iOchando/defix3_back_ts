@@ -9,29 +9,26 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Suscribe = void 0;
+exports.Frequent = void 0;
 const typeorm_1 = require("typeorm");
-let Suscribe = class Suscribe extends typeorm_1.BaseEntity {
+const user_entity_1 = require("./user.entity");
+let Frequent = class Frequent extends typeorm_1.BaseEntity {
 };
 __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)(),
     __metadata("design:type", Number)
-], Suscribe.prototype, "id", void 0);
+], Frequent.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, (user) => user.defix_id),
+    __metadata("design:type", user_entity_1.User)
+], Frequent.prototype, "user", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true
     }),
     __metadata("design:type", String)
-], Suscribe.prototype, "email", void 0);
-__decorate([
-    (0, typeorm_1.CreateDateColumn)(),
-    __metadata("design:type", Date)
-], Suscribe.prototype, "created_at", void 0);
-__decorate([
-    (0, typeorm_1.UpdateDateColumn)(),
-    __metadata("design:type", Date)
-], Suscribe.prototype, "updated_at", void 0);
-Suscribe = __decorate([
+], Frequent.prototype, "frequent_user", void 0);
+Frequent = __decorate([
     (0, typeorm_1.Entity)()
-], Suscribe);
-exports.Suscribe = Suscribe;
+], Frequent);
+exports.Frequent = Frequent;

@@ -1,13 +1,14 @@
+import "dotenv/config";
 import path from 'path';
 import { DataSource } from 'typeorm'
 
 const AppDataSource = new DataSource({
   type: "postgres",
-  host: "157.230.2.213",
-  port: 5432,
-  username: "gf",
-  password: "uPKsp22tBeBC506WRBv21d7kniWiELwg",
-  database: "defix3_node",
+  host: process.env.HOST_ORM,
+  port: Number(process.env.PORT),
+  username: process.env.USER_ORM,
+  password: process.env.PASSWORD_ORM,
+  database: process.env.DATABASE_ORM,
   synchronize: false,
   logging: true,
   entities: [path.join(__dirname, "../entities/*")],

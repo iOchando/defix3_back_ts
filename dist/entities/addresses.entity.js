@@ -24,13 +24,13 @@ __decorate([
 ], Address.prototype, "user", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: false
+        nullable: true
     }),
     __metadata("design:type", String)
 ], Address.prototype, "name", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: false
+        nullable: true
     }),
     __metadata("design:type", String)
 ], Address.prototype, "address", void 0);

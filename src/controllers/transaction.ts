@@ -13,6 +13,8 @@ import { transactionBNB, transactionTokenBNB } from "../services/bsc.services";
 import { Wallet } from "../interfaces/wallet.interface";
 import { Credential } from "../interfaces/credential.interface";
 import { EnvioCorreo, getEmailFlagFN } from "../helpers/mail";
+import { Frequent } from "../entities/frequent.entity";
+import { User } from "../entities/user.entity";
 
 
 
@@ -38,6 +40,8 @@ async function transaction(req: Request, res: Response) {
       toAddress = toDefix
       tipoEnvio = "wallet"
     }
+
+    console.log(fromAddress, toAddress)
 
     if (!fromAddress || !toAddress) return res.status(400).send()
 
@@ -85,6 +89,7 @@ async function transaction(req: Request, res: Response) {
         fromDefix,
         toDefix,
         coin,
+        blockchain,
         amount,
         fromAddress,
         toAddress,
@@ -102,24 +107,17 @@ async function transaction(req: Request, res: Response) {
 
 async function saveFrequent(defixId: string, frequentUser: string) {
   try {
-    const conexion = await dbConnect()
+    const userFrequent = await Frequent.findOneBy({ user: { defix_id: defixId }, frequent_user: frequentUser })
+    if (userFrequent) return false
 
-    const resultados = await conexion.query("select * \
-                                              from frequent where \
-                                              defix_id = $1 and frequent_user = $2\
-                                              ", [defixId, frequentUser])
+    const user = await User.findOneBy({ defix_id: defixId })
+    if (!user) return false
 
-    if (resultados.rows.length === 0) {
-      await conexion.query(`insert into frequent
-              (defix_id, frequent_user)
-              values ($1, $2)`, [defixId, frequentUser])
-        .then(() => {
-          return true
-        }).catch(() => {
-          return false
-        })
-    }
-    return false
+    const frequent = new Frequent()
+    frequent.user = user
+    frequent.frequent_user = frequentUser
+    frequent.save()
+    return true
   } catch (error) {
     return false
   }
@@ -172,4 +170,4 @@ const getTokenContract = async (token: string, blockchain: string) => {
 //   })
 // }
 
-export {transaction}
+export { transaction }

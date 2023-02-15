@@ -18,7 +18,6 @@ async function setEmailSuscribe(req: Request, res: Response) {
 
       return res.status(400).send()
     } else {
-      console.log("AQUI")
       return res.status(400).send()
     }
   } catch (error) {

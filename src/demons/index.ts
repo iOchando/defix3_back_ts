@@ -26,7 +26,7 @@ const Demon = (routeDemon: string, io: Server) => {
   });
 
   demon.on('exit', () => {
-    // console.log('Demon died. Restarting demon ' + routeDemon);
+    console.log('Demon died. Restarting demon ' + routeDemon);
     Demon(routeDemon, io);
   });
 }

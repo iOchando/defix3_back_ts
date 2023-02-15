@@ -10,6 +10,7 @@ import { Server, Socket } from "socket.io";
 // import startWebSocket from "./websockets/websocket";
 import * as http from 'http';
 import * as https from 'https';
+const fs = require('fs');
 
 import swaggerUi, { serve } from "swagger-ui-express";
 import swaggerSetup from "./docs/swagger";
@@ -17,11 +18,24 @@ import swaggerSetup from "./docs/swagger";
 import { startDemons } from "./demons";
 import { testnet } from "bitcoinjs-lib/src/networks";
 
-const PORT = 3072;
+const PORT = 3072
+
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/defix3.com/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/defix3.com/cert.pem', 'utf8');
+const ca = fs.readFileSync('/etc/letsencrypt/live/defix3.com/chain.pem', 'utf8');
+
+const credentials = {
+  key: privateKey,
+  cert: certificate,
+  ca: ca
+};
+
 const app = express();
 
 app.use(morgan('dev'))
-app.use(cors());
+app.use(cors({
+  origin: '*'
+}));
 app.use(express.json());
 
 app.use('/api/v2', router)
@@ -31,7 +45,7 @@ dbConnect().then(() => console.log("Conexion DB Ready"));
 
 AppDataSource.initialize().then(() => console.log("Conexion ORM Ready"));
 
-const server = http.createServer(app);
+const server = https.createServer(credentials, app);
 
 server.listen(PORT, () => console.log(`Listo por el puerto ${PORT}`));
 

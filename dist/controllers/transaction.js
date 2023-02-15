@@ -21,6 +21,8 @@ const near_services_1 = require("../services/near.services");
 const tron_services_1 = require("../services/tron.services");
 const bsc_services_1 = require("../services/bsc.services");
 const mail_1 = require("../helpers/mail");
+const frequent_entity_1 = require("../entities/frequent.entity");
+const user_entity_1 = require("../entities/user.entity");
 function transaction(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -43,6 +45,7 @@ function transaction(req, res) {
                 toAddress = toDefix;
                 tipoEnvio = "wallet";
             }
+            console.log(fromAddress, toAddress);
             if (!fromAddress || !toAddress)
                 return res.status(400).send();
             const srcContract = yield getTokenContract(coin, blockchain);
@@ -90,7 +93,7 @@ function transaction(req, res) {
                     tipoEnvio: tipoEnvio
                 };
                 (0, mail_1.EnvioCorreo)(resSend, resReceive, 'envio', item);
-                const transaction = yield (0, utils_1.saveTransaction)(fromDefix, toDefix, coin, amount, fromAddress, toAddress, transactionHash, 'TRANSFER');
+                const transaction = yield (0, utils_1.saveTransaction)(fromDefix, toDefix, coin, blockchain, amount, fromAddress, toAddress, transactionHash, 'TRANSFER');
                 yield saveFrequent(fromDefix, toDefix);
                 return res.send(transaction);
             }
@@ -105,22 +108,17 @@ exports.transaction = transaction;
 function saveFrequent(defixId, frequentUser) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const conexion = yield (0, postgres_1.default)();
-            const resultados = yield conexion.query("select * \
-                                              from frequent where \
-                                              defix_id = $1 and frequent_user = $2\
-                                              ", [defixId, frequentUser]);
-            if (resultados.rows.length === 0) {
-                yield conexion.query(`insert into frequent
-              (defix_id, frequent_user)
-              values ($1, $2)`, [defixId, frequentUser])
-                    .then(() => {
-                    return true;
-                }).catch(() => {
-                    return false;
-                });
-            }
-            return false;
+            const userFrequent = yield frequent_entity_1.Frequent.findOneBy({ user: { defix_id: defixId }, frequent_user: frequentUser });
+            if (userFrequent)
+                return false;
+            const user = yield user_entity_1.User.findOneBy({ defix_id: defixId });
+            if (!user)
+                return false;
+            const frequent = new frequent_entity_1.Frequent();
+            frequent.user = user;
+            frequent.frequent_user = frequentUser;
+            frequent.save();
+            return true;
         }
         catch (error) {
             return false;

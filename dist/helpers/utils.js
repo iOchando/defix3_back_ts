@@ -18,41 +18,31 @@ const near_services_1 = require("../services/near.services");
 const axios_1 = __importDefault(require("axios"));
 const user_entity_1 = require("../entities/user.entity");
 const addresses_entity_1 = require("../entities/addresses.entity");
+const transaction_entity_1 = require("../entities/transaction.entity");
 const NETWORK = process.env.NETWORK;
-function saveTransaction(fromDefix, toDefix, coin, amount, fromAddress, toAddress, hash, tipo) {
+function saveTransaction(fromDefix, toDefix, coin, blockchain, amount, fromAddress, toAddress, hash, tipo) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            let date_ob = new Date();
-            let date = ("0" + date_ob.getDate()).slice(-2);
-            let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
-            let year = date_ob.getFullYear();
-            let hours = date_ob.getHours();
-            let minutes = date_ob.getMinutes();
-            let seconds = date_ob.getSeconds();
-            let date_time = (year + "-" + month + "-" + date + " " + hours + ":" + minutes + ":" + seconds);
-            let dateFech = (year + "-" + month + "-" + date);
-            const conexion = yield (0, postgres_1.default)();
-            const response = yield conexion.query(`insert into transactions
-      (from_defix, from_address, to_defix, to_address, coin, value, date_time, date_fech ,date_year, date_month, hash, tipo)
-      values
-      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`, [fromDefix, fromAddress, toDefix, toAddress, coin, String(amount), String(date_time), String(dateFech), String(year), String(month), hash, tipo])
-                .then(() => {
-                const transaction = {
-                    from_defix: fromDefix,
-                    from_address: fromAddress,
-                    to_defix: toDefix,
-                    to_address: toAddress,
-                    coin: coin,
-                    value: String(amount),
-                    date_time: String(date_time),
-                    date_fech: String(dateFech),
-                    date_year: String(year),
-                    date_month: String(month),
-                    hash: hash,
-                    tipo: tipo
-                };
-                return transaction;
-            }).catch((error) => {
+            const date = new Date();
+            const month = ("0" + (date.getMonth() + 1)).slice(-2);
+            const year = String(date.getFullYear());
+            const transaction = new transaction_entity_1.Transaction();
+            transaction.from_defix = fromDefix;
+            transaction.from_address = fromAddress;
+            transaction.to_defix = toDefix;
+            transaction.to_address = toAddress;
+            transaction.coin = coin;
+            transaction.blockchain = blockchain;
+            transaction.value = amount;
+            transaction.hash = hash;
+            transaction.tipo = tipo;
+            transaction.date_year = year;
+            transaction.date_month = month;
+            const response = yield transaction.save()
+                .then((resp) => {
+                return resp;
+            })
+                .catch(() => {
                 return false;
             });
             return response;

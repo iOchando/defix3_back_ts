@@ -9,104 +9,90 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = void 0;
+exports.Transaction = void 0;
 const typeorm_1 = require("typeorm");
-let User = class User extends typeorm_1.BaseEntity {
+let Transaction = class Transaction extends typeorm_1.BaseEntity {
 };
 __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)(),
     __metadata("design:type", Number)
-], User.prototype, "id", void 0);
+], Transaction.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        nullable: true
+    }),
+    __metadata("design:type", String)
+], Transaction.prototype, "from_defix", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        nullable: true
+    }),
+    __metadata("design:type", String)
+], Transaction.prototype, "from_address", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        nullable: true
+    }),
+    __metadata("design:type", String)
+], Transaction.prototype, "to_defix", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        nullable: true
+    }),
+    __metadata("design:type", String)
+], Transaction.prototype, "to_address", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        nullable: true
+    }),
+    __metadata("design:type", String)
+], Transaction.prototype, "coin", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        nullable: true
+    }),
+    __metadata("design:type", String)
+], Transaction.prototype, "blockchain", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true,
-        unique: true
+        type: "float"
     }),
-    __metadata("design:type", String)
-], User.prototype, "defix_id", void 0);
-__decorate([
-    (0, typeorm_1.Column)({
-        nullable: true,
-        unique: true
-    }),
-    __metadata("design:type", String)
-], User.prototype, "email", void 0);
-__decorate([
-    (0, typeorm_1.Column)({
-        nullable: true,
-        unique: true
-    }),
-    __metadata("design:type", String)
-], User.prototype, "import_id", void 0);
+    __metadata("design:type", Number)
+], Transaction.prototype, "value", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true
     }),
     __metadata("design:type", String)
-], User.prototype, "name", void 0);
+], Transaction.prototype, "hash", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true
     }),
     __metadata("design:type", String)
-], User.prototype, "lastname", void 0);
-__decorate([
-    (0, typeorm_1.Column)({
-        nullable: true,
-        default: true
-    }),
-    __metadata("design:type", Boolean)
-], User.prototype, "close_sessions", void 0);
-__decorate([
-    (0, typeorm_1.Column)({
-        nullable: true,
-        default: true
-    }),
-    __metadata("design:type", Boolean)
-], User.prototype, "dosfa", void 0);
+], Transaction.prototype, "tipo", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true
     }),
     __metadata("design:type", String)
-], User.prototype, "legal_document", void 0);
+], Transaction.prototype, "date_year", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true
     }),
     __metadata("design:type", String)
-], User.prototype, "type_document", void 0);
+], Transaction.prototype, "date_month", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        nullable: true
-    }),
-    __metadata("design:type", String)
-], User.prototype, "secret", void 0);
+    (0, typeorm_1.CreateDateColumn)(),
+    __metadata("design:type", Date)
+], Transaction.prototype, "created_at", void 0);
 __decorate([
-    (0, typeorm_1.Column)({
-        nullable: true
-    }),
-    __metadata("design:type", Boolean)
-], User.prototype, "flag_send", void 0);
-__decorate([
-    (0, typeorm_1.Column)({
-        nullable: true
-    }),
-    __metadata("design:type", Boolean)
-], User.prototype, "flag_receive", void 0);
-__decorate([
-    (0, typeorm_1.Column)({
-        nullable: true
-    }),
-    __metadata("design:type", Boolean)
-], User.prototype, "flag_dex", void 0);
-__decorate([
-    (0, typeorm_1.Column)({
-        nullable: true
-    }),
-    __metadata("design:type", Boolean)
-], User.prototype, "flag_fiat", void 0);
-User = __decorate([
-    (0, typeorm_1.Entity)({ name: "users" })
-], User);
-exports.User = User;
+    (0, typeorm_1.UpdateDateColumn)(),
+    __metadata("design:type", Date)
+], Transaction.prototype, "updated_at", void 0);
+Transaction = __decorate([
+    (0, typeorm_1.Entity)({ name: "transactions" })
+], Transaction);
+exports.Transaction = Transaction;

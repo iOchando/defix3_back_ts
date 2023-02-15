@@ -10,18 +10,19 @@ export class Balances extends BaseEntity {
   user!: User
 
   @Column({
-    nullable: false
+    nullable: true
   })
   blockchain!: string
 
   @Column({
-    nullable: false
+    nullable: true
   })
   coin!: string
 
   @Column({
-    nullable: false,
-    type: "float"
+    nullable: true,
+    type: "float",
+    default: 0
   })
   balance!: number
 }

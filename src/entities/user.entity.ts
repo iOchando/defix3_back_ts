@@ -6,7 +6,7 @@ export class User extends BaseEntity {
   id!: number
 
   @Column({
-    nullable: false,
+    nullable: true,
     unique: true
   })
   defix_id!: string
@@ -18,7 +18,7 @@ export class User extends BaseEntity {
   email!: string
 
   @Column({
-    nullable: false,
+    nullable: true,
     unique: true
   })
   import_id!: string
@@ -34,14 +34,14 @@ export class User extends BaseEntity {
   lastname!: string
 
   @Column({
-    nullable: false,
-    default: false
+    nullable: true,
+    default: true
   })
   close_sessions!: boolean
 
   @Column({
     nullable: true,
-    default: false
+    default: true
   })
   dosfa!: boolean
 

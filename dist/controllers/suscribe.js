@@ -26,7 +26,6 @@ function setEmailSuscribe(req, res) {
                 return res.status(400).send();
             }
             else {
-                console.log("AQUI");
                 return res.status(400).send();
             }
         }

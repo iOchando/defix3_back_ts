@@ -1,8 +1,8 @@
 import { Entity, Column, PrimaryGeneratedColumn, BaseEntity, OneToOne, JoinColumn, OneToMany, ManyToOne } from "typeorm"
 import { User } from "./user.entity"
 
-@Entity({name: "addresses"})
-export class Address extends BaseEntity {
+@Entity()
+export class Frequent extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number
 
@@ -12,10 +12,5 @@ export class Address extends BaseEntity {
   @Column({
     nullable: true
   })
-  name!: string
-
-  @Column({
-    nullable: true
-  })
-  address!: string
+  frequent_user!: string
 }

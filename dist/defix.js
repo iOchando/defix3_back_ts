@@ -35,21 +35,31 @@ const routes_1 = require("./routes");
 const postgres_1 = __importDefault(require("./config/postgres"));
 const data_source_1 = __importDefault(require("./config/data.source"));
 const socket_io_1 = require("socket.io");
-// import startWebSocket from "./websockets/websocket";
-const http = __importStar(require("http"));
+const https = __importStar(require("https"));
+const fs = require('fs');
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const swagger_1 = __importDefault(require("./docs/swagger"));
 const demons_1 = require("./demons");
 const PORT = 3072;
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/defix3.com/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/defix3.com/cert.pem', 'utf8');
+const ca = fs.readFileSync('/etc/letsencrypt/live/defix3.com/chain.pem', 'utf8');
+const credentials = {
+    key: privateKey,
+    cert: certificate,
+    ca: ca
+};
 const app = (0, express_1.default)();
 app.use((0, morgan_1.default)('dev'));
-app.use((0, cors_1.default)());
+app.use((0, cors_1.default)({
+    origin: '*'
+}));
 app.use(express_1.default.json());
 app.use('/api/v2', routes_1.router);
 app.use("/swagger", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.default));
 (0, postgres_1.default)().then(() => console.log("Conexion DB Ready"));
 data_source_1.default.initialize().then(() => console.log("Conexion ORM Ready"));
-const server = http.createServer(app);
+const server = https.createServer(credentials, app);
 server.listen(PORT, () => console.log(`Listo por el puerto ${PORT}`));
 const io = new socket_io_1.Server(server, {
     cors: {
