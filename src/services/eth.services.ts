@@ -1,12 +1,13 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-import { ethers, InterfaceAbi, Wallet } from "ethers";
+import { ethers, Wallet } from "ethers";
 import Web3 from "web3";
 import { AbiItem } from 'web3-utils';
 import { Credential } from "../interfaces/credential.interface";
 import axios from "axios";
 import { ADDRESS_VAULT, GET_COMISION } from "../helpers/utils";
-
+import { constructSimpleSDK } from "@paraswap/sdk";
 import abi from '../helpers/abi.json';
+import dbConnect from "../config/postgres";
 
 
 const ETHEREUM_NETWORK = process.env.ETHEREUM_NETWORK;
@@ -22,8 +23,8 @@ const NETWORK = process.env.NETWORK;
 const ETHERSCAN = process.env.ETHERSCAN;
 
 const createWalletETH = async (mnemonic: string) => {
-  const provider = new ethers.EtherscanProvider(ETHERSCAN);
-  const wallet = ethers.Wallet.fromPhrase(mnemonic);
+  const provider = new ethers.providers.EtherscanProvider(ETHERSCAN);
+  const wallet = ethers.Wallet.fromMnemonic(mnemonic);
 
   const credential: Credential = {
     name: "ETH",
@@ -44,6 +45,8 @@ const getBalanceETH = async (address: string) => {
   try {
     const item = { coin: "ETH", balance: 0 };
     let balance = await web3.eth.getBalance(address);
+
+    console.log("BALANCE: ", balance)
     let balanceTotal = 0
 
     if (balance) {
@@ -146,12 +149,17 @@ async function transactionTokenETH(fromAddress: string, privateKey: string, toAd
       return false;
     }
 
-    let provider = ethers.getDefaultProvider(String(ETHERSCAN))
+    const provider = new ethers.providers.InfuraProvider(
+      ETHEREUM_NETWORK,
+      INFURA_PROJECT_ID
+    );
 
-    const minABI: InterfaceAbi = abi
+    const minABI = abi
 
     const wallet = new ethers.Wallet(privateKey)
     const signer = wallet.connect(provider)
+
+    console.log("SIGNER", srcToken)
 
     const contract = new ethers.Contract(srcToken.contract, minABI, signer);
     let value = Math.pow(10, srcToken.decimals)
@@ -164,7 +172,7 @@ async function transactionTokenETH(fromAddress: string, privateKey: string, toAd
     let fee = Number(web3.utils.fromWei(String(55000 * wei), 'gwei'))
 
     const resp_comision = await GET_COMISION(srcToken.coin)
-    const vault_address = await ADDRESS_VAULT(srcToken.blockchain)
+    const vault_address = await ADDRESS_VAULT(srcToken.coin)
 
     const comision = resp_comision.transfer / 100
 
@@ -209,6 +217,69 @@ async function payCommissionETH(fromAddress: string, privateKey: string, toAddre
   }
 }
 
+const swapPreviewETH = async (fromCoin: string, toCoin: string, amount: number, blockchain: string) => {
+  try {
+    const paraSwap = constructSimpleSDK({ chainId: 1, axios });
+
+    const fromToken: any = await getTokenContractSwap(fromCoin, blockchain)
+    const toToken: any = await getTokenContractSwap(toCoin, blockchain)
+
+    if (!fromToken || !toToken) return false
+
+    let value = Math.pow(10, fromToken.decimals)
+    const srcAmount = amount * value
+
+    const priceRoute = await paraSwap.swap.getRate({
+      srcToken: fromToken.contract,
+      destToken: toToken.contract,
+      amount: String(srcAmount),
+    });
+
+    const response = await axios.get('https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6')
+    let wei = response.data.result.SafeGasPrice
+
+    const comision = await GET_COMISION(blockchain)
+
+    var fee
+
+    if (comision.swap === 0 || comision.swap === 0.0) {
+      fee = 0
+    } else if ((comision.swap !== 0 || comision.swap !== 0.0) && fromCoin === "ETH") {
+      fee = web3.utils.fromWei(String(21000 * wei), 'gwei')
+    } else {
+      fee = web3.utils.fromWei(String(55000 * wei), 'gwei')
+    }
+
+    return priceRoute
+  } catch (error) {
+    return false
+  }
+}
+
+const getTokenContractSwap = async (token: string, blockchain: string) => {
+  try {
+    const conexion = await dbConnect()
+    const response = await conexion.query("SELECT *\
+                                          FROM backend_token a\
+                                          inner join backend_cryptocurrency b on b.id = a.cryptocurrency_id\
+                                          where a.coin = $1 and b.coin = $2",
+      [token, blockchain])
+
+    if (response.rows.length === 0) {
+      if (token === "ETH") {
+        return {
+          decimals: 18,
+          contract: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+        }
+      }
+      return false
+    }
+    console.log(response.rows)
+    return response.rows[0]
+  } catch (error) {
+    return false
+  }
+}
 
 
-export { createWalletETH, isAddressETH, getBalanceETH, getBalanceTokenETH, transactionETH, transactionTokenETH };
+export { swapPreviewETH, createWalletETH, isAddressETH, getBalanceETH, getBalanceTokenETH, transactionETH, transactionTokenETH };

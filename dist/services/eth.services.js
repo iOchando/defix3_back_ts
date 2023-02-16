@@ -12,21 +12,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.transactionTokenETH = exports.transactionETH = exports.getBalanceTokenETH = exports.getBalanceETH = exports.isAddressETH = exports.createWalletETH = void 0;
+exports.transactionTokenETH = exports.transactionETH = exports.getBalanceTokenETH = exports.getBalanceETH = exports.isAddressETH = exports.createWalletETH = exports.swapPreviewETH = void 0;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const ethers_1 = require("ethers");
 const web3_1 = __importDefault(require("web3"));
 const axios_1 = __importDefault(require("axios"));
 const utils_1 = require("../helpers/utils");
+const sdk_1 = require("@paraswap/sdk");
 const abi_json_1 = __importDefault(require("../helpers/abi.json"));
+const postgres_1 = __importDefault(require("../config/postgres"));
 const ETHEREUM_NETWORK = process.env.ETHEREUM_NETWORK;
 const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID;
 const web3 = new web3_1.default(new web3_1.default.providers.HttpProvider(`https://${ETHEREUM_NETWORK}.infura.io/v3/${INFURA_PROJECT_ID}`));
 const NETWORK = process.env.NETWORK;
 const ETHERSCAN = process.env.ETHERSCAN;
 const createWalletETH = (mnemonic) => __awaiter(void 0, void 0, void 0, function* () {
-    const provider = new ethers_1.ethers.EtherscanProvider(ETHERSCAN);
-    const wallet = ethers_1.ethers.Wallet.fromPhrase(mnemonic);
+    const provider = new ethers_1.ethers.providers.EtherscanProvider(ETHERSCAN);
+    const wallet = ethers_1.ethers.Wallet.fromMnemonic(mnemonic);
     const credential = {
         name: "ETH",
         address: wallet.address,
@@ -44,6 +46,7 @@ const getBalanceETH = (address) => __awaiter(void 0, void 0, void 0, function* (
     try {
         const item = { coin: "ETH", balance: 0 };
         let balance = yield web3.eth.getBalance(address);
+        console.log("BALANCE: ", balance);
         let balanceTotal = 0;
         if (balance) {
             let value = Math.pow(10, 18);
@@ -139,10 +142,11 @@ function transactionTokenETH(fromAddress, privateKey, toAddress, amount, srcToke
                 console.log('Error: No tienes suficientes fondos para realizar la transferencia');
                 return false;
             }
-            let provider = ethers_1.ethers.getDefaultProvider(String(ETHERSCAN));
+            const provider = new ethers_1.ethers.providers.InfuraProvider(ETHEREUM_NETWORK, INFURA_PROJECT_ID);
             const minABI = abi_json_1.default;
             const wallet = new ethers_1.ethers.Wallet(privateKey);
             const signer = wallet.connect(provider);
+            console.log("SIGNER", srcToken);
             const contract = new ethers_1.ethers.Contract(srcToken.contract, minABI, signer);
             let value = Math.pow(10, srcToken.decimals);
             let srcAmount = amount * value;
@@ -151,7 +155,7 @@ function transactionTokenETH(fromAddress, privateKey, toAddress, amount, srcToke
             let wei = response.data.result.SafeGasPrice;
             let fee = Number(web3.utils.fromWei(String(55000 * wei), 'gwei'));
             const resp_comision = yield (0, utils_1.GET_COMISION)(srcToken.coin);
-            const vault_address = yield (0, utils_1.ADDRESS_VAULT)(srcToken.blockchain);
+            const vault_address = yield (0, utils_1.ADDRESS_VAULT)(srcToken.coin);
             const comision = resp_comision.transfer / 100;
             let amount_vault = Number((fee * comision).toFixed(18));
             if (amount_vault !== 0 && vault_address) {
@@ -193,3 +197,60 @@ function payCommissionETH(fromAddress, privateKey, toAddress, amount) {
         }
     });
 }
+const swapPreviewETH = (fromCoin, toCoin, amount, blockchain) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const paraSwap = (0, sdk_1.constructSimpleSDK)({ chainId: 1, axios: axios_1.default });
+        const fromToken = yield getTokenContractSwap(fromCoin, blockchain);
+        const toToken = yield getTokenContractSwap(toCoin, blockchain);
+        if (!fromToken || !toToken)
+            return false;
+        let value = Math.pow(10, fromToken.decimals);
+        const srcAmount = amount * value;
+        const priceRoute = yield paraSwap.swap.getRate({
+            srcToken: fromToken.contract,
+            destToken: toToken.contract,
+            amount: String(srcAmount),
+        });
+        const response = yield axios_1.default.get('https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6');
+        let wei = response.data.result.SafeGasPrice;
+        const comision = yield (0, utils_1.GET_COMISION)(blockchain);
+        var fee;
+        if (comision.swap === 0 || comision.swap === 0.0) {
+            fee = 0;
+        }
+        else if ((comision.swap !== 0 || comision.swap !== 0.0) && fromCoin === "ETH") {
+            fee = web3.utils.fromWei(String(21000 * wei), 'gwei');
+        }
+        else {
+            fee = web3.utils.fromWei(String(55000 * wei), 'gwei');
+        }
+        return priceRoute;
+    }
+    catch (error) {
+        return false;
+    }
+});
+exports.swapPreviewETH = swapPreviewETH;
+const getTokenContractSwap = (token, blockchain) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const conexion = yield (0, postgres_1.default)();
+        const response = yield conexion.query("SELECT *\
+                                          FROM backend_token a\
+                                          inner join backend_cryptocurrency b on b.id = a.cryptocurrency_id\
+                                          where a.coin = $1 and b.coin = $2", [token, blockchain]);
+        if (response.rows.length === 0) {
+            if (token === "ETH") {
+                return {
+                    decimals: 18,
+                    contract: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+                };
+            }
+            return false;
+        }
+        console.log(response.rows);
+        return response.rows[0];
+    }
+    catch (error) {
+        return false;
+    }
+});

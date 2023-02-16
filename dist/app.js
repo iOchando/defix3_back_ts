@@ -22,6 +22,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -35,11 +44,12 @@ const routes_1 = require("./routes");
 const postgres_1 = __importDefault(require("./config/postgres"));
 const data_source_1 = __importDefault(require("./config/data.source"));
 const socket_io_1 = require("socket.io");
-// import startWebSocket from "./websockets/websocket";
 const http = __importStar(require("http"));
+const https = __importStar(require("https"));
+const fs = require('fs');
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const swagger_1 = __importDefault(require("./docs/swagger"));
-const demons_1 = require("./demons");
+const process_1 = require("./process");
 const PORT = 3072;
 const app = (0, express_1.default)();
 app.use((0, morgan_1.default)('dev'));
@@ -49,18 +59,33 @@ app.use('/api/v2', routes_1.router);
 app.use("/swagger", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.default));
 (0, postgres_1.default)().then(() => console.log("Conexion DB Ready"));
 data_source_1.default.initialize().then(() => console.log("Conexion ORM Ready"));
-const server = http.createServer(app);
+let ENV = "dev";
+let server;
+if (ENV === "prod") {
+    const privateKey = fs.readFileSync('/etc/letsencrypt/live/defix3.com/privkey.pem', 'utf8');
+    const certificate = fs.readFileSync('/etc/letsencrypt/live/defix3.com/cert.pem', 'utf8');
+    const ca = fs.readFileSync('/etc/letsencrypt/live/defix3.com/chain.pem', 'utf8');
+    const credentials = {
+        key: privateKey,
+        cert: certificate,
+        ca: ca
+    };
+    server = https.createServer(credentials, app);
+}
+else {
+    server = http.createServer(app);
+}
 server.listen(PORT, () => console.log(`Listo por el puerto ${PORT}`));
 const io = new socket_io_1.Server(server, {
     cors: {
         origin: "*",
     }
 });
-// setInterval(async () => {
-//   io.emit('messageTest')
-// }, 5000)
+setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
+    io.emit('messageTest');
+}), 5000);
 io.on("connection", (socket) => {
     console.log('User APP ' + socket.id + ' connected');
-    // console.log(io.sockets.emit('message2'))
+    console.log(io.sockets.emit('message2'));
 });
-(0, demons_1.startDemons)(io);
+(0, process_1.startProcess)(io);

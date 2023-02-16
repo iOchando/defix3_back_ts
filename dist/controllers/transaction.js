@@ -48,7 +48,9 @@ function transaction(req, res) {
             console.log(fromAddress, toAddress);
             if (!fromAddress || !toAddress)
                 return res.status(400).send();
+            console.log(coin, blockchain);
             const srcContract = yield getTokenContract(coin, blockchain);
+            console.log("CONTRACT", srcContract);
             if (blockchain === "BTC") {
                 //  transactionHash = await transactionBTC(fromDefix, fromAddress, privateKey, toDefix, toAddress, coin, amount, tipoEnvio)
             }
@@ -134,6 +136,7 @@ const getTokenContract = (token, blockchain) => __awaiter(void 0, void 0, void 0
                                           where a.coin = $1 and b.coin = $2", [token, blockchain]);
         if (response.rows.length === 0)
             return false;
+        console.log(response.rows);
         return response.rows[0];
     }
     catch (error) {

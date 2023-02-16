@@ -12,18 +12,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.transactionTokenBNB = exports.transactionBNB = exports.getBalanceTokenBSC = exports.getBalanceBNB = exports.isAddressBNB = exports.createWalletBNB = void 0;
+exports.transactionTokenBNB = exports.transactionBNB = exports.getBalanceTokenBSC = exports.getBalanceBNB = exports.isAddressBNB = exports.createWalletBNB = exports.swapPreviewBNB = void 0;
 const ethers_1 = require("ethers");
 const web3_1 = __importDefault(require("web3"));
 const axios_1 = __importDefault(require("axios"));
 const utils_1 = require("../helpers/utils");
+const sdk_1 = require("@paraswap/sdk");
 const abi_json_1 = __importDefault(require("../helpers/abi.json"));
+const postgres_1 = __importDefault(require("../config/postgres"));
 const WEB_BSC = process.env.WEB_BSC;
 const web3BSC = new web3_1.default(new web3_1.default.providers.HttpProvider(WEB_BSC || ""));
 const ETHERSCAN = process.env.ETHERSCAN;
 const createWalletBNB = (mnemonic) => __awaiter(void 0, void 0, void 0, function* () {
-    const provider = new ethers_1.ethers.EtherscanProvider(ETHERSCAN);
-    const wallet = ethers_1.ethers.Wallet.fromPhrase(mnemonic);
+    const provider = new ethers_1.ethers.providers.EtherscanProvider(ETHERSCAN);
+    const wallet = ethers_1.ethers.Wallet.fromMnemonic(mnemonic);
     const credential = {
         name: "BNB",
         address: wallet.address,
@@ -147,7 +149,7 @@ function transactionTokenBNB(fromAddress, privateKey, toAddress, amount, srcToke
             let wei = response.data.result.SafeGasPrice;
             let fee = Number(web3BSC.utils.fromWei(String(55000 * wei), 'gwei'));
             const resp_comision = yield (0, utils_1.GET_COMISION)(srcToken.coin);
-            const vault_address = yield (0, utils_1.ADDRESS_VAULT)(srcToken.blockchain);
+            const vault_address = yield (0, utils_1.ADDRESS_VAULT)(srcToken.coin);
             const comision = resp_comision.transfer / 100;
             let amount_vault = Number((fee * comision).toFixed(18));
             if (amount_vault !== 0 && vault_address) {
@@ -189,3 +191,60 @@ function payCommissionBNB(fromAddress, privateKey, toAddress, amount) {
         }
     });
 }
+const swapPreviewBNB = (fromCoin, toCoin, amount, blockchain) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const paraSwap = (0, sdk_1.constructSimpleSDK)({ chainId: 56, axios: axios_1.default });
+        const fromToken = yield getTokenContractSwap(fromCoin, blockchain);
+        const toToken = yield getTokenContractSwap(toCoin, blockchain);
+        if (!fromToken || !toToken)
+            return false;
+        let value = Math.pow(10, fromToken.decimals);
+        const srcAmount = amount * value;
+        const priceRoute = yield paraSwap.swap.getRate({
+            srcToken: fromToken.contract,
+            destToken: toToken.contract,
+            amount: String(srcAmount),
+        });
+        const response = yield axios_1.default.get('https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6');
+        let wei = response.data.result.SafeGasPrice;
+        const comision = yield (0, utils_1.GET_COMISION)(blockchain);
+        var fee;
+        if (comision.swap === 0 || comision.swap === 0.0) {
+            fee = 0;
+        }
+        else if ((comision.swap !== 0 || comision.swap !== 0.0) && fromCoin === "BNB") {
+            fee = web3BSC.utils.fromWei(String(21000 * wei), 'gwei');
+        }
+        else {
+            fee = web3BSC.utils.fromWei(String(55000 * wei), 'gwei');
+        }
+        return priceRoute;
+    }
+    catch (error) {
+        return false;
+    }
+});
+exports.swapPreviewBNB = swapPreviewBNB;
+const getTokenContractSwap = (token, blockchain) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const conexion = yield (0, postgres_1.default)();
+        const response = yield conexion.query("SELECT *\
+                                          FROM backend_token a\
+                                          inner join backend_cryptocurrency b on b.id = a.cryptocurrency_id\
+                                          where a.coin = $1 and b.coin = $2", [token, blockchain]);
+        if (response.rows.length === 0) {
+            if (token === "BNB") {
+                return {
+                    decimals: 18,
+                    contract: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+                };
+            }
+            return false;
+        }
+        console.log(response.rows);
+        return response.rows[0];
+    }
+    catch (error) {
+        return false;
+    }
+});

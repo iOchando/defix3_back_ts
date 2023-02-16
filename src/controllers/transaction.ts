@@ -45,7 +45,11 @@ async function transaction(req: Request, res: Response) {
 
     if (!fromAddress || !toAddress) return res.status(400).send()
 
+    console.log(coin, blockchain)
+
     const srcContract = await getTokenContract(coin, blockchain)
+
+    console.log("CONTRACT",srcContract)
 
     if (blockchain === "BTC") {
       //  transactionHash = await transactionBTC(fromDefix, fromAddress, privateKey, toDefix, toAddress, coin, amount, tipoEnvio)
@@ -133,6 +137,7 @@ const getTokenContract = async (token: string, blockchain: string) => {
       [token, blockchain])
 
     if (response.rows.length === 0) return false
+    console.log(response.rows)
     return response.rows[0]
   } catch (error) {
     return false

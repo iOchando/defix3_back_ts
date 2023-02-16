@@ -8,7 +8,6 @@ const PATH_ROUTER = `${__dirname}`;
 
 const cleanFileName = (fileName: string) => {
   let file
-  console.log(fileName)
   if (fileName.includes(".ts")) {
     file = fileName.split(".ts").shift()
   } else {
@@ -17,7 +16,7 @@ const cleanFileName = (fileName: string) => {
   return file;
 };
 
-const Demon = (routeDemon: string, io: Server) => {
+const Process = (routeDemon: string, io: Server) => {
   console.log('Starting demon...');
   const demon = fork(routeDemon);
 
@@ -27,17 +26,17 @@ const Demon = (routeDemon: string, io: Server) => {
 
   demon.on('exit', () => {
     console.log('Demon died. Restarting demon ' + routeDemon);
-    Demon(routeDemon, io);
+    Process(routeDemon, io);
   });
 }
 
-const startDemons = (io: Server) => {
+const startProcess = (io: Server) => {
   readdirSync(PATH_ROUTER).filter((fileName) => {
     const cleanName = cleanFileName(fileName);
     if (cleanName !== "index") {
-      Demon(PATH_ROUTER+ "/" +cleanName, io)
+      Process(PATH_ROUTER+ "/" +cleanName, io)
     }
   });
 }
 
-export { startDemons };
+export { startProcess };

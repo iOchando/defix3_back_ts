@@ -1,11 +1,12 @@
-import { ethers, toBigInt, Wallet, InterfaceAbi } from "ethers";
+import { ethers, Wallet } from "ethers";
 import Web3 from "web3";
 import { Credential } from "../interfaces/credential.interface";
 import { AbiItem } from 'web3-utils';
 import axios from "axios";
 import { ADDRESS_VAULT, GET_COMISION } from "../helpers/utils";
-
+import { constructSimpleSDK } from "@paraswap/sdk";
 import abi from '../helpers/abi.json';
+import dbConnect from "../config/postgres";
 
 const WEB_BSC = process.env.WEB_BSC
 
@@ -18,8 +19,8 @@ const web3BSC = new Web3(
 const ETHERSCAN = process.env.ETHERSCAN;
 
 const createWalletBNB = async (mnemonic: string) => {
-  const provider = new ethers.EtherscanProvider(ETHERSCAN);
-  const wallet = ethers.Wallet.fromPhrase(mnemonic);
+  const provider = new ethers.providers.EtherscanProvider(ETHERSCAN);
+  const wallet = ethers.Wallet.fromMnemonic(mnemonic);
 
   const credential: Credential = {
     name: "BNB",
@@ -140,7 +141,7 @@ async function transactionTokenBNB(fromAddress: string, privateKey: string, toAd
 
     let provider = ethers.getDefaultProvider(String(ETHERSCAN))
 
-    const minABI: InterfaceAbi = abi
+    const minABI = abi
 
     const wallet = new ethers.Wallet(privateKey)
     const signer = wallet.connect(provider)
@@ -156,7 +157,7 @@ async function transactionTokenBNB(fromAddress: string, privateKey: string, toAd
     let fee = Number(web3BSC.utils.fromWei(String(55000 * wei), 'gwei'))
 
     const resp_comision = await GET_COMISION(srcToken.coin)
-    const vault_address = await ADDRESS_VAULT(srcToken.blockchain)
+    const vault_address = await ADDRESS_VAULT(srcToken.coin)
 
     const comision = resp_comision.transfer / 100
 
@@ -201,4 +202,68 @@ async function payCommissionBNB(fromAddress: string, privateKey: string, toAddre
   }
 }
 
-export { createWalletBNB, isAddressBNB, getBalanceBNB, getBalanceTokenBSC, transactionBNB, transactionTokenBNB };
+const swapPreviewBNB = async (fromCoin: string, toCoin: string, amount: number, blockchain: string) => {
+  try {
+    const paraSwap = constructSimpleSDK({ chainId: 56, axios });
+
+    const fromToken: any = await getTokenContractSwap(fromCoin, blockchain)
+    const toToken: any = await getTokenContractSwap(toCoin, blockchain)
+
+    if (!fromToken || !toToken) return false
+
+    let value = Math.pow(10, fromToken.decimals)
+    const srcAmount = amount * value
+
+    const priceRoute = await paraSwap.swap.getRate({
+      srcToken: fromToken.contract,
+      destToken: toToken.contract,
+      amount: String(srcAmount),
+    });
+
+    const response = await axios.get('https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6')
+    let wei = response.data.result.SafeGasPrice
+
+    const comision = await GET_COMISION(blockchain)
+
+    var fee
+
+    if (comision.swap === 0 || comision.swap === 0.0) {
+      fee = 0
+    } else if ((comision.swap !== 0 || comision.swap !== 0.0) && fromCoin === "BNB") {
+      fee = web3BSC.utils.fromWei(String(21000 * wei), 'gwei')
+    } else {
+      fee = web3BSC.utils.fromWei(String(55000 * wei), 'gwei')
+    }
+
+    return priceRoute
+  } catch (error) {
+    return false
+  }
+}
+
+const getTokenContractSwap = async (token: string, blockchain: string) => {
+  try {
+    const conexion = await dbConnect()
+    const response = await conexion.query("SELECT *\
+                                          FROM backend_token a\
+                                          inner join backend_cryptocurrency b on b.id = a.cryptocurrency_id\
+                                          where a.coin = $1 and b.coin = $2",
+      [token, blockchain])
+
+    if (response.rows.length === 0) {
+      if (token === "BNB") {
+        return {
+          decimals: 18,
+          contract: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+        }
+      }
+      return false
+    }
+    console.log(response.rows)
+    return response.rows[0]
+  } catch (error) {
+    return false
+  }
+}
+
+export { swapPreviewBNB, createWalletBNB, isAddressBNB, getBalanceBNB, getBalanceTokenBSC, transactionBNB, transactionTokenBNB };
