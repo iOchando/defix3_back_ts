@@ -36,9 +36,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.transactionBTC = exports.getBalanceBTC_Cypher = exports.getBalanceBTC = exports.isAddressBTC = exports.createWalletBTC = void 0;
-const bitcoinjs_lib_1 = __importDefault(require("bitcoinjs-lib"));
 const ecpair_1 = require("ecpair");
-const bitcoinjs_lib_2 = require("bitcoinjs-lib");
+const bitcoinjs_lib_1 = require("bitcoinjs-lib");
 const bip39_1 = require("bip39");
 const WAValidator = require("wallet-address-validator");
 const axios_1 = __importDefault(require("axios"));
@@ -52,18 +51,18 @@ const createWalletBTC = (mnemonic) => __awaiter(void 0, void 0, void 0, function
     let network;
     let path;
     if (NETWORK === "mainnet") {
-        network = bitcoinjs_lib_2.networks.bitcoin; //use networks.testnet networks.bitcoin for testnet
+        network = bitcoinjs_lib_1.networks.bitcoin; //use networks.testnet networks.bitcoin for testnet
         path = `m/49'/0'/0'/0`; // Use m/49'/1'/0'/0 for testnet mainnet `m/49'/0'/0'/0
     }
     else {
-        network = bitcoinjs_lib_2.networks.testnet;
+        network = bitcoinjs_lib_1.networks.testnet;
         path = `m/49'/1/0'/0`;
     }
     const seed = (0, bip39_1.mnemonicToSeedSync)(mnemonic);
     const root = bip32.fromSeed(seed, network);
     const account = root.derivePath(path);
     const node = account.derive(0).derive(0);
-    const btcAddress = bitcoinjs_lib_2.payments.p2pkh({
+    const btcAddress = bitcoinjs_lib_1.payments.p2pkh({
         pubkey: node.publicKey,
         network: network,
     }).address;
@@ -144,11 +143,12 @@ function transactionBTC(fromAddress, privateKey, toAddress, coin, amount) {
         try {
             let network;
             if (NETWORK === "mainnet") {
-                network = bitcoinjs_lib_1.default.networks.bitcoin; //use networks.testnet networks.bitcoin for testnet
+                network = bitcoinjs_lib_1.networks.bitcoin; //use networks.testnet networks.bitcoin for testnet
             }
             else {
-                network = bitcoinjs_lib_1.default.networks.testnet; //use networks.testnet networks.bitcoin for testnet
+                network = bitcoinjs_lib_1.networks.testnet; //use networks.testnet networks.bitcoin for testnet
             }
+            console.log("HOLAAA");
             const resp_comision = yield (0, utils_1.GET_COMISION)(coin);
             const vault_address = yield (0, utils_1.ADDRESS_VAULT)(coin);
             const comision = resp_comision.transfer / 100;
@@ -222,8 +222,9 @@ function transactionBTC(fromAddress, privateKey, toAddress, coin, amount) {
                     tmptx.data.pubkeys = [];
                     tmptx.data.signatures = tmptx.data.tosign.map(function (tosign, n) {
                         tmptx.data.pubkeys.push(keys.publicKey.toString('hex'));
-                        return bitcoinjs_lib_1.default.script.signature.encode(keys.sign(Buffer.from(tosign, "hex")), 0x01).toString("hex").slice(0, -2);
+                        return bitcoinjs_lib_1.script.signature.encode(keys.sign(Buffer.from(tosign, "hex")), 0x01).toString("hex").slice(0, -2);
                     });
+                    console.log("AQUI");
                     const result = axios_1.default.post('https://api.blockcypher.com/v1/btc/' + process.env.BLOCKCYPHER + '/txs/send', tmptx.data)
                         .then(function (finaltx) {
                         txHash = finaltx.data.tx.hash;
@@ -238,7 +239,7 @@ function transactionBTC(fromAddress, privateKey, toAddress, coin, amount) {
                 });
             })
                 .catch(function (error) {
-                console.log("error axios");
+                console.log("error axios", error);
                 return false;
             });
             if (txHash)

@@ -24,6 +24,7 @@ const validation2FA = (defixId, code) => __awaiter(void 0, void 0, void 0, funct
         return true;
     }
     catch (error) {
+        console.log(error);
         return false;
     }
 });

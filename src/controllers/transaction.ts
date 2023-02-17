@@ -47,7 +47,7 @@ async function transaction(req: Request, res: Response) {
 
     const srcContract = await getTokenContract(coin, blockchain)
 
-    if (!await validation2FA(fromDefix, code)) return res.status(400).send()
+    if (!await validation2FA(fromDefix, code)) return res.status(401).send()
 
     if (blockchain === "BTC") {
       transactionHash = await transactionBTC(fromAddress, privateKey, toAddress, coin, amount)

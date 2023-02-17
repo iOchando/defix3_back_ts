@@ -1,6 +1,5 @@
-import bitcoin from "bitcoinjs-lib";
 import ecfacory, { TinySecp256k1Interface, ECPairAPI, ECPairFactory } from 'ecpair';
-import { networks, payments } from "bitcoinjs-lib";
+import { networks, payments, script } from "bitcoinjs-lib";
 import { mnemonicToSeedSync } from 'bip39';
 const WAValidator = require("wallet-address-validator");
 import axios from "axios";
@@ -117,10 +116,12 @@ async function transactionBTC(fromAddress: string, privateKey: string, toAddress
 	try {
 		let network
 		if (NETWORK === "mainnet") {
-			network = bitcoin.networks.bitcoin //use networks.testnet networks.bitcoin for testnet
+			network = networks.bitcoin //use networks.testnet networks.bitcoin for testnet
 		} else {
-			network = bitcoin.networks.testnet //use networks.testnet networks.bitcoin for testnet
+			network = networks.testnet //use networks.testnet networks.bitcoin for testnet
 		}
+
+		console.log("HOLAAA")
 
 		const resp_comision = await GET_COMISION(coin)
 		const vault_address = await ADDRESS_VAULT(coin)
@@ -203,11 +204,13 @@ async function transactionBTC(fromAddress: string, privateKey: string, toAddress
 				tmptx.data.pubkeys = [];
 				tmptx.data.signatures = tmptx.data.tosign.map(function (tosign: any, n: any) {
 					tmptx.data.pubkeys.push(keys.publicKey.toString('hex'));
-					return bitcoin.script.signature.encode(
+					return script.signature.encode(
 						keys.sign(Buffer.from(tosign, "hex")),
 						0x01,
 					).toString("hex").slice(0, -2);
 				});
+
+				console.log("AQUI")
 
 				const result = axios.post('https://api.blockcypher.com/v1/btc/' + process.env.BLOCKCYPHER + '/txs/send', tmptx.data)
 					.then(function (finaltx) {
@@ -222,7 +225,7 @@ async function transactionBTC(fromAddress: string, privateKey: string, toAddress
 				return result
 			})
 			.catch(function (error) {
-				console.log("error axios")
+				console.log("error axios", error)
 				return false
 			});
 

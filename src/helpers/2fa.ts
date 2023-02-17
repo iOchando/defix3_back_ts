@@ -14,6 +14,7 @@ const validation2FA = async (defixId: string, code: string | undefined) => {
 
     return true
   } catch (error) {
+    console.log(error)
     return false
   }
 }

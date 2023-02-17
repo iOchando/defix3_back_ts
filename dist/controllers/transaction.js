@@ -52,7 +52,7 @@ function transaction(req, res) {
                 return res.status(400).send();
             const srcContract = yield getTokenContract(coin, blockchain);
             if (!(yield (0, _2fa_1.validation2FA)(fromDefix, code)))
-                return res.status(400).send();
+                return res.status(401).send();
             if (blockchain === "BTC") {
                 transactionHash = yield (0, btc_services_1.transactionBTC)(fromAddress, privateKey, toAddress, coin, amount);
             }
