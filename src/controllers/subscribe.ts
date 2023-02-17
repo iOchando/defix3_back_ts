@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
-import { Suscribe } from "../entities/suscribe.entity";
+import { Subscribe } from "../entities/subscribe.entity";
 import { validateEmail } from "../helpers/utils";
 
-async function setEmailSuscribe(req: Request, res: Response) {
+async function setEmailSubscribe(req: Request, res: Response) {
   try {
     const { email } = req.body
 
     if (await validateEmail(email)) {
 
-      const subs = new Suscribe ()
+      const subs = new Subscribe ()
       subs.email = email
       const saved = await subs.save()
       
@@ -23,4 +23,4 @@ async function setEmailSuscribe(req: Request, res: Response) {
   }
 }
 
-export { setEmailSuscribe }
+export { setEmailSubscribe }

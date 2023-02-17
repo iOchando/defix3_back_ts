@@ -2,17 +2,17 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.router = void 0;
 const express_1 = require("express");
-const suscribe_1 = require("../controllers/suscribe");
+const subscribe_1 = require("../controllers/subscribe");
 const router = (0, express_1.Router)();
 exports.router = router;
 /**
  * Post track
  * @openapi
- * /set-email-suscribe/:
+ * /set-email-subscribe/:
  *    post:
  *      tags:
- *        - Suscribe
- *      summary: Enviar correo para suscribirse a Defix3.
+ *        - Susbcribe
+ *      summary: Enviar correo para subscribirse a Defix3.
  *      description: Registrar correo.
  *      requestBody:
  *          content:
@@ -33,4 +33,4 @@ exports.router = router;
  *        '500':
  *          description: Bad Request.
  */
-router.post('/set-email-suscribe/', suscribe_1.setEmailSuscribe);
+router.post('/set-email-subscribe/', subscribe_1.setEmailSubscribe);

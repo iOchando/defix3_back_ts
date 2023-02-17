@@ -9,15 +9,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setEmailSuscribe = void 0;
-const suscribe_entity_1 = require("../entities/suscribe.entity");
+exports.setEmailSubscribe = void 0;
+const subscribe_entity_1 = require("../entities/subscribe.entity");
 const utils_1 = require("../helpers/utils");
-function setEmailSuscribe(req, res) {
+function setEmailSubscribe(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { email } = req.body;
             if (yield (0, utils_1.validateEmail)(email)) {
-                const subs = new suscribe_entity_1.Suscribe();
+                const subs = new subscribe_entity_1.Subscribe();
                 subs.email = email;
                 const saved = yield subs.save();
                 if (saved)
@@ -33,4 +33,4 @@ function setEmailSuscribe(req, res) {
         }
     });
 }
-exports.setEmailSuscribe = setEmailSuscribe;
+exports.setEmailSubscribe = setEmailSubscribe;

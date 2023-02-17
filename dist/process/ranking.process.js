@@ -18,8 +18,11 @@ const ProcessFn = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const response = yield axios_1.default.get('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=tron%2Cbitcoin%2Cethereum%2Ctether%2Cbinancecoin%2Cwrapped-bitcoin%2Cusdc-coin%2Cdai&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=1h%2C24h%2C7d');
         if (response.data) {
-            console.log(response.data);
-            process.send(response.data);
+            console.log("EMIT");
+            if (response.data.length > 0) {
+                console.log(response.data[0]);
+                process.send(response.data);
+            }
         }
     }
     catch (error) {

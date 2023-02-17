@@ -121,6 +121,26 @@ async function saveFrequent(defixId: string, frequentUser: string) {
   }
 }
 
+const getTransactionHistory = async (req: Request, res: Response) => {
+  try {
+      const { defixId, coin, date_year, date_month, tipo } = req.body
+
+      const conexion = await dbConnect()
+
+      const resultados = await conexion.query("select * \
+                                              from transactions where \
+                                              ((from_defix = $1 or to_defix = $1) or ('%' = $1 or '%' = $1))\
+                                              and (coin = $2 or '%' = $2)\
+                                              and (date_year = $3 or '%' = $3)\
+                                              and (date_month = $4 or '%' = $4)\
+                                              and (tipo = $5 or '%' = $5)\
+                                              ", [defixId, coin, date_year, date_month, tipo])
+      res.json(resultados.rows)
+  } catch (error) {
+      return res.status(500).send()
+  }
+}
+
 const getTokenContract = async (token: string, blockchain: string) => {
   try {
     const conexion = await dbConnect()
@@ -169,4 +189,4 @@ const getTokenContract = async (token: string, blockchain: string) => {
 //   })
 // }
 
-export { transaction }
+export { transaction, getTransactionHistory }

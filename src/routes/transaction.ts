@@ -1,11 +1,10 @@
 import { Request, Response, Router } from "express";
-import { transaction } from "../controllers/transaction";
+import { transaction, getTransactionHistory } from "../controllers/transaction";
 
 const router = Router();
 
 /**
- * Post track
- * @openapi
+ * @swagger
  * /transaction/:
  *    post:
  *      tags:
@@ -47,5 +46,7 @@ const router = Router();
  *          description: Bad Request.
  */
 router.post('/transaction/', transaction)
+
+router.post('/transaction-history/', getTransactionHistory)
 
 export { router };

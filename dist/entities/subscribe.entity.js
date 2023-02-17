@@ -9,30 +9,30 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Suscribe = void 0;
+exports.Subscribe = void 0;
 const typeorm_1 = require("typeorm");
-let Suscribe = class Suscribe extends typeorm_1.BaseEntity {
+let Subscribe = class Subscribe extends typeorm_1.BaseEntity {
 };
 __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)(),
     __metadata("design:type", Number)
-], Suscribe.prototype, "id", void 0);
+], Subscribe.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true,
         unique: true
     }),
     __metadata("design:type", String)
-], Suscribe.prototype, "email", void 0);
+], Subscribe.prototype, "email", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
-], Suscribe.prototype, "created_at", void 0);
+], Subscribe.prototype, "created_at", void 0);
 __decorate([
     (0, typeorm_1.UpdateDateColumn)(),
     __metadata("design:type", Date)
-], Suscribe.prototype, "updated_at", void 0);
-Suscribe = __decorate([
+], Subscribe.prototype, "updated_at", void 0);
+Subscribe = __decorate([
     (0, typeorm_1.Entity)()
-], Suscribe);
-exports.Suscribe = Suscribe;
+], Subscribe);
+exports.Subscribe = Subscribe;

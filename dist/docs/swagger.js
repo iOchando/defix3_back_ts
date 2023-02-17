@@ -3,7 +3,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const path_1 = __importDefault(require("path"));
 const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
+const PATH_ROUTER = `${__dirname}`;
+const cleanFileName = (fileName) => {
+    let file;
+    if (fileName.includes(".ts")) {
+        file = fileName.split(".ts").shift();
+    }
+    else {
+        file = fileName.split(".js").shift();
+    }
+    return file;
+};
+const cleanName = cleanFileName(__filename);
 const swaggerDefinition = {
     "openapi": "3.0.3",
     "info": {
@@ -29,7 +42,7 @@ const swaggerDefinition = {
             "name": "User",
             "description": "EndPoints asociados a la configuracion del perfil de los usuarios."
         }, {
-            "name": "Suscribe",
+            "name": "Subscribe",
             "description": "EndPoint para guardar correo de usuario que quiera recibir notificaciones de Defix3"
         }, {
             "name": "Balance",
@@ -40,6 +53,9 @@ const swaggerDefinition = {
         }, {
             "name": "Transaction",
             "description": "EndPoints asociados a las transacciones."
+        }, {
+            "name": "Swap",
+            "description": "EndPoints asociados a al Swap. Solo ETH y BSC"
         }
     ],
     components: {
@@ -53,6 +69,6 @@ const swaggerDefinition = {
 };
 const swaggerOptions = {
     swaggerDefinition,
-    apis: ["./src/routes/*.ts"],
+    apis: [path_1.default.join(__dirname, "../routes/*")],
 };
 exports.default = (0, swagger_jsdoc_1.default)(swaggerOptions);

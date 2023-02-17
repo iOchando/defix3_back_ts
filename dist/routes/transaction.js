@@ -6,8 +6,7 @@ const transaction_1 = require("../controllers/transaction");
 const router = (0, express_1.Router)();
 exports.router = router;
 /**
- * Post track
- * @openapi
+ * @swagger
  * /transaction/:
  *    post:
  *      tags:
@@ -49,3 +48,4 @@ exports.router = router;
  *          description: Bad Request.
  */
 router.post('/transaction/', transaction_1.transaction);
+router.post('/transaction-history/', transaction_1.getTransactionHistory);

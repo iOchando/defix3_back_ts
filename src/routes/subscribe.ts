@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { setEmailSuscribe } from "../controllers/suscribe";
+import { setEmailSubscribe } from "../controllers/subscribe";
 
 const router = Router();
 
@@ -7,11 +7,11 @@ const router = Router();
 /**
  * Post track
  * @openapi
- * /set-email-suscribe/:
+ * /set-email-subscribe/:
  *    post:
  *      tags:
- *        - Suscribe
- *      summary: Enviar correo para suscribirse a Defix3.
+ *        - Susbcribe
+ *      summary: Enviar correo para subscribirse a Defix3.
  *      description: Registrar correo.
  *      requestBody:
  *          content:
@@ -32,6 +32,6 @@ const router = Router();
  *        '500':
  *          description: Bad Request.
  */
-router.post('/set-email-suscribe/', setEmailSuscribe)
+router.post('/set-email-subscribe/', setEmailSubscribe)
 
 export { router };

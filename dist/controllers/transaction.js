@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.transaction = void 0;
+exports.getTransactionHistory = exports.transaction = void 0;
 const postgres_1 = __importDefault(require("../config/postgres"));
 const utils_1 = require("../helpers/utils");
 const crypto_1 = require("../helpers/crypto");
@@ -124,6 +124,25 @@ function saveFrequent(defixId, frequentUser) {
         }
     });
 }
+const getTransactionHistory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { defixId, coin, date_year, date_month, tipo } = req.body;
+        const conexion = yield (0, postgres_1.default)();
+        const resultados = yield conexion.query("select * \
+                                              from transactions where \
+                                              ((from_defix = $1 or to_defix = $1) or ('%' = $1 or '%' = $1))\
+                                              and (coin = $2 or '%' = $2)\
+                                              and (date_year = $3 or '%' = $3)\
+                                              and (date_month = $4 or '%' = $4)\
+                                              and (tipo = $5 or '%' = $5)\
+                                              ", [defixId, coin, date_year, date_month, tipo]);
+        res.json(resultados.rows);
+    }
+    catch (error) {
+        return res.status(500).send();
+    }
+});
+exports.getTransactionHistory = getTransactionHistory;
 const getTokenContract = (token, blockchain) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const conexion = yield (0, postgres_1.default)();

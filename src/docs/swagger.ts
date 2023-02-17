@@ -1,4 +1,20 @@
+import path from "path";
 import swaggerJSDoc, { OAS3Definition, OAS3Options } from "swagger-jsdoc";
+
+const PATH_ROUTER = `${__dirname}`;
+
+const cleanFileName = (fileName: string) => {
+  let file
+  if (fileName.includes(".ts")) {
+    file = fileName.split(".ts").shift()
+  } else {
+    file = fileName.split(".js").shift()
+  }
+  return file;
+};
+
+const cleanName = cleanFileName(__filename);
+
 
 const swaggerDefinition: OAS3Definition = {
   "openapi": "3.0.3",
@@ -25,7 +41,7 @@ const swaggerDefinition: OAS3Definition = {
     "name": "User",
     "description": "EndPoints asociados a la configuracion del perfil de los usuarios."
   }, {
-    "name": "Suscribe",
+    "name": "Subscribe",
     "description": "EndPoint para guardar correo de usuario que quiera recibir notificaciones de Defix3"
   }, {
     "name": "Balance",
@@ -36,6 +52,9 @@ const swaggerDefinition: OAS3Definition = {
   }, {
     "name": "Transaction",
     "description": "EndPoints asociados a las transacciones."
+  }, {
+    "name": "Swap",
+    "description": "EndPoints asociados a al Swap. Solo ETH y BSC"
   }
 ],
   components: {
@@ -50,7 +69,7 @@ const swaggerDefinition: OAS3Definition = {
 
 const swaggerOptions: OAS3Options = {
   swaggerDefinition,
-  apis: ["./src/routes/*.ts"],
+  apis: [path.join(__dirname, "../routes/*")],
 };
 
 export default swaggerJSDoc(swaggerOptions);

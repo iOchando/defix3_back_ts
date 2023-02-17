@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, BaseEntity, CreateDateColumn, UpdateDateColumn } from "typeorm"
 
 @Entity()
-export class Suscribe extends BaseEntity {
+export class Subscribe extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number
 

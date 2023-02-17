@@ -29,7 +29,7 @@ dbConnect().then(() => console.log("Conexion DB Ready"));
 
 AppDataSource.initialize().then(() => console.log("Conexion ORM Ready"));
 
-let ENV = "dev"
+let ENV = "prod"
 let server
 if (ENV === "prod") {
   const privateKey = fs.readFileSync('/etc/letsencrypt/live/defix3.com/privkey.pem', 'utf8');
