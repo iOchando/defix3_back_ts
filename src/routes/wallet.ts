@@ -10,7 +10,7 @@ router.post("/import-from-pk/", importFromPK);
 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /generate-mnemonic/:
  *    post:
  *      tags:
@@ -54,7 +54,7 @@ router.post("/generate-mnemonic/", generateMnemonicAPI);
 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /create-wallet/:
  *    post:
  *      tags:
@@ -93,7 +93,7 @@ router.post("/create-wallet/", createWallet);
 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /import-wallet/:
  *    post:
  *      tags:
@@ -126,7 +126,7 @@ router.post('/import-wallet/', importWallet);
 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /validate-defix3/:
  *    post:
  *      tags:
@@ -157,7 +157,7 @@ router.post('/validate-defix3/', validateDefixIdAPI);
 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /import-from-mnemonic/:
  *    post:
  *      tags:
@@ -193,7 +193,7 @@ router.post('/import-from-mnemonic/', importFromMnemonic)
 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /get-users:
  *    get:
  *      tags:
@@ -213,7 +213,7 @@ router.get('/get-users', getUsers)
 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /validate-address/:
  *    post:
  *      tags:

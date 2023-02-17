@@ -4,7 +4,7 @@ import { validateDefixId, validateEmail, getAddressUser, saveTransaction } from 
 import { encrypt, decrypt } from "../helpers/crypto";
 import { generateMnemonic } from 'bip39';
 
-import { createWalletBTC, isAddressBTC } from "../services/btc.services";
+import { createWalletBTC, isAddressBTC, transactionBTC } from "../services/btc.services";
 import { transactionETH, transactionTokenETH } from "../services/eth.services";
 import { transactionNEAR } from "../services/near.services";
 import { transactionTRON, transactionTokenTRON } from "../services/tron.services";
@@ -15,12 +15,14 @@ import { Credential } from "../interfaces/credential.interface";
 import { EnvioCorreo, getEmailFlagFN } from "../helpers/mail";
 import { Frequent } from "../entities/frequent.entity";
 import { User } from "../entities/user.entity";
+import { Transaction } from "../entities/transaction.entity";
+import { validation2FA } from "../helpers/2fa";
 
 
 
 async function transaction(req: Request, res: Response) {
   try {
-    const { fromDefix, pkEncrypt, toDefix, coin, amount, blockchain } = req.body
+    const { fromDefix, pkEncrypt, toDefix, coin, amount, blockchain, code } = req.body
     let transactionHash, fromAddress, toAddress, tipoEnvio;
 
     const privateKey = decrypt(pkEncrypt)
@@ -45,8 +47,10 @@ async function transaction(req: Request, res: Response) {
 
     const srcContract = await getTokenContract(coin, blockchain)
 
+    if (!await validation2FA(fromDefix, code)) return res.status(400).send()
+
     if (blockchain === "BTC") {
-      //  transactionHash = await transactionBTC(fromDefix, fromAddress, privateKey, toDefix, toAddress, coin, amount, tipoEnvio)
+      transactionHash = await transactionBTC(fromAddress, privateKey, toAddress, coin, amount)
     } else if (blockchain === "NEAR") {
       transactionHash = await transactionNEAR(fromAddress, privateKey, toAddress, coin, amount)
     } else if (blockchain === "ETH") {
@@ -121,23 +125,59 @@ async function saveFrequent(defixId: string, frequentUser: string) {
   }
 }
 
+async function getFrequent(req: Request, res: Response) {
+  try {
+    const { defixId } = req.body
+    const frequents = await Frequent.find({ where: { user: { defix_id: defixId } } })
+    res.send(frequents)
+  } catch (error) {
+    return false
+  }
+}
+
+async function deleteFrequent(req: Request, res: Response) {
+  try {
+    const { id_frequent } = req.body
+    const result = await Frequent.delete({ id: id_frequent })
+    if (result.affected === 0) return res.status(404).send()
+
+    return res.status(204).send()
+  } catch (error) {
+    res.status(404).json(error)
+  }
+}
+
 const getTransactionHistory = async (req: Request, res: Response) => {
   try {
-      const { defixId, coin, date_year, date_month, tipo } = req.body
+    const { defixId, coin, blockchain, date_year, date_month, tipo } = req.body
 
-      const conexion = await dbConnect()
+    const transactions = await (await Transaction.find({
+      where: {
+        coin: coin ? coin : undefined,
+        blockchain: blockchain ? blockchain : undefined,
+        date_year: date_year ? date_year : undefined,
+        date_month: date_month ? date_month : undefined,
+        tipo: tipo ? tipo : undefined,
+      },
+    })).filter(function (element) {
+      return element.from_defix === defixId || element.to_defix === defixId;
+    });
 
-      const resultados = await conexion.query("select * \
-                                              from transactions where \
-                                              ((from_defix = $1 or to_defix = $1) or ('%' = $1 or '%' = $1))\
-                                              and (coin = $2 or '%' = $2)\
-                                              and (date_year = $3 or '%' = $3)\
-                                              and (date_month = $4 or '%' = $4)\
-                                              and (tipo = $5 or '%' = $5)\
-                                              ", [defixId, coin, date_year, date_month, tipo])
-      res.json(resultados.rows)
+    res.send(transactions)
+
+    // const conexion = await dbConnect()
+
+    // const resultados = await conexion.query("select * \
+    //                                           from transactions where \
+    //                                           ((from_defix = $1 or to_defix = $1) or ('%' = $1 or '%' = $1))\
+    //                                           and (coin = $2 or '%' = $2)\
+    //                                           and (date_year = $3 or '%' = $3)\
+    //                                           and (date_month = $4 or '%' = $4)\
+    //                                           and (tipo = $5 or '%' = $5)\
+    //                                           ", [defixId, coin, date_year, date_month, tipo])
+    // res.json(resultados.rows)
   } catch (error) {
-      return res.status(500).send()
+    return res.status(500).send()
   }
 }
 
@@ -158,35 +198,4 @@ const getTokenContract = async (token: string, blockchain: string) => {
   }
 }
 
-// const transaction = async (req, res) => {
-//   const { fromDefix } = req.body
-//   status2fa(fromDefix).then((respStatus) => {
-//     switch (respStatus) {
-//       case true: {
-//         const { code } = req.body;
-//         validarCode2fa(code, fromDefix).then((respValidacion) => {
-//           console.log(respValidacion);
-//           switch (respValidacion) {
-//             case true: {
-//               return Ejecutartransaction(req, res);
-//             }
-//             case false: {
-//               res.json({ respuesta: "code" });
-//             }
-//               break;
-//             default: res.status(500).json({ respuesta: "Error interno del sistema" })
-//               break;
-//           }
-//         })
-//       }
-//         break;
-//       case false: {
-//         return Ejecutartransaction(req, res);
-//       }
-//       default: res.status(500).json({ respuesta: "Error interno del sistema" })
-//         break;
-//     }
-//   })
-// }
-
-export { transaction, getTransactionHistory }
+export { transaction, getTransactionHistory, getFrequent, deleteFrequent }

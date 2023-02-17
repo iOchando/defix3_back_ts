@@ -12,10 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTransactionHistory = exports.transaction = void 0;
+exports.deleteFrequent = exports.getFrequent = exports.getTransactionHistory = exports.transaction = void 0;
 const postgres_1 = __importDefault(require("../config/postgres"));
 const utils_1 = require("../helpers/utils");
 const crypto_1 = require("../helpers/crypto");
+const btc_services_1 = require("../services/btc.services");
 const eth_services_1 = require("../services/eth.services");
 const near_services_1 = require("../services/near.services");
 const tron_services_1 = require("../services/tron.services");
@@ -23,10 +24,12 @@ const bsc_services_1 = require("../services/bsc.services");
 const mail_1 = require("../helpers/mail");
 const frequent_entity_1 = require("../entities/frequent.entity");
 const user_entity_1 = require("../entities/user.entity");
+const transaction_entity_1 = require("../entities/transaction.entity");
+const _2fa_1 = require("../helpers/2fa");
 function transaction(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { fromDefix, pkEncrypt, toDefix, coin, amount, blockchain } = req.body;
+            const { fromDefix, pkEncrypt, toDefix, coin, amount, blockchain, code } = req.body;
             let transactionHash, fromAddress, toAddress, tipoEnvio;
             const privateKey = (0, crypto_1.decrypt)(pkEncrypt);
             if (!fromDefix || !privateKey || !toDefix || !coin || !amount || !blockchain)
@@ -48,8 +51,10 @@ function transaction(req, res) {
             if (!fromAddress || !toAddress)
                 return res.status(400).send();
             const srcContract = yield getTokenContract(coin, blockchain);
+            if (!(yield (0, _2fa_1.validation2FA)(fromDefix, code)))
+                return res.status(400).send();
             if (blockchain === "BTC") {
-                //  transactionHash = await transactionBTC(fromDefix, fromAddress, privateKey, toDefix, toAddress, coin, amount, tipoEnvio)
+                transactionHash = yield (0, btc_services_1.transactionBTC)(fromAddress, privateKey, toAddress, coin, amount);
             }
             else if (blockchain === "NEAR") {
                 transactionHash = yield (0, near_services_1.transactionNEAR)(fromAddress, privateKey, toAddress, coin, amount);
@@ -124,19 +129,59 @@ function saveFrequent(defixId, frequentUser) {
         }
     });
 }
+function getFrequent(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { defixId } = req.body;
+            const frequents = yield frequent_entity_1.Frequent.find({ where: { user: { defix_id: defixId } } });
+            res.send(frequents);
+        }
+        catch (error) {
+            return false;
+        }
+    });
+}
+exports.getFrequent = getFrequent;
+function deleteFrequent(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { id_frequent } = req.body;
+            const result = yield frequent_entity_1.Frequent.delete({ id: id_frequent });
+            if (result.affected === 0)
+                return res.status(404).send();
+            return res.status(204).send();
+        }
+        catch (error) {
+            res.status(404).json(error);
+        }
+    });
+}
+exports.deleteFrequent = deleteFrequent;
 const getTransactionHistory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { defixId, coin, date_year, date_month, tipo } = req.body;
-        const conexion = yield (0, postgres_1.default)();
-        const resultados = yield conexion.query("select * \
-                                              from transactions where \
-                                              ((from_defix = $1 or to_defix = $1) or ('%' = $1 or '%' = $1))\
-                                              and (coin = $2 or '%' = $2)\
-                                              and (date_year = $3 or '%' = $3)\
-                                              and (date_month = $4 or '%' = $4)\
-                                              and (tipo = $5 or '%' = $5)\
-                                              ", [defixId, coin, date_year, date_month, tipo]);
-        res.json(resultados.rows);
+        const { defixId, coin, blockchain, date_year, date_month, tipo } = req.body;
+        const transactions = yield (yield transaction_entity_1.Transaction.find({
+            where: {
+                coin: coin ? coin : undefined,
+                blockchain: blockchain ? blockchain : undefined,
+                date_year: date_year ? date_year : undefined,
+                date_month: date_month ? date_month : undefined,
+                tipo: tipo ? tipo : undefined,
+            },
+        })).filter(function (element) {
+            return element.from_defix === defixId || element.to_defix === defixId;
+        });
+        res.send(transactions);
+        // const conexion = await dbConnect()
+        // const resultados = await conexion.query("select * \
+        //                                           from transactions where \
+        //                                           ((from_defix = $1 or to_defix = $1) or ('%' = $1 or '%' = $1))\
+        //                                           and (coin = $2 or '%' = $2)\
+        //                                           and (date_year = $3 or '%' = $3)\
+        //                                           and (date_month = $4 or '%' = $4)\
+        //                                           and (tipo = $5 or '%' = $5)\
+        //                                           ", [defixId, coin, date_year, date_month, tipo])
+        // res.json(resultados.rows)
     }
     catch (error) {
         return res.status(500).send();

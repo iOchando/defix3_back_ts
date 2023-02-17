@@ -5,7 +5,7 @@ const router = Router();
 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /close-all-sessions/:
  *    post:
  *      tags:
@@ -38,7 +38,7 @@ router.post('/close-all-sessions/', closeAllSessions)
 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /get-close-all-sessions/:
  *    post:
  *      tags:
@@ -70,7 +70,7 @@ router.post('/get-close-all-sessions/', getCloseAllSesions)
 // defixId, seedPhrase, email, flag_send, flag_receive, flag_dex, flag_fiat, name, last_name, legal_document, type_document 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /set-email-data/:
  *    post:
  *      tags:
@@ -130,7 +130,7 @@ router.post('/set-email-data/', setEmailData)
 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /get-email-data/:
  *    post:
  *      tags:

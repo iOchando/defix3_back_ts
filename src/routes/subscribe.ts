@@ -6,11 +6,11 @@ const router = Router();
 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /set-email-subscribe/:
  *    post:
  *      tags:
- *        - Susbcribe
+ *        - Subscribe
  *      summary: Enviar correo para subscribirse a Defix3.
  *      description: Registrar correo.
  *      requestBody:

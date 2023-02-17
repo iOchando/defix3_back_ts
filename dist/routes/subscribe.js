@@ -7,11 +7,11 @@ const router = (0, express_1.Router)();
 exports.router = router;
 /**
  * Post track
- * @openapi
+ * @swagger
  * /set-email-subscribe/:
  *    post:
  *      tags:
- *        - Susbcribe
+ *        - Subscribe
  *      summary: Enviar correo para subscribirse a Defix3.
  *      description: Registrar correo.
  *      requestBody:

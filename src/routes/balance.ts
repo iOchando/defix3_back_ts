@@ -5,7 +5,7 @@ const router = Router();
 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /get-cryptos:
  *    get:
  *      tags:
@@ -24,7 +24,7 @@ router.get("/get-cryptos", getCryptos);
 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /get-balance/:
  *    post:
  *      tags:

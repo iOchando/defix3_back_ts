@@ -10,7 +10,7 @@ wallet_1.importFromPK;
 router.post("/import-from-pk/", wallet_1.importFromPK);
 /**
  * Post track
- * @openapi
+ * @swagger
  * /generate-mnemonic/:
  *    post:
  *      tags:
@@ -52,7 +52,7 @@ router.post("/import-from-pk/", wallet_1.importFromPK);
 router.post("/generate-mnemonic/", wallet_1.generateMnemonicAPI);
 /**
  * Post track
- * @openapi
+ * @swagger
  * /create-wallet/:
  *    post:
  *      tags:
@@ -89,7 +89,7 @@ router.post("/generate-mnemonic/", wallet_1.generateMnemonicAPI);
 router.post("/create-wallet/", wallet_1.createWallet);
 /**
  * Post track
- * @openapi
+ * @swagger
  * /import-wallet/:
  *    post:
  *      tags:
@@ -120,7 +120,7 @@ router.post("/create-wallet/", wallet_1.createWallet);
 router.post('/import-wallet/', wallet_1.importWallet);
 /**
  * Post track
- * @openapi
+ * @swagger
  * /validate-defix3/:
  *    post:
  *      tags:
@@ -149,7 +149,7 @@ router.post('/import-wallet/', wallet_1.importWallet);
 router.post('/validate-defix3/', wallet_1.validateDefixIdAPI);
 /**
  * Post track
- * @openapi
+ * @swagger
  * /import-from-mnemonic/:
  *    post:
  *      tags:
@@ -183,7 +183,7 @@ router.post('/validate-defix3/', wallet_1.validateDefixIdAPI);
 router.post('/import-from-mnemonic/', wallet_1.importFromMnemonic);
 /**
  * Post track
- * @openapi
+ * @swagger
  * /get-users:
  *    get:
  *      tags:
@@ -201,7 +201,7 @@ router.post('/import-from-mnemonic/', wallet_1.importFromMnemonic);
 router.get('/get-users', wallet_1.getUsers);
 /**
  * Post track
- * @openapi
+ * @swagger
  * /validate-address/:
  *    post:
  *      tags:

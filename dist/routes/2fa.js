@@ -7,7 +7,7 @@ const router = (0, express_1.Router)();
 exports.router = router;
 /**
  * Post track
- * @openapi
+ * @swagger
  * /generar-2fa/:
  *    post:
  *      tags:
@@ -39,7 +39,7 @@ exports.router = router;
 router.post('/generar-2fa/', _2fa_1.generar2fa);
 /**
  * Post track
- * @openapi
+ * @swagger
  * /activar-2fa/:
  *    post:
  *      tags:
@@ -74,7 +74,7 @@ router.post('/generar-2fa/', _2fa_1.generar2fa);
 router.post('/activar-2fa/', _2fa_1.activar2fa);
 /**
  * Post track
- * @openapi
+ * @swagger
  * /activar-2fa/:
  *    post:
  *      tags:
@@ -106,7 +106,7 @@ router.post('/activar-2fa/', _2fa_1.activar2fa);
 router.post('/desactivar-2fa/', _2fa_1.desactivar2fa);
 /**
  * Post track
- * @openapi
+ * @swagger
  * /status-2fa/:
  *    post:
  *      tags:

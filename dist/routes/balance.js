@@ -7,7 +7,7 @@ const router = (0, express_1.Router)();
 exports.router = router;
 /**
  * Post track
- * @openapi
+ * @swagger
  * /get-cryptos:
  *    get:
  *      tags:
@@ -25,7 +25,7 @@ exports.router = router;
 router.get("/get-cryptos", balance_1.getCryptos);
 /**
  * Post track
- * @openapi
+ * @swagger
  * /get-balance/:
  *    post:
  *      tags:

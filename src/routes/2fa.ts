@@ -5,7 +5,7 @@ const router = Router();
 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /generar-2fa/:
  *    post:
  *      tags:
@@ -38,7 +38,7 @@ router.post('/generar-2fa/', generar2fa)
 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /activar-2fa/:
  *    post:
  *      tags:
@@ -74,7 +74,7 @@ router.post('/activar-2fa/', activar2fa)
 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /activar-2fa/:
  *    post:
  *      tags:
@@ -107,7 +107,7 @@ router.post('/desactivar-2fa/', desactivar2fa)
 
 /**
  * Post track
- * @openapi
+ * @swagger
  * /status-2fa/:
  *    post:
  *      tags:
