@@ -12,61 +12,39 @@ const swaggerDefinition: OAS3Definition = {
   },
   "servers": [
     {
+      "url": "https://defix3.com:3072/api/v2/"
+    },
+    {
       "url": "http://localhost:3080/api/v2/"
-    },
-    {
-      "url": "https://defix3.com/api/v2/"
-    },
-    {
-      "url": "https://testnet.defix3.com/api/v2/"
     }
   ],
-  "tags" : [ {
-    "name" : "Wallet",
-    "description" : "EndPoints asociados a la creacion y funciones basicas de las wallets."
+  "tags": [{
+    "name": "Wallet",
+    "description": "EndPoints asociados a la creacion y funciones basicas de las wallets."
   }, {
-    "name" : "pet",
-    "description" : "Everything about your Pets"
+    "name": "User",
+    "description": "EndPoints asociados a la configuracion del perfil de los usuarios."
   }, {
-    "name" : "store",
-    "description" : "Access to Petstore orders"
+    "name": "Suscribe",
+    "description": "EndPoint para guardar correo de usuario que quiera recibir notificaciones de Defix3"
   }, {
-    "name" : "user",
-    "description" : "Operations about user"
-  } ],
+    "name": "Balance",
+    "description": "EndPoints asociados al balance y Cryptomonedas"
+  }, {
+    "name": "2FA",
+    "description": "EndPoints asociados al 2FA."
+  }, {
+    "name": "Transaction",
+    "description": "EndPoints asociados a las transacciones."
+  }
+],
   components: {
     securitySchemes: {
       bearerAuth: {
         type: "http",
         scheme: "bearer",
       },
-    },
-    schemas: {
-      user: {
-        type: "object",
-        required: ["name", "album", "cover", "artist", "duration", "mediaId"],
-        properties: {
-          name: {
-            type: "string",
-          },
-          email: {
-            type: "string",
-          },
-        },
-      },
-      item: {
-        type: "object",
-        required: ["price", "qty"],
-        properties: {
-          price: {
-            type: "string",
-          },
-          qty: {
-            type: "string",
-          },
-        },
-      },
-    },
+    }
   },
 }
 

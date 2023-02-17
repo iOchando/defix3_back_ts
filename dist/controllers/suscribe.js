@@ -16,7 +16,6 @@ function setEmailSuscribe(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { email } = req.body;
-            console.log(email);
             if (yield (0, utils_1.validateEmail)(email)) {
                 const subs = new suscribe_entity_1.Suscribe();
                 subs.email = email;

@@ -6,7 +6,8 @@ export class Suscribe extends BaseEntity {
   id!: number
 
   @Column({
-    nullable: true
+    nullable: true,
+    unique: true
   })
   email!: string
 

@@ -42,8 +42,10 @@ if (ENV === "prod") {
     ca: ca
   };
   server = https.createServer(credentials, app);
+  console.log("htpps")
 } else {
   server = http.createServer(app);
+  console.log("htpp")
 }
 
 

@@ -19,7 +19,8 @@ __decorate([
 ], Suscribe.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
+        unique: true
     }),
     __metadata("design:type", String)
 ], Suscribe.prototype, "email", void 0);

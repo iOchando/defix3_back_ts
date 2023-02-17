@@ -227,6 +227,7 @@ const swapPreviewETH = (fromCoin, toCoin, amount, blockchain) => __awaiter(void 
         return priceRoute;
     }
     catch (error) {
+        console.log(error);
         return false;
     }
 });

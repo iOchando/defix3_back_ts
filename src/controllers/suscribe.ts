@@ -6,8 +6,6 @@ async function setEmailSuscribe(req: Request, res: Response) {
   try {
     const { email } = req.body
 
-    console.log(email)
-
     if (await validateEmail(email)) {
 
       const subs = new Suscribe ()

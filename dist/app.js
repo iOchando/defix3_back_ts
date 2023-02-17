@@ -71,9 +71,11 @@ if (ENV === "prod") {
         ca: ca
     };
     server = https.createServer(credentials, app);
+    console.log("htpps");
 }
 else {
     server = http.createServer(app);
+    console.log("htpp");
 }
 server.listen(PORT, () => console.log(`Listo por el puerto ${PORT}`));
 const io = new socket_io_1.Server(server, {

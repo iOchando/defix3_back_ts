@@ -13,64 +13,62 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.status2faFn = exports.validarCode2fa = exports.status2fa = exports.desactivar2fa = exports.activar2fa = exports.generar2fa = void 0;
-const postgres_1 = __importDefault(require("../config/postgres"));
 const otplib_1 = require("otplib");
 const qrcode_1 = __importDefault(require("qrcode"));
 const utils_1 = require("../helpers/utils");
 const crypto_1 = require("../helpers/crypto");
+const user_entity_1 = require("../entities/user.entity");
 const generar2fa = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { defixId, seedPhrase } = req.body;
+        if (!defixId || !seedPhrase)
+            return res.status(400).send();
         const mnemonic = (0, crypto_1.decrypt)(seedPhrase);
         if (!mnemonic)
             return res.status(400).send();
         const validate = yield (0, utils_1.validateMnemonicDefix)(defixId, mnemonic);
         if (!validate)
             return res.status(400).send();
-        const conexion = yield (0, postgres_1.default)();
-        const resultados = yield conexion.query("select dosfa, secret from users where defix_id = $1", [defixId]);
-        if (resultados.rowCount === 1) {
-            switch (resultados.rows[0].dosfa) {
-                case true:
-                    {
-                        res.json({ respuesta: "dosfa" });
-                    }
-                    break;
-                case false:
-                    {
-                        if (resultados.rows[0].secret == null) {
-                            const secret = otplib_1.authenticator.generateSecret();
-                            yield conexion.query("update users set secret = $1 where defix_id = $2 ", [secret, defixId])
-                                .then(() => {
-                                let codigo = otplib_1.authenticator.keyuri(defixId, 'Defix3 App', secret);
-                                qrcode_1.default.toDataURL(codigo, (err, url) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                    res.json({ respuesta: "ok", qr: url, codigo: secret });
-                                });
-                            }).catch(() => {
-                                res.status(500).json({ respuesta: "error en la base de datos" });
-                            });
-                        }
-                        else {
-                            let codigo = otplib_1.authenticator.keyuri(defixId, 'Defix3 App', resultados.rows[0].secret);
+        const user = yield user_entity_1.User.findOneBy({ defix_id: defixId });
+        if (!user)
+            return res.status(400).send();
+        switch (user.dosfa) {
+            case true:
+                {
+                    res.status(400).json({ respuesta: "dosfa" });
+                }
+                break;
+            case false:
+                {
+                    if (!user.secret) {
+                        const secret = otplib_1.authenticator.generateSecret();
+                        yield user_entity_1.User.update({ defix_id: user.defix_id }, { secret: secret })
+                            .then(() => {
+                            let codigo = otplib_1.authenticator.keyuri(defixId, 'Defix3 App', secret);
                             qrcode_1.default.toDataURL(codigo, (err, url) => {
                                 if (err) {
                                     throw err;
                                 }
-                                res.json({ respuesta: "ok", qr: url, codigo: resultados.rows[0].secret });
+                                res.json({ qr: url, codigo: secret });
                             });
-                        }
+                        }).catch(() => {
+                            res.status(500).json({ respuesta: "error en la base de datos" });
+                        });
                     }
-                    break;
-                default:
-                    res.status(500).json({ respuesta: "error en el campo dosfa" });
-                    break;
-            }
-        }
-        else {
-            res.status(500).json({ respuesta: "user no existe" });
+                    else {
+                        let codigo = otplib_1.authenticator.keyuri(defixId, 'Defix3 App', user.secret);
+                        qrcode_1.default.toDataURL(codigo, (err, url) => {
+                            if (err) {
+                                throw err;
+                            }
+                            res.json({ qr: url, codigo: user.secret });
+                        });
+                    }
+                }
+                break;
+            default:
+                res.status(500).json({ respuesta: "error en el campo dosfa" });
+                break;
         }
     }
     catch (error) {
@@ -81,34 +79,28 @@ exports.generar2fa = generar2fa;
 const activar2fa = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { defixId, seedPhrase, code } = req.body;
+        if (!defixId || !seedPhrase || !code)
+            return res.status(400).send();
         const mnemonic = (0, crypto_1.decrypt)(seedPhrase);
         if (!mnemonic)
             return res.status(400).send();
         const response = yield (0, utils_1.validateMnemonicDefix)(defixId, mnemonic);
         if (!response)
             return res.status(400).send();
-        const conexion = yield (0, postgres_1.default)();
-        const resultados = yield conexion.query("select dosfa, secret from users where defix_id = $1", [defixId]);
-        if (resultados.rowCount === 1) {
-            console.log(resultados.rows[0].secret);
-            if (resultados.rows[0].secret != null) {
-                var auth = otplib_1.authenticator.check(code.toString(), resultados.rows[0].secret);
-                if (auth) {
-                    yield conexion.query("update users set dosfa = true where defix_id = $1 ", [defixId])
-                        .then(() => {
-                        res.json({ respuesta: "ok" });
-                    }).catch(() => {
-                        res.status(500).json({ respuesta: "error en la base de datos" });
-                    });
-                }
-                else {
-                    res.json({ respuesta: "code" });
-                }
-            }
-            else {
-                res.json({ respuesta: "secret" });
-            }
-        }
+        const user = yield user_entity_1.User.findOneBy({ defix_id: defixId });
+        if (!user)
+            return res.status(400).send();
+        if (!user.secret)
+            return res.status(400).send({ respuesta: "secret" });
+        const auth = otplib_1.authenticator.check(code.toString(), user.secret);
+        if (!auth)
+            return res.status(400).send({ respuesta: "code" });
+        yield user_entity_1.User.update({ defix_id: user.defix_id }, { dosfa: true })
+            .then(() => {
+            return res.send({ respuesta: "ok" });
+        }).catch(() => {
+            return res.status(500).json({ respuesta: "error en la base de datos" });
+        });
     }
     catch (error) {
         return res.status(500).send();
@@ -117,30 +109,33 @@ const activar2fa = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.activar2fa = activar2fa;
 const desactivar2fa = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { defixId, code } = req.body;
-    validarCode2fa(code, defixId).then((result) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!defixId || !code)
+        return res.status(400).send();
+    yield validarCode2fa(code, defixId).then((result) => __awaiter(void 0, void 0, void 0, function* () {
         switch (result) {
             case true:
                 {
-                    const conexion = yield (0, postgres_1.default)();
-                    const resultados = yield conexion.query("select dosfa, secret from users where defix_id = $1", [defixId]);
-                    if (resultados.rowCount === 1) {
-                        if (resultados.rows[0].dosfa === true) {
-                            yield conexion.query("update users set dosfa = false, secret = null where defix_id = $1 ", [defixId])
-                                .then(() => {
-                                res.json({ respuesta: "ok" });
-                            }).catch(() => {
-                                res.status(500).json({ respuesta: "error en la base de datos" });
-                            });
-                        }
-                        else {
+                    // const conexion = await dbConnect();
+                    // const resultados = await conexion.query("select dosfa, secret from users where defix_id = $1", [defixId]);
+                    const user = yield user_entity_1.User.findOneBy({ defix_id: defixId });
+                    if (!user)
+                        return res.status(400).send();
+                    if (user.dosfa) {
+                        yield user_entity_1.User.update({ defix_id: user.defix_id }, { dosfa: false, secret: undefined })
+                            .then(() => {
                             res.json({ respuesta: "ok" });
-                        }
+                        }).catch(() => {
+                            res.status(500).json({ respuesta: "error en la base de datos" });
+                        });
+                    }
+                    else {
+                        res.json({ respuesta: "ok" });
                     }
                 }
                 break;
             case false:
                 {
-                    res.json({ respuesta: "code" });
+                    res.status(400).json({ respuesta: "code" });
                 }
                 break;
             default:
@@ -152,32 +147,32 @@ const desactivar2fa = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 exports.desactivar2fa = desactivar2fa;
 const status2fa = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { defixId } = req.body;
-    status2faFn(defixId).then(result => {
-        res.json(result);
+    yield status2faFn(defixId)
+        .then(result => {
+        res.send(result);
+    })
+        .catch((err) => {
+        res.status(404).send({ error: err });
     });
 });
 exports.status2fa = status2fa;
 // UTILS
 function validarCode2fa(code, defixId) {
     return __awaiter(this, void 0, void 0, function* () {
-        const conexion = yield (0, postgres_1.default)();
-        const resultados = yield conexion.query("select secret from users where defix_id = $1", [defixId]);
-        if (resultados.rowCount === 1) {
-            var auth = otplib_1.authenticator.check(String(code), resultados.rows[0].secret);
-            return auth;
-        }
-        return null;
+        const user = yield user_entity_1.User.findOneBy({ defix_id: defixId });
+        if (!user)
+            return false;
+        const auth = otplib_1.authenticator.check(String(code), user.secret);
+        return auth;
     });
 }
 exports.validarCode2fa = validarCode2fa;
 function status2faFn(defixId) {
     return __awaiter(this, void 0, void 0, function* () {
-        const conexion = yield (0, postgres_1.default)();
-        const resultados = yield conexion.query("select dosfa from users where defix_id = $1", [defixId]);
-        if (resultados.rowCount === 1) {
-            return resultados.rows[0].dosfa;
-        }
-        return null;
+        const user = yield user_entity_1.User.findOneBy({ defix_id: defixId });
+        if (!user)
+            return false;
+        return user.dosfa;
     });
 }
 exports.status2faFn = status2faFn;

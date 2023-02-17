@@ -237,6 +237,7 @@ const swapPreviewBNB = async (fromCoin: string, toCoin: string, amount: number, 
 
     return priceRoute
   } catch (error) {
+    console.log(error)
     return false
   }
 }

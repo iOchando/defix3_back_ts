@@ -41,15 +41,9 @@ async function transaction(req: Request, res: Response) {
       tipoEnvio = "wallet"
     }
 
-    console.log(fromAddress, toAddress)
-
     if (!fromAddress || !toAddress) return res.status(400).send()
 
-    console.log(coin, blockchain)
-
     const srcContract = await getTokenContract(coin, blockchain)
-
-    console.log("CONTRACT",srcContract)
 
     if (blockchain === "BTC") {
       //  transactionHash = await transactionBTC(fromDefix, fromAddress, privateKey, toDefix, toAddress, coin, amount, tipoEnvio)
