@@ -86,22 +86,21 @@ function transaction(req, res) {
             else {
                 transactionHash = false;
             }
-            if (transactionHash) {
-                const resSend = yield (0, mail_1.getEmailFlagFN)(fromDefix, 'SEND');
-                const resReceive = yield (0, mail_1.getEmailFlagFN)(toDefix, 'RECEIVE');
-                const item = {
-                    monto: amount,
-                    moneda: coin,
-                    receptor: toDefix,
-                    emisor: fromDefix,
-                    tipoEnvio: tipoEnvio
-                };
-                (0, mail_1.EnvioCorreo)(resSend, resReceive, 'envio', item);
-                const transaction = yield (0, utils_1.saveTransaction)(fromDefix, toDefix, coin, blockchain, amount, fromAddress, toAddress, transactionHash, 'TRANSFER');
-                yield saveFrequent(fromDefix, toDefix);
-                return res.send(transaction);
-            }
-            return res.status(500).send();
+            if (!transactionHash)
+                return res.status(500).send();
+            const resSend = yield (0, mail_1.getEmailFlagFN)(fromDefix, 'SEND');
+            const resReceive = yield (0, mail_1.getEmailFlagFN)(toDefix, 'RECEIVE');
+            const item = {
+                monto: amount,
+                moneda: coin,
+                receptor: toDefix,
+                emisor: fromDefix,
+                tipoEnvio: tipoEnvio
+            };
+            (0, mail_1.EnvioCorreo)(resSend, resReceive, 'envio', item);
+            const transaction = yield (0, utils_1.saveTransaction)(fromDefix, toDefix, coin, blockchain, amount, fromAddress, toAddress, transactionHash, 'TRANSFER');
+            yield saveFrequent(fromDefix, toDefix);
+            return res.send(transaction);
         }
         catch (error) {
             return res.status(500).send();

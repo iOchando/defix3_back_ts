@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.transactionTokenETH = exports.transactionETH = exports.getBalanceTokenETH = exports.getBalanceETH = exports.isAddressETH = exports.createWalletETH = exports.swapPreviewETH = void 0;
+exports.transactionTokenETH = exports.transactionETH = exports.getBalanceTokenETH = exports.getBalanceETH = exports.isAddressETH = exports.createWalletETH = exports.swapPreviewETH = exports.swapTokenETH = void 0;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const ethers_1 = require("ethers");
 const web3_1 = __importDefault(require("web3"));
@@ -232,6 +232,43 @@ const swapPreviewETH = (fromCoin, toCoin, amount, blockchain) => __awaiter(void 
     }
 });
 exports.swapPreviewETH = swapPreviewETH;
+function swapTokenETH(fromCoin, privateKey, priceRoute) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const paraSwap = (0, sdk_1.constructSimpleSDK)({ chainId: 1, axios: axios_1.default });
+            const signer = web3.eth.accounts.privateKeyToAccount(privateKey);
+            const txParams = yield paraSwap.swap.buildTx({
+                srcToken: priceRoute.srcToken,
+                destToken: priceRoute.destToken,
+                srcAmount: priceRoute.srcAmount,
+                destAmount: priceRoute.destAmount,
+                priceRoute: priceRoute,
+                userAddress: signer.address
+            });
+            const txSigned = yield signer.signTransaction(txParams);
+            if (!txSigned.rawTransaction)
+                return false;
+            console.log(txSigned);
+            const result = yield web3.eth.sendSignedTransaction(txSigned.rawTransaction);
+            const transactionHash = result.transactionHash;
+            if (!transactionHash)
+                return false;
+            const resp_comision = yield (0, utils_1.GET_COMISION)(fromCoin);
+            const vault_address = yield (0, utils_1.ADDRESS_VAULT)(fromCoin);
+            const comision = resp_comision.swap / 100;
+            let amount_vault = (Number(priceRoute.gasCostUSD) * comision);
+            if (amount_vault !== 0 && vault_address) {
+                yield payCommissionETH(signer.address, privateKey, vault_address, amount_vault);
+            }
+            return { transactionHash: transactionHash, address: signer.address };
+        }
+        catch (error) {
+            console.log(error);
+            return false;
+        }
+    });
+}
+exports.swapTokenETH = swapTokenETH;
 const getTokenContractSwap = (token, blockchain) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const conexion = yield (0, postgres_1.default)();

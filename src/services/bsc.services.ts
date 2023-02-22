@@ -4,7 +4,7 @@ import { Credential } from "../interfaces/credential.interface";
 import { AbiItem } from 'web3-utils';
 import axios from "axios";
 import { ADDRESS_VAULT, GET_COMISION } from "../helpers/utils";
-import { constructSimpleSDK } from "@paraswap/sdk";
+import { constructSimpleSDK, OptimalRate } from "@paraswap/sdk";
 import abi from '../helpers/abi.json';
 import dbConnect from "../config/postgres";
 
@@ -242,6 +242,51 @@ const swapPreviewBNB = async (fromCoin: string, toCoin: string, amount: number, 
   }
 }
 
+async function swapTokenBSC(fromCoin: string, privateKey: string, priceRoute: OptimalRate) {
+  try {
+    const paraSwap = constructSimpleSDK({ chainId: 1, axios });
+    const signer = web3BSC.eth.accounts.privateKeyToAccount(privateKey)
+
+    const txParams = await paraSwap.swap.buildTx(
+      {
+        srcToken: priceRoute.srcToken,
+        destToken: priceRoute.destToken,
+        srcAmount: priceRoute.srcAmount,
+        destAmount: priceRoute.destAmount,
+        priceRoute: priceRoute,
+        userAddress: signer.address
+      }
+    );
+
+    const txSigned = await signer.signTransaction(txParams)
+
+    if (!txSigned.rawTransaction) return false
+
+    console.log(txSigned)
+    const result = await web3BSC.eth.sendSignedTransaction(txSigned.rawTransaction)
+
+    const transactionHash = result.transactionHash
+
+    if (!transactionHash) return false
+
+    const resp_comision = await GET_COMISION(fromCoin)
+    const vault_address = await ADDRESS_VAULT(fromCoin)
+
+    const comision = resp_comision.swap / 100
+
+    let amount_vault = (Number(priceRoute.gasCostUSD) * comision)
+
+    if (amount_vault !== 0 && vault_address) {
+      await payCommissionBNB(signer.address, privateKey, vault_address, amount_vault)
+    }
+
+    return {transactionHash: transactionHash, address: signer.address}
+  } catch (error) {
+    console.log(error)
+    return false
+  }
+}
+
 const getTokenContractSwap = async (token: string, blockchain: string) => {
   try {
     const conexion = await dbConnect()
@@ -267,4 +312,4 @@ const getTokenContractSwap = async (token: string, blockchain: string) => {
   }
 }
 
-export { swapPreviewBNB, createWalletBNB, isAddressBNB, getBalanceBNB, getBalanceTokenBSC, transactionBNB, transactionTokenBNB };
+export { swapTokenBSC, swapPreviewBNB, createWalletBNB, isAddressBNB, getBalanceBNB, getBalanceTokenBSC, transactionBNB, transactionTokenBNB };

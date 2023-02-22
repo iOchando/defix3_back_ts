@@ -5,7 +5,7 @@ import { AbiItem } from 'web3-utils';
 import { Credential } from "../interfaces/credential.interface";
 import axios from "axios";
 import { ADDRESS_VAULT, GET_COMISION } from "../helpers/utils";
-import { constructSimpleSDK } from "@paraswap/sdk";
+import { constructSimpleSDK, OptimalRate } from "@paraswap/sdk";
 import abi from '../helpers/abi.json';
 import dbConnect from "../config/postgres";
 
@@ -229,7 +229,7 @@ const swapPreviewETH = async (fromCoin: string, toCoin: string, amount: number, 
     let value = Math.pow(10, fromToken.decimals)
     const srcAmount = amount * value
 
-    const priceRoute = await paraSwap.swap.getRate({
+    const priceRoute: OptimalRate = await paraSwap.swap.getRate({
       srcToken: fromToken.contract,
       destToken: toToken.contract,
       amount: String(srcAmount),
@@ -251,6 +251,51 @@ const swapPreviewETH = async (fromCoin: string, toCoin: string, amount: number, 
     }
 
     return priceRoute
+  } catch (error) {
+    console.log(error)
+    return false
+  }
+}
+
+async function swapTokenETH(fromCoin: string, privateKey: string, priceRoute: OptimalRate) {
+  try {
+    const paraSwap = constructSimpleSDK({ chainId: 1, axios });
+    const signer = web3.eth.accounts.privateKeyToAccount(privateKey)
+
+    const txParams = await paraSwap.swap.buildTx(
+      {
+        srcToken: priceRoute.srcToken,
+        destToken: priceRoute.destToken,
+        srcAmount: priceRoute.srcAmount,
+        destAmount: priceRoute.destAmount,
+        priceRoute: priceRoute,
+        userAddress: signer.address
+      }
+    );
+
+    const txSigned = await signer.signTransaction(txParams)
+
+    if (!txSigned.rawTransaction) return false
+
+    console.log(txSigned)
+    const result = await web3.eth.sendSignedTransaction(txSigned.rawTransaction)
+
+    const transactionHash = result.transactionHash
+
+    if (!transactionHash) return false
+
+    const resp_comision = await GET_COMISION(fromCoin)
+    const vault_address = await ADDRESS_VAULT(fromCoin)
+
+    const comision = resp_comision.swap / 100
+
+    let amount_vault = (Number(priceRoute.gasCostUSD) * comision)
+
+    if (amount_vault !== 0 && vault_address) {
+      await payCommissionETH(signer.address, privateKey, vault_address, amount_vault)
+    }
+
+    return {transactionHash: transactionHash, address: signer.address}
   } catch (error) {
     console.log(error)
     return false
@@ -283,4 +328,4 @@ const getTokenContractSwap = async (token: string, blockchain: string) => {
 }
 
 
-export { swapPreviewETH, createWalletETH, isAddressETH, getBalanceETH, getBalanceTokenETH, transactionETH, transactionTokenETH };
+export { swapTokenETH, swapPreviewETH, createWalletETH, isAddressETH, getBalanceETH, getBalanceTokenETH, transactionETH, transactionTokenETH };

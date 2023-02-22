@@ -40,7 +40,7 @@ router.post("/import-from-pk/", wallet_1.importFromPK);
  *                  respuesta: {
  *                    type: "string"
  *                  },
- *                  mnemonic: {
+ *                  seedPhrase: {
  *                    type: "string"
  *                  }
  *                }
@@ -64,12 +64,12 @@ router.post("/generate-mnemonic/", wallet_1.generateMnemonicAPI);
  *            application/json:
  *              schema:
  *                type: "object"
- *                required: [defixId, mnemonic]
+ *                required: [defixId, seedPhrase]
  *                properties: {
  *                  defixId: {
  *                    type: "string"
  *                  },
- *                  mnemonic: {
+ *                  seedPhrase: {
  *                    type: "string"
  *                  },
  *                  email: {
@@ -101,9 +101,9 @@ router.post("/create-wallet/", wallet_1.createWallet);
  *            application/json:
  *              schema:
  *                type: "object"
- *                required: [mnemonic]
+ *                required: [seedPhrase]
  *                properties: {
- *                  mnemonic: {
+ *                  seedPhrase: {
  *                    type: "string"
  *                  }
  *                }
@@ -161,12 +161,12 @@ router.post('/validate-defix3/', wallet_1.validateDefixIdAPI);
  *            application/json:
  *              schema:
  *                type: "object"
- *                required: [defixId, mnemonic]
+ *                required: [defixId, seedPhrase]
  *                properties: {
  *                  defixId: {
  *                    type: "string"
  *                  },
- *                  mnemonic: {
+ *                  seedPhrase: {
  *                    type: "string"
  *                  }
  *                }

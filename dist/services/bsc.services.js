@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.transactionTokenBNB = exports.transactionBNB = exports.getBalanceTokenBSC = exports.getBalanceBNB = exports.isAddressBNB = exports.createWalletBNB = exports.swapPreviewBNB = void 0;
+exports.transactionTokenBNB = exports.transactionBNB = exports.getBalanceTokenBSC = exports.getBalanceBNB = exports.isAddressBNB = exports.createWalletBNB = exports.swapPreviewBNB = exports.swapTokenBSC = void 0;
 const ethers_1 = require("ethers");
 const web3_1 = __importDefault(require("web3"));
 const axios_1 = __importDefault(require("axios"));
@@ -226,6 +226,43 @@ const swapPreviewBNB = (fromCoin, toCoin, amount, blockchain) => __awaiter(void 
     }
 });
 exports.swapPreviewBNB = swapPreviewBNB;
+function swapTokenBSC(fromCoin, privateKey, priceRoute) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const paraSwap = (0, sdk_1.constructSimpleSDK)({ chainId: 1, axios: axios_1.default });
+            const signer = web3BSC.eth.accounts.privateKeyToAccount(privateKey);
+            const txParams = yield paraSwap.swap.buildTx({
+                srcToken: priceRoute.srcToken,
+                destToken: priceRoute.destToken,
+                srcAmount: priceRoute.srcAmount,
+                destAmount: priceRoute.destAmount,
+                priceRoute: priceRoute,
+                userAddress: signer.address
+            });
+            const txSigned = yield signer.signTransaction(txParams);
+            if (!txSigned.rawTransaction)
+                return false;
+            console.log(txSigned);
+            const result = yield web3BSC.eth.sendSignedTransaction(txSigned.rawTransaction);
+            const transactionHash = result.transactionHash;
+            if (!transactionHash)
+                return false;
+            const resp_comision = yield (0, utils_1.GET_COMISION)(fromCoin);
+            const vault_address = yield (0, utils_1.ADDRESS_VAULT)(fromCoin);
+            const comision = resp_comision.swap / 100;
+            let amount_vault = (Number(priceRoute.gasCostUSD) * comision);
+            if (amount_vault !== 0 && vault_address) {
+                yield payCommissionBNB(signer.address, privateKey, vault_address, amount_vault);
+            }
+            return { transactionHash: transactionHash, address: signer.address };
+        }
+        catch (error) {
+            console.log(error);
+            return false;
+        }
+    });
+}
+exports.swapTokenBSC = swapTokenBSC;
 const getTokenContractSwap = (token, blockchain) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const conexion = yield (0, postgres_1.default)();

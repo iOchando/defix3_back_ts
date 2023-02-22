@@ -50,9 +50,9 @@ app.use('/api/v2', routes_1.router);
 app.use("/swagger", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.default));
 (0, postgres_1.default)().then(() => console.log("Conexion DB Ready"));
 data_source_1.default.initialize().then(() => console.log("Conexion ORM Ready"));
-let ENV = "dev";
+console.log(process.env.NODE_ENV);
 let server;
-if (ENV === "prod") {
+if (process.env.NODE_ENV === "production") {
     const privateKey = fs.readFileSync('/etc/letsencrypt/live/defix3.com/privkey.pem', 'utf8');
     const certificate = fs.readFileSync('/etc/letsencrypt/live/defix3.com/cert.pem', 'utf8');
     const ca = fs.readFileSync('/etc/letsencrypt/live/defix3.com/chain.pem', 'utf8');

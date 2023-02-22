@@ -40,7 +40,7 @@ router.post("/import-from-pk/", importFromPK);
  *                  respuesta: {
  *                    type: "string"
  *                  },
- *                  mnemonic: {
+ *                  seedPhrase: {
  *                    type: "string"
  *                  }
  *                }
@@ -66,12 +66,12 @@ router.post("/generate-mnemonic/", generateMnemonicAPI);
  *            application/json:
  *              schema:
  *                type: "object"
- *                required: [defixId, mnemonic]
+ *                required: [defixId, seedPhrase]
  *                properties: {
  *                  defixId: {
  *                    type: "string"
  *                  },
- *                  mnemonic: {
+ *                  seedPhrase: {
  *                    type: "string"
  *                  },
  *                  email: {
@@ -105,9 +105,9 @@ router.post("/create-wallet/", createWallet);
  *            application/json:
  *              schema:
  *                type: "object"
- *                required: [mnemonic]
+ *                required: [seedPhrase]
  *                properties: {
- *                  mnemonic: {
+ *                  seedPhrase: {
  *                    type: "string"
  *                  }
  *                }
@@ -169,12 +169,12 @@ router.post('/validate-defix3/', validateDefixIdAPI);
  *            application/json:
  *              schema:
  *                type: "object"
- *                required: [defixId, mnemonic]
+ *                required: [defixId, seedPhrase]
  *                properties: {
  *                  defixId: {
  *                    type: "string"
  *                  },
- *                  mnemonic: {
+ *                  seedPhrase: {
  *                    type: "string"
  *                  }
  *                }

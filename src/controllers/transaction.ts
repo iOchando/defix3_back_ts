@@ -18,8 +18,6 @@ import { User } from "../entities/user.entity";
 import { Transaction } from "../entities/transaction.entity";
 import { validation2FA } from "../helpers/2fa";
 
-
-
 async function transaction(req: Request, res: Response) {
   try {
     const { fromDefix, pkEncrypt, toDefix, coin, amount, blockchain, code } = req.body
@@ -75,33 +73,33 @@ async function transaction(req: Request, res: Response) {
       transactionHash = false
     }
 
-    if (transactionHash) {
-      const resSend = await getEmailFlagFN(fromDefix, 'SEND');
-      const resReceive = await getEmailFlagFN(toDefix, 'RECEIVE');
-      const item = {
-        monto: amount,
-        moneda: coin,
-        receptor: toDefix,
-        emisor: fromDefix,
-        tipoEnvio: tipoEnvio
-      };
-      EnvioCorreo(resSend, resReceive, 'envio', item);
+    if (!transactionHash) return res.status(500).send()
 
-      const transaction = await saveTransaction(
-        fromDefix,
-        toDefix,
-        coin,
-        blockchain,
-        amount,
-        fromAddress,
-        toAddress,
-        transactionHash as string,
-        'TRANSFER'
-      );
-      await saveFrequent(fromDefix, toDefix)
-      return res.send(transaction)
-    }
-    return res.status(500).send()
+    const resSend = await getEmailFlagFN(fromDefix, 'SEND');
+    const resReceive = await getEmailFlagFN(toDefix, 'RECEIVE');
+    const item = {
+      monto: amount,
+      moneda: coin,
+      receptor: toDefix,
+      emisor: fromDefix,
+      tipoEnvio: tipoEnvio
+    };
+    EnvioCorreo(resSend, resReceive, 'envio', item);
+
+    const transaction = await saveTransaction(
+      fromDefix,
+      toDefix,
+      coin,
+      blockchain,
+      amount,
+      fromAddress,
+      toAddress,
+      transactionHash as string,
+      'TRANSFER'
+    );
+    await saveFrequent(fromDefix, toDefix)
+    return res.send(transaction)
+
   } catch (error) {
     return res.status(500).send()
   }

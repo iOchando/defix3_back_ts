@@ -42,3 +42,50 @@ exports.router = router;
  *          description: Bad Request.
  */
 router.post('/swap-preview/', swap_1.swapPreview);
+/**
+ * @swagger
+ * /swap-token/:
+ *    post:
+ *      tags:
+ *        - Swap
+ *      summary: Realiza el swap
+ *      description: Manda el priceRoute obtenido anteriormente para hacer el swap.
+ *      requestBody:
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: "object"
+ *                required: [fromDefix, fromCoin, toCoin, pkEncrypt, priceRoute, blockchain, code]
+ *                properties: {
+ *                  fromDefix: {
+ *                    type: "string"
+ *                  },
+ *                  fromCoin: {
+ *                    type: "string"
+ *                  },
+ *                  toCoin: {
+ *                    type: "string"
+ *                  },
+ *                  pkEncrypt: {
+ *                    type: "string"
+ *                  },
+ *                  priceRoute: {
+ *                    type: "object"
+ *                  },
+ *                  blockchain: {
+ *                    type: "string"
+ *                  },
+ *                  code: {
+ *                    type: "string"
+ *                  },
+ *                }
+ *      responses:
+ *        '200':
+ *          description: Devuelve la transaccion del swap.
+ *        '400':
+ *          description: Bad Request.
+ *        '500':
+ *          description: Bad Request.
+ */
+router.post('/swap-token/', swap_1.swapToken);
+router.post('/swap-tron/', swap_1.swapTron);
