@@ -76,7 +76,6 @@ const createWallet = async (req: Request, res: Response) => {
 
 			const wallet: Wallet = {
 				defixId: DefixId,
-				mnemonic: mnemonic,
 				credentials: credentials
 			};
 
@@ -132,7 +131,6 @@ const importWallet = async (req: Request, res: Response) => {
 
 		const wallet: Wallet = {
 			defixId: defixId,
-			mnemonic: mnemonic,
 			credentials: credentials
 		};
 
@@ -196,7 +194,6 @@ const importFromMnemonic = async (req: Request, res: Response) => {
 
 			const wallet: Wallet = {
 				defixId: DefixId,
-				mnemonic: mnemonic,
 				credentials: credentials
 			};
 

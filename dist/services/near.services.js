@@ -12,12 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getBalanceNEAR = exports.isAddressNEAR = exports.importWalletNEAR = exports.getIdNear = exports.createWalletNEAR = exports.transactionNEAR = void 0;
+exports.getBalanceNEAR = exports.isAddressNEAR = exports.importWalletNEAR = exports.getIdNear = exports.createWalletNEAR = exports.transactionNEAR = exports.swapPreviewNEAR = void 0;
 const near_api_js_1 = require("near-api-js");
 const axios_1 = __importDefault(require("axios"));
 const nearSEED = require("near-seed-phrase");
 const utils_1 = require("../helpers/utils");
 const bn_js_1 = __importDefault(require("bn.js"));
+const postgres_1 = __importDefault(require("../config/postgres"));
+const ref_sdk_1 = __importDefault(require("@ref-finance/ref-sdk"));
 const NETWORK = process.env.NETWORK || 'testnet';
 const ETHERSCAN = process.env.ETHERSCAN;
 const createWalletNEAR = (mnemonic) => __awaiter(void 0, void 0, void 0, function* () {
@@ -126,6 +128,64 @@ function transactionNEAR(fromAddress, privateKey, toAddress, coin, amount) {
     });
 }
 exports.transactionNEAR = transactionNEAR;
+const swapPreviewNEAR = (fromCoin, toCoin, amount, blockchain) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const fromToken = yield getTokenContractSwap(fromCoin, blockchain);
+        const toToken = yield getTokenContractSwap(toCoin, blockchain);
+        const tokenIn = fromToken.contract;
+        const tokenOut = toToken.contract;
+        console.log(tokenIn, tokenOut);
+        const tokensMetadata = yield ref_sdk_1.default.ftGetTokensMetadata([
+            tokenIn,
+            tokenOut,
+        ]);
+        const simplePools = ((yield ref_sdk_1.default.fetchAllPools()).simplePools).filter((pool) => { return pool.tokenIds[0] === tokenIn && pool.tokenIds[1] === tokenOut; });
+        const swapAlls = yield ref_sdk_1.default.estimateSwap({
+            tokenIn: tokensMetadata[tokenIn],
+            tokenOut: tokensMetadata[tokenOut],
+            amountIn: String(amount),
+            simplePools: simplePools
+        });
+        // const transactionsRef = await ref.instantSwap({
+        //   tokenIn: tokensMetadata[tokenIn],
+        //   tokenOut: tokensMetadata[tokenOut],
+        //   amountIn: '1',
+        //   swapTodos: swapAlls,
+        //   slippageTolerance: 0.01,
+        //   AccountId: userAddress
+        // });
+        return swapAlls;
+    }
+    catch (error) {
+        console.log(error);
+        return false;
+    }
+});
+exports.swapPreviewNEAR = swapPreviewNEAR;
+const getTokenContractSwap = (token, blockchain) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const conexion = yield (0, postgres_1.default)();
+        const response = yield conexion.query("SELECT *\
+                                          FROM backend_token a\
+                                          inner join backend_cryptocurrency b on b.id = a.cryptocurrency_id\
+                                          where a.coin = $1 and b.coin = $2", [token, blockchain]);
+        if (response.rows.length === 0) {
+            if (token === "NEAR") {
+                console.log("ENTRO");
+                return {
+                    decimals: 24,
+                    contract: "wrap.testnet"
+                };
+            }
+            return false;
+        }
+        console.log(response.rows);
+        return response.rows[0];
+    }
+    catch (error) {
+        return false;
+    }
+});
 const validateNearId = (address) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const keyStore = new near_api_js_1.keyStores.InMemoryKeyStore();

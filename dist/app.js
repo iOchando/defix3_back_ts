@@ -41,6 +41,8 @@ const fs = require('fs');
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const swagger_1 = __importDefault(require("./docs/swagger"));
 const process_1 = require("./process");
+const node_cache_1 = __importDefault(require("node-cache"));
+const nodeCache = new node_cache_1.default();
 const PORT = 3072;
 const app = (0, express_1.default)();
 app.use((0, morgan_1.default)('dev'));
@@ -74,7 +76,11 @@ const io = new socket_io_1.Server(server, {
         origin: "*",
     }
 });
+(0, process_1.startProcess)(io, nodeCache);
 io.on("connection", (socket) => {
     console.log('User APP ' + socket.id + ' connected');
+    if (nodeCache.has("getRanking")) {
+        const data = nodeCache.get("getRanking");
+        io.emit('getRanking', data);
+    }
 });
-(0, process_1.startProcess)(io);

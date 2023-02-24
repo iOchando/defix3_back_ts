@@ -16,6 +16,7 @@ const crypto_1 = require("../helpers/crypto");
 const _2fa_1 = require("../helpers/2fa");
 const mail_1 = require("../helpers/mail");
 const utils_1 = require("../helpers/utils");
+const near_services_1 = require("../services/near.services");
 function swapPreview(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -29,6 +30,9 @@ function swapPreview(req, res) {
             }
             else if (blockchain === "BNB") {
                 priceRoute = yield (0, bsc_services_1.swapPreviewBNB)(fromCoin, toCoin, amount, blockchain);
+            }
+            else if (blockchain === "NEAR") {
+                priceRoute = yield (0, near_services_1.swapPreviewNEAR)(fromCoin, toCoin, amount, blockchain);
             }
             else {
                 priceRoute = false;

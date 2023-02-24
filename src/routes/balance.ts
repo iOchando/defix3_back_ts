@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { getCryptos, getBalance } from "../controllers/balance";
+import { getCryptos, getBalance, getCryptosSwap } from "../controllers/balance";
 
 const router = Router();
 
@@ -21,6 +21,25 @@ const router = Router();
  *          description: Bad Request.
  */
 router.get("/get-cryptos", getCryptos);
+
+/**
+ * Post track
+ * @swagger
+ * /get-cryptos-swap:
+ *    get:
+ *      tags:
+ *        - Balance
+ *      summary: Obtiene las Cryptos y Tokens con swap permitidos en Defix3.
+ *      description: Te da un array con las cryptos y tokens.
+ *      responses:
+ *        '200':
+ *          description: Array con las cryptos y tokens.
+ *        '400':
+ *          description: Bad Request.
+ *        '500':
+ *          description: Bad Request.
+ */
+ router.get("/get-cryptos-swap", getCryptosSwap);
 
 /**
  * Post track

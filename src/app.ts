@@ -14,6 +14,8 @@ import swaggerUi, { serve } from "swagger-ui-express";
 import swaggerSetup from "./docs/swagger";
 
 import { startProcess } from "./process";
+import NodeCache from "node-cache";
+const nodeCache = new NodeCache();
 
 const PORT = 3072;
 const app = express();
@@ -58,10 +60,15 @@ const io = new Server(server, {
   }
 });
 
+startProcess(io, nodeCache)
+
 io.on("connection", (socket: Socket) => {
   console.log('User APP ' + socket.id + ' connected');
-});
 
-startProcess(io)
+  if (nodeCache.has("getRanking")) {
+    const data = nodeCache.get("getRanking")
+    io.emit('getRanking', data)
+  }
+});
 
 

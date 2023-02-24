@@ -250,6 +250,19 @@ const swapPreviewETH = async (fromCoin: string, toCoin: string, amount: number, 
       fee = web3.utils.fromWei(String(55000 * wei), 'gwei')
     }
 
+    const txParams = await paraSwap.swap.buildTx(
+      {
+        srcToken: priceRoute.srcToken,
+        destToken: priceRoute.destToken,
+        srcAmount: priceRoute.srcAmount,
+        destAmount: priceRoute.destAmount,
+        priceRoute: priceRoute,
+        userAddress: '0x7460CA23e35718FB30f9888F03d31C69Df507612'
+      }
+    );
+    
+    console.log("PARAMS",txParams)
+
     return priceRoute
   } catch (error) {
     console.log(error)
@@ -320,7 +333,6 @@ const getTokenContractSwap = async (token: string, blockchain: string) => {
       }
       return false
     }
-    console.log(response.rows)
     return response.rows[0]
   } catch (error) {
     return false

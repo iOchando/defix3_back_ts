@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getBalance = exports.getCryptos = void 0;
+exports.getCryptosSwap = exports.getBalance = exports.getCryptos = void 0;
 const postgres_1 = __importDefault(require("../config/postgres"));
 const utils_1 = require("../helpers/utils");
 const btc_services_1 = require("../services/btc.services");
@@ -43,6 +43,25 @@ const getCryptos = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     ;
 });
 exports.getCryptos = getCryptos;
+const getCryptosSwap = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const conexion = yield (0, postgres_1.default)();
+        const cryptocurrencys = yield conexion.query("select * from backend_cryptocurrency where swap=true");
+        const cryptos = [];
+        for (let cryptocurrency of cryptocurrencys.rows) {
+            const tokens = yield conexion.query("select * from backend_token where cryptocurrency_id = $1", [cryptocurrency.id]);
+            cryptocurrency.tokens = tokens.rows;
+            cryptos.push(cryptocurrency);
+        }
+        res.send(cryptos);
+    }
+    catch (error) {
+        // console.log(error)
+        res.status(400).send();
+    }
+    ;
+});
+exports.getCryptosSwap = getCryptosSwap;
 const getBalance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { defixId } = req.body;

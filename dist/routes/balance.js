@@ -26,6 +26,24 @@ router.get("/get-cryptos", balance_1.getCryptos);
 /**
  * Post track
  * @swagger
+ * /get-cryptos-swap:
+ *    get:
+ *      tags:
+ *        - Balance
+ *      summary: Obtiene las Cryptos y Tokens con swap permitidos en Defix3.
+ *      description: Te da un array con las cryptos y tokens.
+ *      responses:
+ *        '200':
+ *          description: Array con las cryptos y tokens.
+ *        '400':
+ *          description: Bad Request.
+ *        '500':
+ *          description: Bad Request.
+ */
+router.get("/get-cryptos-swap", balance_1.getCryptosSwap);
+/**
+ * Post track
+ * @swagger
  * /get-balance/:
  *    post:
  *      tags:

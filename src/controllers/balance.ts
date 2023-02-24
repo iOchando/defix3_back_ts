@@ -38,6 +38,26 @@ const getCryptos = async (req: Request, res: Response) => {
 	};
 };
 
+const getCryptosSwap = async (req: Request, res: Response) => {
+	try {
+		const conexion = await dbConnect();
+		const cryptocurrencys = await conexion.query("select * from backend_cryptocurrency where swap=true");
+
+		const cryptos = []
+
+		for (let cryptocurrency of cryptocurrencys.rows) {
+			const tokens = await conexion.query("select * from backend_token where cryptocurrency_id = $1", [cryptocurrency.id]);
+			cryptocurrency.tokens = tokens.rows
+			cryptos.push(cryptocurrency)
+		}
+
+		res.send(cryptos)
+	} catch (error) {
+		// console.log(error)
+		res.status(400).send()
+	};
+};
+
 const getBalance = async (req: Request, res: Response) => {
 	try {
 		const { defixId } = req.body
@@ -194,4 +214,4 @@ const balanceDataBaseFn = async (defixId: string, balances: BalanceCrypto[]) => 
 	};
 };
 
-export { getCryptos, getBalance }
+export { getCryptos, getBalance, getCryptosSwap }

@@ -6,10 +6,11 @@ import { decrypt } from "../helpers/crypto";
 import { validation2FA } from "../helpers/2fa";
 import { EnvioCorreo, getEmailFlagFN } from "../helpers/mail";
 import { saveTransaction } from "../helpers/utils";
+import { swapPreviewNEAR } from "../services/near.services";
 
 async function swapPreview(req: Request, res: Response) {
   try {
-    const { fromCoin, toCoin, amount, blockchain } = req.body
+    const { fromCoin, toCoin, amount, blockchain, address } = req.body
 
     let priceRoute
 
@@ -20,6 +21,8 @@ async function swapPreview(req: Request, res: Response) {
       console.log(priceRoute)
     } else if (blockchain === "BNB") {
       priceRoute = await swapPreviewBNB(fromCoin, toCoin, amount, blockchain)
+    } else if (blockchain === "NEAR") {
+      priceRoute = await swapPreviewNEAR(fromCoin, toCoin, amount, blockchain, address)
     } else {
       priceRoute = false
     }

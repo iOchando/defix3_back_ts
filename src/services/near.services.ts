@@ -5,6 +5,9 @@ import { Credential } from "../interfaces/credential.interface";
 import { CONFIG, GET_COMISION, ADDRESS_VAULT } from "../helpers/utils";
 import { BufferN } from "bitcoinjs-lib/src/types";
 import BN from 'bn.js'
+import dbConnect from "../config/postgres";
+import ref from '@ref-finance/ref-sdk'
+import { ftGetTokensMetadata, fetchAllPools, estimateSwap, instantSwap } from '@ref-finance/ref-sdk'
 
 const NETWORK = process.env.NETWORK || 'testnet';
 const ETHERSCAN = process.env.ETHERSCAN;
@@ -132,6 +135,71 @@ async function transactionNEAR(
   }
 }
 
+const swapPreviewNEAR = async (fromCoin: string, toCoin: string, amount: number, blockchain: string, address: string) => {
+  try {
+    const fromToken: any = await getTokenContractSwap(fromCoin, blockchain)
+    const toToken: any = await getTokenContractSwap(toCoin, blockchain)
+
+    const tokenIn = fromToken.contract
+    const tokenOut = toToken.contract
+
+    console.log(tokenIn, tokenOut)
+
+    const tokensMetadata = await ftGetTokensMetadata([
+      tokenIn,
+      tokenOut,
+    ]);
+
+    const simplePools = ((await fetchAllPools()).simplePools).filter((pool) => { return pool.tokenIds[0] === tokenIn && pool.tokenIds[1] === tokenOut });
+
+    const swapAlls = await estimateSwap({
+      tokenIn: tokensMetadata[tokenIn],
+      tokenOut: tokensMetadata[tokenOut],
+      amountIn: String(amount),
+      simplePools: simplePools,
+      options: {enableSmartRouting: true}
+    });
+
+    const transactionsRef = await instantSwap({
+      tokenIn: tokensMetadata[tokenIn],
+      tokenOut: tokensMetadata[tokenOut],
+      amountIn: String(amount),
+      swapTodos: swapAlls,
+      slippageTolerance: 0.01,
+      AccountId: address
+    });
+    
+    return transactionsRef
+  } catch (error) {
+    console.log(error)
+    return false
+  }
+}
+
+const getTokenContractSwap = async (token: string, blockchain: string) => {
+  try {
+    const conexion = await dbConnect()
+    const response = await conexion.query("SELECT *\
+                                          FROM backend_token a\
+                                          inner join backend_cryptocurrency b on b.id = a.cryptocurrency_id\
+                                          where a.coin = $1 and b.coin = $2",
+      [token, blockchain])
+
+    if (response.rows.length === 0) {
+      if (token === "NEAR") {
+        console.log("ENTRO")
+        return {
+          decimals: 24,
+          contract: "wrap.testnet"
+        }
+      }
+      return false
+    }
+    return response.rows[0]
+  } catch (error) {
+    return false
+  }
+}
 
 const validateNearId = async (address: string) => {
   try {
@@ -150,4 +218,5 @@ const validateNearId = async (address: string) => {
   };
 };
 
-export { transactionNEAR, createWalletNEAR, getIdNear, importWalletNEAR, isAddressNEAR, getBalanceNEAR };
+export { swapPreviewNEAR, transactionNEAR, createWalletNEAR, getIdNear, importWalletNEAR, isAddressNEAR, getBalanceNEAR };
+
