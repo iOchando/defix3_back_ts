@@ -18,7 +18,7 @@ function dbConnect() {
             host: process.env.HOST_DB,
             database: process.env.DATABASE,
             password: process.env.PASSWORD_DB,
-            port: Number(process.env.PORT),
+            port: Number(process.env.PORT_DB),
         };
         return new pg_1.Pool(connectionData);
     });

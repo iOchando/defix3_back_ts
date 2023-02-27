@@ -1,28 +1,37 @@
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity, OneToMany, OneToOne, JoinColumn, ManyToOne } from "typeorm"
-import { User } from "./user.entity"
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  BaseEntity,
+  OneToMany,
+  OneToOne,
+  JoinColumn,
+  ManyToOne,
+} from "typeorm";
+import { User } from "./user.entity";
 
 @Entity()
 export class Balances extends BaseEntity {
   @PrimaryGeneratedColumn()
-  id!: number
+  id!: number;
 
   @ManyToOne(() => User, (user) => user.defix_id)
-  user!: User
+  user!: User;
 
   @Column({
-    nullable: true
+    nullable: true,
   })
-  blockchain!: string
+  blockchain!: string;
 
   @Column({
-    nullable: true
+    nullable: true,
   })
-  coin!: string
+  coin!: string;
 
   @Column({
     nullable: true,
     type: "float",
-    default: 0
+    default: 0,
   })
-  balance!: number
+  balance!: number;
 }

@@ -3,7 +3,6 @@ import { setEmailSubscribe } from "../controllers/subscribe";
 
 const router = Router();
 
-
 /**
  * Post track
  * @swagger
@@ -26,12 +25,12 @@ const router = Router();
  *                }
  *      responses:
  *        '200':
- *          description: Success. 
+ *          description: Success.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
-router.post('/set-email-subscribe/', setEmailSubscribe)
+router.post("/set-email-subscribe/", setEmailSubscribe);
 
 export { router };

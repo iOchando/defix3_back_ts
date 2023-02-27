@@ -43,7 +43,7 @@ const swagger_1 = __importDefault(require("./docs/swagger"));
 const process_1 = require("./process");
 const node_cache_1 = __importDefault(require("node-cache"));
 const nodeCache = new node_cache_1.default();
-const PORT = 3072;
+const PORT = Number(process.env.POST) || 3000;
 const app = (0, express_1.default)();
 app.use((0, morgan_1.default)('dev'));
 app.use((0, cors_1.default)());

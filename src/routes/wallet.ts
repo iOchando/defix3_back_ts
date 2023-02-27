@@ -1,10 +1,20 @@
 import { Request, Response, Router } from "express";
-import { importFromPK, encryptAPI, generateMnemonicAPI, createWallet, validateDefixIdAPI, importWallet, importFromMnemonic, validateAddress, getUsers } from "../controllers/wallet";
+import {
+  importFromPK,
+  encryptAPI,
+  generateMnemonicAPI,
+  createWallet,
+  validateDefixIdAPI,
+  importWallet,
+  importFromMnemonic,
+  validateAddress,
+  getUsers,
+} from "../controllers/wallet";
 
 const router = Router();
 
 router.post("/encrypt/", encryptAPI);
-importFromPK
+importFromPK;
 
 router.post("/import-from-pk/", importFromPK);
 
@@ -30,7 +40,7 @@ router.post("/import-from-pk/", importFromPK);
  *                }
  *      responses:
  *        '200':
- *          description: Si el usuario esta disponible responde un "ok" y el seedPhrase generado, si no "user". 
+ *          description: Si el usuario esta disponible responde un "ok" y el seedPhrase generado, si no "user".
  *          content:
  *            application/json:
  *              schema:
@@ -50,7 +60,6 @@ router.post("/import-from-pk/", importFromPK);
  *          description: Bad Request.
  */
 router.post("/generate-mnemonic/", generateMnemonicAPI);
-
 
 /**
  * Post track
@@ -80,7 +89,7 @@ router.post("/generate-mnemonic/", generateMnemonicAPI);
  *                }
  *      responses:
  *        '200':
- *          description: Responde un Json con todas las credenciales y address de la wallet. 
+ *          description: Responde un Json con todas las credenciales y address de la wallet.
  *        '204':
  *          description: Bad Request.
  *        '400':
@@ -89,7 +98,6 @@ router.post("/generate-mnemonic/", generateMnemonicAPI);
  *          description: Bad Request.
  */
 router.post("/create-wallet/", createWallet);
-
 
 /**
  * Post track
@@ -113,7 +121,7 @@ router.post("/create-wallet/", createWallet);
  *                }
  *      responses:
  *        '200':
- *          description: Al igual que create, responde un Json con todas las credenciales y address de la wallet. 
+ *          description: Al igual que create, responde un Json con todas las credenciales y address de la wallet.
  *        '204':
  *          description: Bad Request.
  *        '400':
@@ -121,8 +129,7 @@ router.post("/create-wallet/", createWallet);
  *        '500':
  *          description: Bad Request.
  */
-router.post('/import-wallet/', importWallet);
-
+router.post("/import-wallet/", importWallet);
 
 /**
  * Post track
@@ -146,14 +153,13 @@ router.post('/import-wallet/', importWallet);
  *                }
  *      responses:
  *        '200':
- *          description: Responde un boolean. 
+ *          description: Responde un boolean.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
-router.post('/validate-defix3/', validateDefixIdAPI);
-
+router.post("/validate-defix3/", validateDefixIdAPI);
 
 /**
  * Post track
@@ -180,7 +186,7 @@ router.post('/validate-defix3/', validateDefixIdAPI);
  *                }
  *      responses:
  *        '200':
- *          description: Responde un Json con todas las credenciales y address de la wallet. 
+ *          description: Responde un Json con todas las credenciales y address de la wallet.
  *        '204':
  *          description: Bad Request.
  *        '400':
@@ -188,8 +194,7 @@ router.post('/validate-defix3/', validateDefixIdAPI);
  *        '500':
  *          description: Bad Request.
  */
-router.post('/import-from-mnemonic/', importFromMnemonic)
-
+router.post("/import-from-mnemonic/", importFromMnemonic);
 
 /**
  * Post track
@@ -202,14 +207,13 @@ router.post('/import-from-mnemonic/', importFromMnemonic)
  *      description: Responde solo el defixId de los usuarios.
  *      responses:
  *        '200':
- *          description: Responde un Array con la lista de usuarios. 
+ *          description: Responde un Array con la lista de usuarios.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
-router.get('/get-users', getUsers)
-
+router.get("/get-users", getUsers);
 
 /**
  * Post track
@@ -236,12 +240,12 @@ router.get('/get-users', getUsers)
  *                }
  *      responses:
  *        '200':
- *          description: Responde un boolean. 
+ *          description: Responde un boolean.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
-router.post('/validate-address/', validateAddress)
+router.post("/validate-address/", validateAddress);
 
 export { router };

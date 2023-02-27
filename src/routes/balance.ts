@@ -39,7 +39,7 @@ router.get("/get-cryptos", getCryptos);
  *        '500':
  *          description: Bad Request.
  */
- router.get("/get-cryptos-swap", getCryptosSwap);
+router.get("/get-cryptos-swap", getCryptosSwap);
 
 /**
  * Post track
@@ -63,7 +63,7 @@ router.get("/get-cryptos", getCryptos);
  *                }
  *      responses:
  *        '200':
- *          description: Array con balance de todas las cryptos del usuario. 
+ *          description: Array con balance de todas las cryptos del usuario.
  *        '400':
  *          description: Bad Request.
  *        '500':

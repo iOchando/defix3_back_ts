@@ -1,16 +1,25 @@
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity, OneToOne, JoinColumn, OneToMany, ManyToOne } from "typeorm"
-import { User } from "./user.entity"
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  BaseEntity,
+  OneToOne,
+  JoinColumn,
+  OneToMany,
+  ManyToOne,
+} from "typeorm";
+import { User } from "./user.entity";
 
 @Entity()
 export class Frequent extends BaseEntity {
   @PrimaryGeneratedColumn()
-  id!: number
+  id!: number;
 
   @ManyToOne(() => User, (user) => user.defix_id)
-  user!: User
+  user!: User;
 
   @Column({
-    nullable: true
+    nullable: true,
   })
-  frequent_user!: string
+  frequent_user!: string;
 }

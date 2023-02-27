@@ -1,11 +1,16 @@
 import { Request, Response } from "express";
 import { validateDefixId, validateEmail, getCryptosFn } from "../helpers/utils";
 import { encrypt, decrypt } from "../helpers/crypto";
-import { generateMnemonic } from 'bip39';
+import { generateMnemonic } from "bip39";
 
 import { createWalletBTC, isAddressBTC } from "../services/btc.services";
 import { createWalletETH, isAddressETH } from "../services/eth.services";
-import { createWalletNEAR, getIdNear, importWalletNEAR, isAddressNEAR } from "../services/near.services";
+import {
+  createWalletNEAR,
+  getIdNear,
+  importWalletNEAR,
+  isAddressNEAR,
+} from "../services/near.services";
 import { createWalletTRON, isAddressTRON } from "../services/tron.services";
 import { createWalletBNB, isAddressBNB } from "../services/bsc.services";
 
@@ -17,331 +22,359 @@ import { User } from "../entities/user.entity";
 import { Address } from "../entities/addresses.entity";
 
 const generateMnemonicAPI = async (req: Request, res: Response) => {
-	try {
-		const { defixId } = req.body;
+  try {
+    const { defixId } = req.body;
 
-		if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ")) return res.status(400).send();
+    if (!defixId || !defixId.includes(".defix3") || defixId.includes(" "))
+      return res.status(400).send();
 
-		const DefixId = defixId.toLowerCase()
+    const DefixId = defixId.toLowerCase();
 
-		const resp: boolean = await validateDefixId(DefixId);
+    const resp: boolean = await validateDefixId(DefixId);
 
-		if (resp) return res.status(400).send();
+    if (resp) return res.status(400).send();
 
-		const mnemonic = await generateMnemonic();
+    const mnemonic = await generateMnemonic();
 
-		res.send({ mnemonic: mnemonic });
-	} catch (err) {
-		console.log(err);
-		res.status(500).send({ err });
-	}
-}
+    res.send({ mnemonic: mnemonic });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ err });
+  }
+};
 
 const encryptAPI = async (req: Request, res: Response) => {
-	try {
-		const { text } = req.body;
+  try {
+    const { text } = req.body;
 
-		if (!text) return res.status(400).send();
+    if (!text) return res.status(400).send();
 
-		const resp = encrypt(text);
+    const resp = encrypt(text);
 
-		if (!resp) return res.status(400).send();
+    if (!resp) return res.status(400).send();
 
-		res.send(resp);
-	} catch (err) {
-		console.log(err);
-		res.status(500).send({ err });
-	}
-}
+    res.send(resp);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ err });
+  }
+};
 
 const createWallet = async (req: Request, res: Response) => {
-	try {
-		const { defixId, seedPhrase, email } = req.body;
-		const mnemonic = decrypt(seedPhrase)
+  try {
+    const { defixId, seedPhrase, email } = req.body;
+    const mnemonic = decrypt(seedPhrase);
 
-		if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ") || !mnemonic) return res.status(400).send();
+    if (
+      !defixId ||
+      !defixId.includes(".defix3") ||
+      defixId.includes(" ") ||
+      !mnemonic
+    )
+      return res.status(400).send();
 
-		const DefixId = defixId.toLowerCase()
+    const DefixId = defixId.toLowerCase();
 
-		const exists: boolean = await validateDefixId(defixId.toLowerCase());
+    const exists: boolean = await validateDefixId(defixId.toLowerCase());
 
-		if (!exists) {
-			const credentials: Array<Credential> = [];
+    if (!exists) {
+      const credentials: Array<Credential> = [];
 
-			credentials.push(await createWalletBTC(mnemonic));
-			credentials.push(await createWalletETH(mnemonic));
-			credentials.push(await createWalletNEAR(mnemonic));
-			credentials.push(await createWalletTRON(mnemonic));
-			credentials.push(await createWalletBNB(mnemonic));
+      credentials.push(await createWalletBTC(mnemonic));
+      credentials.push(await createWalletETH(mnemonic));
+      credentials.push(await createWalletNEAR(mnemonic));
+      credentials.push(await createWalletTRON(mnemonic));
+      credentials.push(await createWalletBNB(mnemonic));
 
-			const wallet: Wallet = {
-				defixId: DefixId,
-				credentials: credentials
-			};
+      const wallet: Wallet = {
+        defixId: DefixId,
+        credentials: credentials,
+      };
 
-			const nearId = await getIdNear(mnemonic)
+      const nearId = await getIdNear(mnemonic);
 
-			const save = await saveUser(nearId, wallet)
+      const save = await saveUser(nearId, wallet);
 
-			if (save) {
-				if (await validateEmail(email)) {
-					EnviarPhraseCorreo(mnemonic, DefixId, email)
-					console.log("envia correo")
-				}
-				return res.send(wallet)
-			}
-			return res.status(400).send()
-		}
-		res.status(405).send()
-	} catch (err) {
-		console.log(err);
-		res.status(500).send({ err });
-	}
+      if (save) {
+        if (await validateEmail(email)) {
+          EnviarPhraseCorreo(mnemonic, DefixId, email);
+          console.log("envia correo");
+        }
+        return res.send(wallet);
+      }
+      return res.status(400).send();
+    }
+    res.status(405).send();
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ err });
+  }
 };
 
 const importWallet = async (req: Request, res: Response) => {
-	try {
-		const { seedPhrase } = req.body;
+  try {
+    const { seedPhrase } = req.body;
 
-		const mnemonic = decrypt(seedPhrase)
+    const mnemonic = decrypt(seedPhrase);
 
-		if (!mnemonic) return res.status(400).send();
+    if (!mnemonic) return res.status(400).send();
 
-		const nearId = await getIdNear(mnemonic);
+    const nearId = await getIdNear(mnemonic);
 
-		const user = await User.findOneBy({import_id: nearId})
+    const user = await User.findOneBy({ import_id: nearId });
 
-		if (!user) return res.status(400).send();
+    if (!user) return res.status(400).send();
 
-		const defixId = user.defix_id.toLowerCase();
+    const defixId = user.defix_id.toLowerCase();
 
-		const addressNear = await Address.findOneBy({user: {defix_id: user.defix_id}, name: "NEAR"})
+    const addressNear = await Address.findOneBy({
+      user: { defix_id: user.defix_id },
+      name: "NEAR",
+    });
 
-		if (!addressNear) return res.status(400).send();
+    if (!addressNear) return res.status(400).send();
 
-		const nearAddress = addressNear.address;
+    const nearAddress = addressNear.address;
 
-		const credentials: Array<Credential> = [];
+    const credentials: Array<Credential> = [];
 
-		credentials.push(await createWalletBTC(mnemonic));
-		credentials.push(await createWalletETH(mnemonic));
-		credentials.push(await importWalletNEAR(nearAddress, mnemonic));
-		credentials.push(await createWalletTRON(mnemonic));
-		credentials.push(await createWalletBNB(mnemonic));
+    credentials.push(await createWalletBTC(mnemonic));
+    credentials.push(await createWalletETH(mnemonic));
+    credentials.push(await importWalletNEAR(nearAddress, mnemonic));
+    credentials.push(await createWalletTRON(mnemonic));
+    credentials.push(await createWalletBNB(mnemonic));
 
-		const wallet: Wallet = {
-			defixId: defixId,
-			credentials: credentials
-		};
+    const wallet: Wallet = {
+      defixId: defixId,
+      credentials: credentials,
+    };
 
-		const addressTRON = await Address.findOneBy({user: {defix_id: user.defix_id}, name: "TRX"})
+    const addressTRON = await Address.findOneBy({
+      user: { defix_id: user.defix_id },
+      name: "TRX",
+    });
 
-		// Crypto news
+    // Crypto news
 
-		if (!addressTRON) {
-			const addresstron = credentials.find(element => element.name === 'TRX')
-			if (addresstron) {
-				const address = new Address()
-				address.user = user
-				address.name = "TRX"
-				address.address = addresstron.address
-				await address.save()
-			}
-		}
+    if (!addressTRON) {
+      const addresstron = credentials.find((element) => element.name === "TRX");
+      if (addresstron) {
+        const address = new Address();
+        address.user = user;
+        address.name = "TRX";
+        address.address = addresstron.address;
+        await address.save();
+      }
+    }
 
-		const addressBNB = await Address.findOneBy({user: {defix_id: user.defix_id}, name: "BNB"})
+    const addressBNB = await Address.findOneBy({
+      user: { defix_id: user.defix_id },
+      name: "BNB",
+    });
 
-		if (!addressBNB) {
-			const addressbnb = credentials.find(element => element.name === 'BNB')
-			if (addressbnb) {
-				const address = new Address()
-				address.user = user
-				address.name = "BNB"
-				address.address = addressbnb.address
-				await address.save()
-			}
-		}
-		// End
+    if (!addressBNB) {
+      const addressbnb = credentials.find((element) => element.name === "BNB");
+      if (addressbnb) {
+        const address = new Address();
+        address.user = user;
+        address.name = "BNB";
+        address.address = addressbnb.address;
+        await address.save();
+      }
+    }
+    // End
 
-		await User.update({defix_id: user.defix_id}, {close_sessions: false})
+    await User.update({ defix_id: user.defix_id }, { close_sessions: false });
 
-		res.send(wallet)
-	} catch (error) {
-		res.status(400).send()
-	}
-}
+    res.send(wallet);
+  } catch (error) {
+    res.status(400).send();
+  }
+};
 
 const importFromMnemonic = async (req: Request, res: Response) => {
-	try {
-		const { defixId, seedPhrase } = req.body
+  try {
+    const { defixId, seedPhrase } = req.body;
 
-		const mnemonic = decrypt(seedPhrase)
+    const mnemonic = decrypt(seedPhrase);
 
-		if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ") || !mnemonic) return res.status(400).send();
+    if (
+      !defixId ||
+      !defixId.includes(".defix3") ||
+      defixId.includes(" ") ||
+      !mnemonic
+    )
+      return res.status(400).send();
 
-		const DefixId = defixId.toLowerCase()
+    const DefixId = defixId.toLowerCase();
 
-		const exists: boolean = await validateDefixId(defixId.toLowerCase());
+    const exists: boolean = await validateDefixId(defixId.toLowerCase());
 
-		if (!exists) {
-			const credentials: Array<Credential> = [];
+    if (!exists) {
+      const credentials: Array<Credential> = [];
 
-			credentials.push(await createWalletBTC(mnemonic));
-			credentials.push(await createWalletETH(mnemonic));
-			credentials.push(await createWalletNEAR(mnemonic));
-			credentials.push(await createWalletTRON(mnemonic));
-			credentials.push(await createWalletBNB(mnemonic));
+      credentials.push(await createWalletBTC(mnemonic));
+      credentials.push(await createWalletETH(mnemonic));
+      credentials.push(await createWalletNEAR(mnemonic));
+      credentials.push(await createWalletTRON(mnemonic));
+      credentials.push(await createWalletBNB(mnemonic));
 
-			const wallet: Wallet = {
-				defixId: DefixId,
-				credentials: credentials
-			};
+      const wallet: Wallet = {
+        defixId: DefixId,
+        credentials: credentials,
+      };
 
-			const nearId = await getIdNear(mnemonic)
+      const nearId = await getIdNear(mnemonic);
 
-			const save = await saveUser(nearId, wallet)
+      const save = await saveUser(nearId, wallet);
 
-			if (save) {
-				return res.send(wallet)
-			}
-			return res.status(400).send()
-		}
-		res.status(405).send()
-	} catch (err) {
-		console.log(err);
-		res.status(500).send({ err });
-	}
+      if (save) {
+        return res.send(wallet);
+      }
+      return res.status(400).send();
+    }
+    res.status(405).send();
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ err });
+  }
 };
 
 const validatePK = async (privateKey: string) => {
-	try {
-
-	} catch (error) {
-		return false
-	}
-}
+  try {
+  } catch (error) {
+    return false;
+  }
+};
 
 const importFromPK = async (req: Request, res: Response) => {
-	try {
-		const { pkEncrypt } = req.body
+  try {
+    const { pkEncrypt } = req.body;
 
-		const privateKey = decrypt(pkEncrypt)
+    const privateKey = decrypt(pkEncrypt);
 
-		// if (!privateKey) return res.status(400).send();
+    // if (!privateKey) return res.status(400).send();
 
-		const cryptos = await getCryptosFn()
+    const cryptos = await getCryptosFn();
 
-		console.log(cryptos)
+    console.log(cryptos);
 
-		// const exists: boolean = await validateDefixId(defixId.toLowerCase());
+    // const exists: boolean = await validateDefixId(defixId.toLowerCase());
 
-		// if (!exists) {
-		// 	const credentials: Array<Credential> = [];
+    // if (!exists) {
+    // 	const credentials: Array<Credential> = [];
 
-		// 	credentials.push(await createWalletBTC(mnemonic));
-		// 	credentials.push(await createWalletETH(mnemonic));
-		// 	credentials.push(await createWalletNEAR(mnemonic));
-		// 	credentials.push(await createWalletTRON(mnemonic));
-		// 	credentials.push(await createWalletBNB(mnemonic));
+    // 	credentials.push(await createWalletBTC(mnemonic));
+    // 	credentials.push(await createWalletETH(mnemonic));
+    // 	credentials.push(await createWalletNEAR(mnemonic));
+    // 	credentials.push(await createWalletTRON(mnemonic));
+    // 	credentials.push(await createWalletBNB(mnemonic));
 
-		// 	const wallet: Wallet = {
-		// 		defixId: defixId,
-		// 		mnemonic: mnemonic,
-		// 		credentials: credentials
-		// 	};
+    // 	const wallet: Wallet = {
+    // 		defixId: defixId,
+    // 		mnemonic: mnemonic,
+    // 		credentials: credentials
+    // 	};
 
-		// 	const nearId = await getIdNear(mnemonic)
+    // 	const nearId = await getIdNear(mnemonic)
 
-		// 	const save = await saveUser(nearId, wallet)
+    // 	const save = await saveUser(nearId, wallet)
 
-		// 	if (save) {
-		// 		return res.send(wallet)
-		// 	}
-		// 	return res.status(400).send()
-		// }
-		// res.status(405).send()
-	} catch (err) {
-		console.log(err);
-		res.status(500).send({ err });
-	}
+    // 	if (save) {
+    // 		return res.send(wallet)
+    // 	}
+    // 	return res.status(400).send()
+    // }
+    // res.status(405).send()
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ err });
+  }
 };
 
 const getUsers = async (req: Request, res: Response) => {
-	try {
-		const users = await User.find({ select: ["defix_id", "id"]})
-		res.send(users);
-	} catch (error) {
-		res.status(400).send(error);
-	};
+  try {
+    const users = await User.find({ select: ["defix_id", "id"] });
+    res.send(users);
+  } catch (error) {
+    res.status(400).send(error);
+  }
 };
 
 // UTILS
 
 const validateAddress = async (req: Request, res: Response) => {
-	try {
-		const { address, coin } = req.body
-		if (!address || !coin) return res.status(400).send()
+  try {
+    const { address, coin } = req.body;
+    if (!address || !coin) return res.status(400).send();
 
-		if (coin === 'BTC') {
-			return res.send(await isAddressBTC(address))
-		}
-		else if (coin === 'NEAR') {
-			return res.send(await isAddressNEAR(address))
-		}
-		else if (coin === 'ETH') {
-			return res.send(await isAddressETH(address))
-		}
-		else if (coin === 'BNB') {
-			return res.send(await isAddressBNB(address))
-		}
-		else if (coin === 'TRX') {
-			return res.send(await isAddressTRON(address))
-		}
-		res.status(400).send()
-	} catch (error) {
-		res.status(400).send({ "error": error })
-	}
-}
+    if (coin === "BTC") {
+      return res.send(await isAddressBTC(address));
+    } else if (coin === "NEAR") {
+      return res.send(await isAddressNEAR(address));
+    } else if (coin === "ETH") {
+      return res.send(await isAddressETH(address));
+    } else if (coin === "BNB") {
+      return res.send(await isAddressBNB(address));
+    } else if (coin === "TRX") {
+      return res.send(await isAddressTRON(address));
+    }
+    res.status(400).send();
+  } catch (error) {
+    res.status(400).send({ error: error });
+  }
+};
 
 const saveUser = async (nearId: string, wallet: Wallet) => {
-	try {
-		const user = new User()
+  try {
+    const user = new User();
 
-		user.defix_id = wallet.defixId
-		user.import_id = nearId
+    user.defix_id = wallet.defixId;
+    user.import_id = nearId;
 
-		const resUser = await user.save()
-		if (!resUser) return false
+    const resUser = await user.save();
+    if (!resUser) return false;
 
-		for (let credential of wallet.credentials) {
-			const address = new Address()
-			address.user = user
-			address.name = credential.name
-			address.address = credential.address
-			await address.save()
-		}
+    for (let credential of wallet.credentials) {
+      const address = new Address();
+      address.user = user;
+      address.name = credential.name;
+      address.address = credential.address;
+      await address.save();
+    }
 
-		if (resUser) return true
-		return false
-	} catch (error) {
-		console.log(error)
-		return false
-	}
-}
+    if (resUser) return true;
+    return false;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
 
 const validateDefixIdAPI = async (req: Request, res: Response) => {
-	try {
-		const { defixId } = req.body;
+  try {
+    const { defixId } = req.body;
 
-		if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ")) return res.status(400).send();
+    if (!defixId || !defixId.includes(".defix3") || defixId.includes(" "))
+      return res.status(400).send();
 
-		const resp: boolean = await validateDefixId(defixId.toLowerCase());
+    const resp: boolean = await validateDefixId(defixId.toLowerCase());
 
-		res.send(resp);
-	} catch (err) {
-		console.log(err);
-		res.status(500).send({ err });
-	}
-}
+    res.send(resp);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ err });
+  }
+};
 
-export { encryptAPI, generateMnemonicAPI, createWallet, validateDefixIdAPI, importWallet, importFromMnemonic, validateAddress, getUsers, importFromPK }
+export {
+  encryptAPI,
+  generateMnemonicAPI,
+  createWallet,
+  validateDefixIdAPI,
+  importWallet,
+  importFromMnemonic,
+  validateAddress,
+  getUsers,
+  importFromPK,
+};

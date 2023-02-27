@@ -1,5 +1,10 @@
 import { Request, Response, Router } from "express";
-import { getCloseAllSesions, closeAllSessions, setEmailData, getEmailData } from "../controllers/user";
+import {
+  getCloseAllSesions,
+  closeAllSessions,
+  setEmailData,
+  getEmailData,
+} from "../controllers/user";
 
 const router = Router();
 
@@ -28,13 +33,13 @@ const router = Router();
  *                }
  *      responses:
  *        '200':
- *          description: Buena respuesta. 
+ *          description: Buena respuesta.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
-router.post('/close-all-sessions/', closeAllSessions)
+router.post("/close-all-sessions/", closeAllSessions);
 
 /**
  * Post track
@@ -58,16 +63,15 @@ router.post('/close-all-sessions/', closeAllSessions)
  *                }
  *      responses:
  *        '200':
- *          description: Responde boolean. 
+ *          description: Responde boolean.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
-router.post('/get-close-all-sessions/', getCloseAllSesions)
+router.post("/get-close-all-sessions/", getCloseAllSesions);
 
-
-// defixId, seedPhrase, email, flag_send, flag_receive, flag_dex, flag_fiat, name, last_name, legal_document, type_document 
+// defixId, seedPhrase, email, flag_send, flag_receive, flag_dex, flag_fiat, name, last_name, legal_document, type_document
 /**
  * Post track
  * @swagger
@@ -120,13 +124,13 @@ router.post('/get-close-all-sessions/', getCloseAllSesions)
  *                }
  *      responses:
  *        '200':
- *          description: Success. 
+ *          description: Success.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
-router.post('/set-email-data/', setEmailData)
+router.post("/set-email-data/", setEmailData);
 
 /**
  * Post track
@@ -150,12 +154,12 @@ router.post('/set-email-data/', setEmailData)
  *                }
  *      responses:
  *        '200':
- *          description: Responde objeto con la data. 
+ *          description: Responde objeto con la data.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
-router.post('/get-email-data/', getEmailData)
+router.post("/get-email-data/", getEmailData);
 
 export { router };

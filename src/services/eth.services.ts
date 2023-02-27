@@ -1,14 +1,13 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import { ethers, Wallet } from "ethers";
 import Web3 from "web3";
-import { AbiItem } from 'web3-utils';
+import { AbiItem } from "web3-utils";
 import { Credential } from "../interfaces/credential.interface";
 import axios from "axios";
 import { ADDRESS_VAULT, GET_COMISION } from "../helpers/utils";
 import { constructSimpleSDK, OptimalRate } from "@paraswap/sdk";
-import abi from '../helpers/abi.json';
+import abi from "../helpers/abi.json";
 import dbConnect from "../config/postgres";
-
 
 const ETHEREUM_NETWORK = process.env.ETHEREUM_NETWORK;
 const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID;
@@ -29,12 +28,11 @@ const createWalletETH = async (mnemonic: string) => {
   const credential: Credential = {
     name: "ETH",
     address: wallet.address,
-    privateKey: wallet.privateKey
+    privateKey: wallet.privateKey,
   };
 
   return credential;
 };
-
 
 const isAddressETH = async (address: string) => {
   const is_address = await web3.utils.isAddress(address);
@@ -46,53 +44,65 @@ const getBalanceETH = async (address: string) => {
     const item = { coin: "ETH", balance: 0 };
     let balance = await web3.eth.getBalance(address);
 
-    console.log("BALANCE: ", balance)
-    let balanceTotal = 0
+    console.log("BALANCE: ", balance);
+    let balanceTotal = 0;
 
     if (balance) {
       let value = Math.pow(10, 18);
       balanceTotal = Number(balance) / value;
       if (!balanceTotal) {
         balanceTotal = 0;
-      };
+      }
       return balanceTotal;
     } else {
       return balanceTotal;
     }
   } catch (error) {
-    return 0
+    return 0;
   }
-}
+};
 
-const getBalanceTokenETH = async (address: string, srcContract: string, decimals: number) => {
+const getBalanceTokenETH = async (
+  address: string,
+  srcContract: string,
+  decimals: number
+) => {
   try {
     let contract = new web3.eth.Contract(abi as AbiItem[], srcContract);
 
-    const balance = await contract.methods.balanceOf(address).call()
+    const balance = await contract.methods.balanceOf(address).call();
 
-    let balanceTotal = 0
+    let balanceTotal = 0;
 
     if (balance) {
-      let value = Math.pow(10, decimals)
-      balanceTotal = balance / value
+      let value = Math.pow(10, decimals);
+      balanceTotal = balance / value;
       if (!balanceTotal) {
-        balanceTotal = 0
+        balanceTotal = 0;
       }
-      return balanceTotal
+      return balanceTotal;
     } else {
-      return balanceTotal
+      return balanceTotal;
     }
   } catch (error) {
-    console.log(error)
-    return 0
+    console.log(error);
+    return 0;
   }
-}
+};
 
-async function transactionETH(fromAddress: string, privateKey: string, toAddress: string, coin: string, amount: number) {
+async function transactionETH(
+  fromAddress: string,
+  privateKey: string,
+  toAddress: string,
+  coin: string,
+  amount: number
+) {
   try {
     const balance = await getBalanceETH(fromAddress);
     if (balance < amount) {
-      console.log('Error: No tienes suficientes fondos para realizar la transferencia');
+      console.log(
+        "Error: No tienes suficientes fondos para realizar la transferencia"
+      );
       return false;
     }
 
@@ -103,36 +113,48 @@ async function transactionETH(fromAddress: string, privateKey: string, toAddress
     const rawTransaction = {
       from: fromAddress,
       to: toAddress,
-      value: web3.utils.toHex(web3.utils.toWei(amount.toString(), 'ether')),
+      value: web3.utils.toHex(web3.utils.toWei(amount.toString(), "ether")),
       gasPrice: web3.utils.toHex(gasPrice),
       gasLimit: web3.utils.toHex(gasLimit),
-      nonce: nonce
+      nonce: nonce,
     };
 
-    const signedTransaction = await web3.eth.accounts.signTransaction(rawTransaction, privateKey);
+    const signedTransaction = await web3.eth.accounts.signTransaction(
+      rawTransaction,
+      privateKey
+    );
 
-    if (!signedTransaction.rawTransaction) return false
+    if (!signedTransaction.rawTransaction) return false;
 
-    const transactionHash = await web3.eth.sendSignedTransaction(signedTransaction.rawTransaction);
+    const transactionHash = await web3.eth.sendSignedTransaction(
+      signedTransaction.rawTransaction
+    );
 
-    const response = await axios.get('https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6')
-    let wei = response.data.result.SafeGasPrice
-    let fee = Number(web3.utils.fromWei(String(21000 * wei), 'gwei'))
+    const response = await axios.get(
+      "https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6"
+    );
+    let wei = response.data.result.SafeGasPrice;
+    let fee = Number(web3.utils.fromWei(String(21000 * wei), "gwei"));
 
-    const resp_comision = await GET_COMISION(coin)
-    const vault_address = await ADDRESS_VAULT(coin)
+    const resp_comision = await GET_COMISION(coin);
+    const vault_address = await ADDRESS_VAULT(coin);
 
-    const comision = resp_comision.transfer / 100
+    const comision = resp_comision.transfer / 100;
 
-    let amount_vault = Number((fee * comision).toFixed(18))
+    let amount_vault = Number((fee * comision).toFixed(18));
 
-    console.log(amount_vault, vault_address)
+    console.log(amount_vault, vault_address);
 
     if (amount_vault !== 0 && vault_address) {
-      await payCommissionETH(fromAddress, privateKey, vault_address, amount_vault)
+      await payCommissionETH(
+        fromAddress,
+        privateKey,
+        vault_address,
+        amount_vault
+      );
     }
 
-    if (!transactionHash.transactionHash) return false
+    if (!transactionHash.transactionHash) return false;
 
     return transactionHash.transactionHash as string;
   } catch (error) {
@@ -141,11 +163,23 @@ async function transactionETH(fromAddress: string, privateKey: string, toAddress
   }
 }
 
-async function transactionTokenETH(fromAddress: string, privateKey: string, toAddress: string, amount: number, srcToken: any) {
+async function transactionTokenETH(
+  fromAddress: string,
+  privateKey: string,
+  toAddress: string,
+  amount: number,
+  srcToken: any
+) {
   try {
-    const balance = await getBalanceTokenETH(fromAddress, srcToken.contract, srcToken.decimals);
+    const balance = await getBalanceTokenETH(
+      fromAddress,
+      srcToken.contract,
+      srcToken.decimals
+    );
     if (balance && balance < amount) {
-      console.log('Error: No tienes suficientes fondos para realizar la transferencia');
+      console.log(
+        "Error: No tienes suficientes fondos para realizar la transferencia"
+      );
       return false;
     }
 
@@ -154,45 +188,57 @@ async function transactionTokenETH(fromAddress: string, privateKey: string, toAd
       INFURA_PROJECT_ID
     );
 
-    const minABI = abi
+    const minABI = abi;
 
-    const wallet = new ethers.Wallet(privateKey)
-    const signer = wallet.connect(provider)
+    const wallet = new ethers.Wallet(privateKey);
+    const signer = wallet.connect(provider);
 
-    console.log("SIGNER", srcToken)
+    console.log("SIGNER", srcToken);
 
     const contract = new ethers.Contract(srcToken.contract, minABI, signer);
-    let value = Math.pow(10, srcToken.decimals)
-    let srcAmount = amount * value
+    let value = Math.pow(10, srcToken.decimals);
+    let srcAmount = amount * value;
 
     const tx = await contract.transfer(toAddress, String(srcAmount));
 
-    const response = await axios.get('https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6')
-    let wei = response.data.result.SafeGasPrice
-    let fee = Number(web3.utils.fromWei(String(55000 * wei), 'gwei'))
+    const response = await axios.get(
+      "https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6"
+    );
+    let wei = response.data.result.SafeGasPrice;
+    let fee = Number(web3.utils.fromWei(String(55000 * wei), "gwei"));
 
-    const resp_comision = await GET_COMISION(srcToken.coin)
-    const vault_address = await ADDRESS_VAULT(srcToken.coin)
+    const resp_comision = await GET_COMISION(srcToken.coin);
+    const vault_address = await ADDRESS_VAULT(srcToken.coin);
 
-    const comision = resp_comision.transfer / 100
+    const comision = resp_comision.transfer / 100;
 
-    let amount_vault = Number((fee * comision).toFixed(18))
+    let amount_vault = Number((fee * comision).toFixed(18));
 
     if (amount_vault !== 0 && vault_address) {
-      await payCommissionETH(fromAddress, privateKey, vault_address, amount_vault)
+      await payCommissionETH(
+        fromAddress,
+        privateKey,
+        vault_address,
+        amount_vault
+      );
     }
 
     if (tx.hash) {
-      return tx.hash as string
+      return tx.hash as string;
     }
-    return false
+    return false;
   } catch (error) {
-    console.log("error", error)
-    return false
+    console.log("error", error);
+    return false;
   }
 }
 
-async function payCommissionETH(fromAddress: string, privateKey: string, toAddress: string, amount: number) {
+async function payCommissionETH(
+  fromAddress: string,
+  privateKey: string,
+  toAddress: string,
+  amount: number
+) {
   try {
     const gasPrice = await web3.eth.getGasPrice();
     const gasLimit = 21000;
@@ -201,33 +247,41 @@ async function payCommissionETH(fromAddress: string, privateKey: string, toAddre
     const rawTransaction = {
       from: fromAddress,
       to: toAddress,
-      value: web3.utils.toHex(web3.utils.toWei(amount.toString(), 'ether')),
+      value: web3.utils.toHex(web3.utils.toWei(amount.toString(), "ether")),
       gasPrice: web3.utils.toHex(gasPrice),
       gasLimit: web3.utils.toHex(gasLimit),
-      nonce: nonce
+      nonce: nonce,
     };
 
-    const signedTransaction = await web3.eth.accounts.signTransaction(rawTransaction, privateKey);
+    const signedTransaction = await web3.eth.accounts.signTransaction(
+      rawTransaction,
+      privateKey
+    );
 
-    if (!signedTransaction.rawTransaction) return false
+    if (!signedTransaction.rawTransaction) return false;
 
     await web3.eth.sendSignedTransaction(signedTransaction.rawTransaction);
   } catch (error) {
-    return false
+    return false;
   }
 }
 
-const swapPreviewETH = async (fromCoin: string, toCoin: string, amount: number, blockchain: string) => {
+const swapPreviewETH = async (
+  fromCoin: string,
+  toCoin: string,
+  amount: number,
+  blockchain: string
+) => {
   try {
     const paraSwap = constructSimpleSDK({ chainId: 1, axios });
 
-    const fromToken: any = await getTokenContractSwap(fromCoin, blockchain)
-    const toToken: any = await getTokenContractSwap(toCoin, blockchain)
+    const fromToken: any = await getTokenContractSwap(fromCoin, blockchain);
+    const toToken: any = await getTokenContractSwap(toCoin, blockchain);
 
-    if (!fromToken || !toToken) return false
+    if (!fromToken || !toToken) return false;
 
-    let value = Math.pow(10, fromToken.decimals)
-    const srcAmount = amount * value
+    let value = Math.pow(10, fromToken.decimals);
+    const srcAmount = amount * value;
 
     const priceRoute: OptimalRate = await paraSwap.swap.getRate({
       srcToken: fromToken.contract,
@@ -235,109 +289,138 @@ const swapPreviewETH = async (fromCoin: string, toCoin: string, amount: number, 
       amount: String(srcAmount),
     });
 
-    const response = await axios.get('https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6')
-    let wei = response.data.result.SafeGasPrice
-
-    const comision = await GET_COMISION(blockchain)
-
-    var fee
-
-    if (comision.swap === 0 || comision.swap === 0.0) {
-      fee = 0
-    } else if ((comision.swap !== 0 || comision.swap !== 0.0) && fromCoin === "ETH") {
-      fee = web3.utils.fromWei(String(21000 * wei), 'gwei')
-    } else {
-      fee = web3.utils.fromWei(String(55000 * wei), 'gwei')
-    }
-
-    const txParams = await paraSwap.swap.buildTx(
-      {
-        srcToken: priceRoute.srcToken,
-        destToken: priceRoute.destToken,
-        srcAmount: priceRoute.srcAmount,
-        destAmount: priceRoute.destAmount,
-        priceRoute: priceRoute,
-        userAddress: '0x7460CA23e35718FB30f9888F03d31C69Df507612'
-      }
+    const response = await axios.get(
+      "https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6"
     );
-    
-    console.log("PARAMS",txParams)
+    let wei = response.data.result.SafeGasPrice;
 
-    return priceRoute
+    const comision = await GET_COMISION(blockchain);
+
+    let feeTransfer = "0";
+    let porcentFee = 0;
+
+    if (comision.swap) {
+      porcentFee = comision.swap / 100;
+      if (comision.swap && fromCoin === "ETH") {
+        feeTransfer = web3.utils.fromWei(String(21000 * wei), "gwei");
+      } else {
+        feeTransfer = web3.utils.fromWei(String(55000 * wei), "gwei");
+      }
+    }
+    const feeGas = web3.utils.fromWei(
+      String(Number(priceRoute.gasCost) * wei),
+      "gwei"
+    );
+
+    const srcFee = String(Number(feeTransfer) + Number(feeGas));
+
+    let feeDefix = String(Number(srcFee) * porcentFee);
+
+    const dataSwap = {
+      exchange: priceRoute.bestRoute[0].swaps[0].swapExchanges[0].exchange,
+      fromAmount: priceRoute.srcAmount,
+      fromDecimals: fromToken.decimals,
+      toAmount: priceRoute.destAmount,
+      toDecimals: toToken.decimals,
+      fee: srcFee,
+      feeDefix: feeDefix,
+      feeTotal: String(Number(srcFee) + Number(feeDefix)),
+    };
+
+    return { dataSwap, priceRoute };
   } catch (error) {
-    console.log(error)
-    return false
+    console.log(error);
+    return false;
   }
-}
+};
 
-async function swapTokenETH(fromCoin: string, privateKey: string, priceRoute: OptimalRate) {
+async function swapTokenETH(
+  fromCoin: string,
+  privateKey: string,
+  priceRoute: OptimalRate
+) {
   try {
     const paraSwap = constructSimpleSDK({ chainId: 1, axios });
-    const signer = web3.eth.accounts.privateKeyToAccount(privateKey)
+    const signer = web3.eth.accounts.privateKeyToAccount(privateKey);
 
-    const txParams = await paraSwap.swap.buildTx(
-      {
-        srcToken: priceRoute.srcToken,
-        destToken: priceRoute.destToken,
-        srcAmount: priceRoute.srcAmount,
-        destAmount: priceRoute.destAmount,
-        priceRoute: priceRoute,
-        userAddress: signer.address
-      }
+    const txParams = await paraSwap.swap.buildTx({
+      srcToken: priceRoute.srcToken,
+      destToken: priceRoute.destToken,
+      srcAmount: priceRoute.srcAmount,
+      destAmount: priceRoute.destAmount,
+      priceRoute: priceRoute,
+      userAddress: signer.address,
+    });
+
+    const txSigned = await signer.signTransaction(txParams);
+
+    if (!txSigned.rawTransaction) return false;
+
+    console.log(txSigned);
+    const result = await web3.eth.sendSignedTransaction(
+      txSigned.rawTransaction
     );
 
-    const txSigned = await signer.signTransaction(txParams)
+    const transactionHash = result.transactionHash;
 
-    if (!txSigned.rawTransaction) return false
+    if (!transactionHash) return false;
 
-    console.log(txSigned)
-    const result = await web3.eth.sendSignedTransaction(txSigned.rawTransaction)
+    const resp_comision = await GET_COMISION(fromCoin);
+    const vault_address = await ADDRESS_VAULT(fromCoin);
 
-    const transactionHash = result.transactionHash
+    const comision = resp_comision.swap / 100;
 
-    if (!transactionHash) return false
-
-    const resp_comision = await GET_COMISION(fromCoin)
-    const vault_address = await ADDRESS_VAULT(fromCoin)
-
-    const comision = resp_comision.swap / 100
-
-    let amount_vault = (Number(priceRoute.gasCostUSD) * comision)
+    let amount_vault = Number(priceRoute.gasCostUSD) * comision;
 
     if (amount_vault !== 0 && vault_address) {
-      await payCommissionETH(signer.address, privateKey, vault_address, amount_vault)
+      await payCommissionETH(
+        signer.address,
+        privateKey,
+        vault_address,
+        amount_vault
+      );
     }
 
-    return {transactionHash: transactionHash, address: signer.address}
+    return { transactionHash: transactionHash, address: signer.address };
   } catch (error) {
-    console.log(error)
-    return false
+    console.log(error);
+    return false;
   }
 }
 
 const getTokenContractSwap = async (token: string, blockchain: string) => {
   try {
-    const conexion = await dbConnect()
-    const response = await conexion.query("SELECT *\
+    const conexion = await dbConnect();
+    const response = await conexion.query(
+      "SELECT *\
                                           FROM backend_token a\
                                           inner join backend_cryptocurrency b on b.id = a.cryptocurrency_id\
                                           where a.coin = $1 and b.coin = $2",
-      [token, blockchain])
+      [token, blockchain]
+    );
 
     if (response.rows.length === 0) {
       if (token === "ETH") {
         return {
           decimals: 18,
-          contract: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-        }
+          contract: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        };
       }
-      return false
+      return false;
     }
-    return response.rows[0]
+    return response.rows[0];
   } catch (error) {
-    return false
+    return false;
   }
-}
+};
 
-
-export { swapTokenETH, swapPreviewETH, createWalletETH, isAddressETH, getBalanceETH, getBalanceTokenETH, transactionETH, transactionTokenETH };
+export {
+  swapTokenETH,
+  swapPreviewETH,
+  createWalletETH,
+  isAddressETH,
+  getBalanceETH,
+  getBalanceTokenETH,
+  transactionETH,
+  transactionTokenETH,
+};

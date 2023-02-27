@@ -19,7 +19,7 @@ const nearSEED = require("near-seed-phrase");
 const utils_1 = require("../helpers/utils");
 const bn_js_1 = __importDefault(require("bn.js"));
 const postgres_1 = __importDefault(require("../config/postgres"));
-const ref_sdk_1 = __importDefault(require("@ref-finance/ref-sdk"));
+const ref_sdk_1 = require("@ref-finance/ref-sdk");
 const NETWORK = process.env.NETWORK || 'testnet';
 const ETHERSCAN = process.env.ETHERSCAN;
 const createWalletNEAR = (mnemonic) => __awaiter(void 0, void 0, void 0, function* () {
@@ -128,33 +128,34 @@ function transactionNEAR(fromAddress, privateKey, toAddress, coin, amount) {
     });
 }
 exports.transactionNEAR = transactionNEAR;
-const swapPreviewNEAR = (fromCoin, toCoin, amount, blockchain) => __awaiter(void 0, void 0, void 0, function* () {
+const swapPreviewNEAR = (fromCoin, toCoin, amount, blockchain, address) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const fromToken = yield getTokenContractSwap(fromCoin, blockchain);
         const toToken = yield getTokenContractSwap(toCoin, blockchain);
         const tokenIn = fromToken.contract;
         const tokenOut = toToken.contract;
         console.log(tokenIn, tokenOut);
-        const tokensMetadata = yield ref_sdk_1.default.ftGetTokensMetadata([
+        const tokensMetadata = yield (0, ref_sdk_1.ftGetTokensMetadata)([
             tokenIn,
             tokenOut,
         ]);
-        const simplePools = ((yield ref_sdk_1.default.fetchAllPools()).simplePools).filter((pool) => { return pool.tokenIds[0] === tokenIn && pool.tokenIds[1] === tokenOut; });
-        const swapAlls = yield ref_sdk_1.default.estimateSwap({
+        const simplePools = ((yield (0, ref_sdk_1.fetchAllPools)()).simplePools).filter((pool) => { return pool.tokenIds[0] === tokenIn && pool.tokenIds[1] === tokenOut; });
+        const swapAlls = yield (0, ref_sdk_1.estimateSwap)({
             tokenIn: tokensMetadata[tokenIn],
             tokenOut: tokensMetadata[tokenOut],
             amountIn: String(amount),
-            simplePools: simplePools
+            simplePools: simplePools,
+            options: { enableSmartRouting: true }
         });
-        // const transactionsRef = await ref.instantSwap({
-        //   tokenIn: tokensMetadata[tokenIn],
-        //   tokenOut: tokensMetadata[tokenOut],
-        //   amountIn: '1',
-        //   swapTodos: swapAlls,
-        //   slippageTolerance: 0.01,
-        //   AccountId: userAddress
-        // });
-        return swapAlls;
+        const transactionsRef = yield (0, ref_sdk_1.instantSwap)({
+            tokenIn: tokensMetadata[tokenIn],
+            tokenOut: tokensMetadata[tokenOut],
+            amountIn: String(amount),
+            swapTodos: swapAlls,
+            slippageTolerance: 0.01,
+            AccountId: address
+        });
+        return transactionsRef;
     }
     catch (error) {
         console.log(error);
@@ -179,7 +180,6 @@ const getTokenContractSwap = (token, blockchain) => __awaiter(void 0, void 0, vo
             }
             return false;
         }
-        console.log(response.rows);
         return response.rows[0];
     }
     catch (error) {

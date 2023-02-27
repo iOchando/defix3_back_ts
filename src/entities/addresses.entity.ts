@@ -1,21 +1,30 @@
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity, OneToOne, JoinColumn, OneToMany, ManyToOne } from "typeorm"
-import { User } from "./user.entity"
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  BaseEntity,
+  OneToOne,
+  JoinColumn,
+  OneToMany,
+  ManyToOne,
+} from "typeorm";
+import { User } from "./user.entity";
 
-@Entity({name: "addresses"})
+@Entity({ name: "addresses" })
 export class Address extends BaseEntity {
   @PrimaryGeneratedColumn()
-  id!: number
+  id!: number;
 
   @ManyToOne(() => User, (user) => user.defix_id)
-  user!: User
+  user!: User;
 
   @Column({
-    nullable: true
+    nullable: true,
   })
-  name!: string
+  name!: string;
 
   @Column({
-    nullable: true
+    nullable: true,
   })
-  address!: string
+  address!: string;
 }

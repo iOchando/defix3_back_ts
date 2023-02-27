@@ -72,7 +72,6 @@ const createWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             credentials.push(yield (0, bsc_services_1.createWalletBNB)(mnemonic));
             const wallet = {
                 defixId: DefixId,
-                mnemonic: mnemonic,
                 credentials: credentials
             };
             const nearId = yield (0, near_services_1.getIdNear)(mnemonic);
@@ -117,7 +116,6 @@ const importWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         credentials.push(yield (0, bsc_services_1.createWalletBNB)(mnemonic));
         const wallet = {
             defixId: defixId,
-            mnemonic: mnemonic,
             credentials: credentials
         };
         const addressTRON = yield addresses_entity_1.Address.findOneBy({ user: { defix_id: user.defix_id }, name: "TRX" });
@@ -169,7 +167,6 @@ const importFromMnemonic = (req, res) => __awaiter(void 0, void 0, void 0, funct
             credentials.push(yield (0, bsc_services_1.createWalletBNB)(mnemonic));
             const wallet = {
                 defixId: DefixId,
-                mnemonic: mnemonic,
                 credentials: credentials
             };
             const nearId = yield (0, near_services_1.getIdNear)(mnemonic);

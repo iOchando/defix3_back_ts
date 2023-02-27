@@ -1,82 +1,91 @@
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity, Table, OneToOne, JoinTable, JoinColumn } from "typeorm"
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  BaseEntity,
+  Table,
+  OneToOne,
+  JoinTable,
+  JoinColumn,
+} from "typeorm";
 
 @Entity({ name: "users" })
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
-  id!: number
+  id!: number;
 
   @Column({
     nullable: true,
-    unique: true
+    unique: true,
   })
-  defix_id!: string
+  defix_id!: string;
 
   @Column({
     nullable: true,
-    unique: true
+    unique: true,
   })
-  email!: string
+  email!: string;
 
   @Column({
     nullable: true,
-    unique: true
+    unique: true,
   })
-  import_id!: string
-
-  @Column({
-    nullable: true
-  })
-  name!: string
-
-  @Column({
-    nullable: true
-  })
-  lastname!: string
+  import_id!: string;
 
   @Column({
     nullable: true,
-    default: true
   })
-  close_sessions!: boolean
+  name!: string;
 
   @Column({
     nullable: true,
-    default: true
   })
-  dosfa!: boolean
+  lastname!: string;
 
   @Column({
-    nullable: true
+    nullable: true,
+    default: true,
   })
-  legal_document!: string
+  close_sessions!: boolean;
 
   @Column({
-    nullable: true
+    nullable: true,
+    default: true,
   })
-  type_document!: string
+  dosfa!: boolean;
 
   @Column({
-    nullable: true
+    nullable: true,
   })
-  secret!: string
+  legal_document!: string;
 
   @Column({
-    nullable: true
+    nullable: true,
   })
-  flag_send!: boolean
+  type_document!: string;
 
   @Column({
-    nullable: true
+    nullable: true,
   })
-  flag_receive!: boolean
+  secret!: string;
 
   @Column({
-    nullable: true
+    nullable: true,
   })
-  flag_dex!: boolean
+  flag_send!: boolean;
 
   @Column({
-    nullable: true
+    nullable: true,
   })
-  flag_fiat!: boolean
+  flag_receive!: boolean;
+
+  @Column({
+    nullable: true,
+  })
+  flag_dex!: boolean;
+
+  @Column({
+    nullable: true,
+  })
+  flag_fiat!: boolean;
 }

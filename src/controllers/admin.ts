@@ -3,12 +3,12 @@ import { User } from "../entities/user.entity";
 
 const getUsersDefix = async (req: Request, res: Response) => {
   try {
-    const users = await User.find({ select: ["defix_id", "id"]})
+    const users = await User.find({ select: ["defix_id", "id"] });
 
-    res.send(users)
+    res.send(users);
   } catch (error) {
-    res.status(404).send()
+    res.status(404).send();
   }
-}
+};
 
-export { getUsersDefix }
+export { getUsersDefix };

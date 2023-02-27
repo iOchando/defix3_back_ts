@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { swapPreview, swapToken, swapTron} from "../controllers/swap";
+import { swapPreview, swapToken, swapTron } from "../controllers/swap";
 
 const router = Router();
 
@@ -33,13 +33,13 @@ const router = Router();
  *                }
  *      responses:
  *        '200':
- *          description: Devuelve el preview o priceRoute del swap a realizar. 
+ *          description: Devuelve el preview o priceRoute del swap a realizar.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
-router.post('/swap-preview/', swapPreview)
+router.post("/swap-preview/", swapPreview);
 
 /**
  * @swagger
@@ -80,14 +80,14 @@ router.post('/swap-preview/', swapPreview)
  *                }
  *      responses:
  *        '200':
- *          description: Devuelve la transaccion del swap. 
+ *          description: Devuelve la transaccion del swap.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
- router.post('/swap-token/', swapToken)
+router.post("/swap-token/", swapToken);
 
- router.post('/swap-tron/', swapTron)
+router.post("/swap-tron/", swapTron);
 
 export { router };

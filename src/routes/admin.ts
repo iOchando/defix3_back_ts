@@ -4,6 +4,6 @@ import authMiddleware from "../middleware/admin";
 
 const router = Router();
 
-router.get('/get-users-defix', authMiddleware, getUsersDefix);
+router.get("/get-users-defix", authMiddleware, getUsersDefix);
 
 export { router };

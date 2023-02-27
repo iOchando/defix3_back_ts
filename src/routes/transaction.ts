@@ -1,5 +1,10 @@
 import { Request, Response, Router } from "express";
-import { transaction, getTransactionHistory, getFrequent, deleteFrequent } from "../controllers/transaction";
+import {
+  transaction,
+  getTransactionHistory,
+  getFrequent,
+  deleteFrequent,
+} from "../controllers/transaction";
 
 const router = Router();
 
@@ -39,13 +44,13 @@ const router = Router();
  *                }
  *      responses:
  *        '200':
- *          description: Devuelve la transaccion realizada. 
+ *          description: Devuelve la transaccion realizada.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
-router.post('/transaction/', transaction)
+router.post("/transaction/", transaction);
 
 /**
  * @swagger
@@ -83,13 +88,13 @@ router.post('/transaction/', transaction)
  *                }
  *      responses:
  *        '200':
- *          description: Devuelve array de transacciones. 
+ *          description: Devuelve array de transacciones.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
-router.post('/transaction-history/', getTransactionHistory)
+router.post("/transaction-history/", getTransactionHistory);
 
 /**
  * @swagger
@@ -112,13 +117,13 @@ router.post('/transaction-history/', getTransactionHistory)
  *                }
  *      responses:
  *        '200':
- *          description: Devuelve array de usuarios. 
+ *          description: Devuelve array de usuarios.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
-router.post('/get-frequent/', getFrequent)
+router.post("/get-frequent/", getFrequent);
 
 /**
  * @swagger
@@ -141,13 +146,12 @@ router.post('/get-frequent/', getFrequent)
  *                }
  *      responses:
  *        '204':
- *          description: Eliminado con exito. 
+ *          description: Eliminado con exito.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
-router.post('/delete-frequent/', deleteFrequent)
-
+router.post("/delete-frequent/", deleteFrequent);
 
 export { router };

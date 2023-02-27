@@ -1,5 +1,10 @@
 import { Request, Response, Router } from "express";
-import { generar2fa, activar2fa, desactivar2fa, status2fa } from "../controllers/2fa";
+import {
+  generar2fa,
+  activar2fa,
+  desactivar2fa,
+  status2fa,
+} from "../controllers/2fa";
 
 const router = Router();
 
@@ -28,13 +33,13 @@ const router = Router();
  *                }
  *      responses:
  *        '200':
- *          description: Devuelve el qr y el codigo 2fa. 
+ *          description: Devuelve el qr y el codigo 2fa.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
-router.post('/generar-2fa/', generar2fa)
+router.post("/generar-2fa/", generar2fa);
 
 /**
  * Post track
@@ -64,13 +69,13 @@ router.post('/generar-2fa/', generar2fa)
  *                }
  *      responses:
  *        '200':
- *          description: Devuelve un ok. 
+ *          description: Devuelve un ok.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
-router.post('/activar-2fa/', activar2fa)
+router.post("/activar-2fa/", activar2fa);
 
 /**
  * Post track
@@ -97,13 +102,13 @@ router.post('/activar-2fa/', activar2fa)
  *                }
  *      responses:
  *        '200':
- *          description: Devuelve un ok. 
+ *          description: Devuelve un ok.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
-router.post('/desactivar-2fa/', desactivar2fa)
+router.post("/desactivar-2fa/", desactivar2fa);
 
 /**
  * Post track
@@ -127,12 +132,12 @@ router.post('/desactivar-2fa/', desactivar2fa)
  *                }
  *      responses:
  *        '200':
- *          description: Devuelve un boolean si el 2FA esta activo o no. 
+ *          description: Devuelve un boolean si el 2FA esta activo o no.
  *        '400':
  *          description: Bad Request.
  *        '500':
  *          description: Bad Request.
  */
-router.post('/status-2fa/', status2fa)
+router.post("/status-2fa/", status2fa);
 
 export { router };

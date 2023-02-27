@@ -20,7 +20,7 @@ const near_services_1 = require("../services/near.services");
 function swapPreview(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { fromCoin, toCoin, amount, blockchain } = req.body;
+            const { fromCoin, toCoin, amount, blockchain, address } = req.body;
             let priceRoute;
             if (!fromCoin || !toCoin || !amount || !blockchain)
                 return res.status(400).send();
@@ -32,7 +32,7 @@ function swapPreview(req, res) {
                 priceRoute = yield (0, bsc_services_1.swapPreviewBNB)(fromCoin, toCoin, amount, blockchain);
             }
             else if (blockchain === "NEAR") {
-                priceRoute = yield (0, near_services_1.swapPreviewNEAR)(fromCoin, toCoin, amount, blockchain);
+                priceRoute = yield (0, near_services_1.swapPreviewNEAR)(fromCoin, toCoin, amount, blockchain, address);
             }
             else {
                 priceRoute = false;
