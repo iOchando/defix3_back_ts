@@ -1,4 +1,4 @@
-import { status2faFn, validarCode2fa } from "../controllers/2fa";
+import { status2faFn, validarCode2fa } from "../controllers/2fa.controller";
 
 const validation2FA = async (defixId: string, code: string | undefined) => {
   try {

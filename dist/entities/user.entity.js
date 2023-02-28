@@ -20,89 +20,89 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true,
-        unique: true
+        unique: true,
     }),
     __metadata("design:type", String)
 ], User.prototype, "defix_id", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true,
-        unique: true
+        unique: true,
     }),
     __metadata("design:type", String)
 ], User.prototype, "email", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true,
-        unique: true
+        unique: true,
     }),
     __metadata("design:type", String)
 ], User.prototype, "import_id", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", String)
 ], User.prototype, "name", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", String)
 ], User.prototype, "lastname", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true,
-        default: true
+        default: true,
     }),
     __metadata("design:type", Boolean)
 ], User.prototype, "close_sessions", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true,
-        default: true
+        default: true,
     }),
     __metadata("design:type", Boolean)
 ], User.prototype, "dosfa", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", String)
 ], User.prototype, "legal_document", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", String)
 ], User.prototype, "type_document", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", String)
 ], User.prototype, "secret", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", Boolean)
 ], User.prototype, "flag_send", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", Boolean)
 ], User.prototype, "flag_receive", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", Boolean)
 ], User.prototype, "flag_dex", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", Boolean)
 ], User.prototype, "flag_fiat", void 0);

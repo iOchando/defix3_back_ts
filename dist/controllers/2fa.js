@@ -44,19 +44,22 @@ const generar2fa = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                         const secret = otplib_1.authenticator.generateSecret();
                         yield user_entity_1.User.update({ defix_id: user.defix_id }, { secret: secret })
                             .then(() => {
-                            let codigo = otplib_1.authenticator.keyuri(defixId, 'Defix3 App', secret);
+                            let codigo = otplib_1.authenticator.keyuri(defixId, "Defix3 App", secret);
                             qrcode_1.default.toDataURL(codigo, (err, url) => {
                                 if (err) {
                                     throw err;
                                 }
                                 res.json({ qr: url, codigo: secret });
                             });
-                        }).catch(() => {
-                            res.status(500).json({ respuesta: "error en la base de datos" });
+                        })
+                            .catch(() => {
+                            res
+                                .status(500)
+                                .json({ respuesta: "error en la base de datos" });
                         });
                     }
                     else {
-                        let codigo = otplib_1.authenticator.keyuri(defixId, 'Defix3 App', user.secret);
+                        let codigo = otplib_1.authenticator.keyuri(defixId, "Defix3 App", user.secret);
                         qrcode_1.default.toDataURL(codigo, (err, url) => {
                             if (err) {
                                 throw err;
@@ -98,7 +101,8 @@ const activar2fa = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         yield user_entity_1.User.update({ defix_id: user.defix_id }, { dosfa: true })
             .then(() => {
             return res.send({ respuesta: "ok" });
-        }).catch(() => {
+        })
+            .catch(() => {
             return res.status(500).json({ respuesta: "error en la base de datos" });
         });
     }
@@ -124,8 +128,11 @@ const desactivar2fa = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                         yield user_entity_1.User.update({ defix_id: user.defix_id }, { dosfa: false, secret: undefined })
                             .then(() => {
                             res.json({ respuesta: "ok" });
-                        }).catch(() => {
-                            res.status(500).json({ respuesta: "error en la base de datos" });
+                        })
+                            .catch(() => {
+                            res
+                                .status(500)
+                                .json({ respuesta: "error en la base de datos" });
                         });
                     }
                     else {
@@ -148,7 +155,7 @@ exports.desactivar2fa = desactivar2fa;
 const status2fa = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { defixId } = req.body;
     yield status2faFn(defixId)
-        .then(result => {
+        .then((result) => {
         res.send(result);
     })
         .catch((err) => {

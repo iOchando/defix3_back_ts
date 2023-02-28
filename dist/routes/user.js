@@ -36,7 +36,7 @@ exports.router = router;
  *        '500':
  *          description: Bad Request.
  */
-router.post('/close-all-sessions/', user_1.closeAllSessions);
+router.post("/close-all-sessions/", user_1.closeAllSessions);
 /**
  * Post track
  * @swagger
@@ -65,8 +65,8 @@ router.post('/close-all-sessions/', user_1.closeAllSessions);
  *        '500':
  *          description: Bad Request.
  */
-router.post('/get-close-all-sessions/', user_1.getCloseAllSesions);
-// defixId, seedPhrase, email, flag_send, flag_receive, flag_dex, flag_fiat, name, last_name, legal_document, type_document 
+router.post("/get-close-all-sessions/", user_1.getCloseAllSesions);
+// defixId, seedPhrase, email, flag_send, flag_receive, flag_dex, flag_fiat, name, last_name, legal_document, type_document
 /**
  * Post track
  * @swagger
@@ -125,7 +125,7 @@ router.post('/get-close-all-sessions/', user_1.getCloseAllSesions);
  *        '500':
  *          description: Bad Request.
  */
-router.post('/set-email-data/', user_1.setEmailData);
+router.post("/set-email-data/", user_1.setEmailData);
 /**
  * Post track
  * @swagger
@@ -154,4 +154,4 @@ router.post('/set-email-data/', user_1.setEmailData);
  *        '500':
  *          description: Bad Request.
  */
-router.post('/get-email-data/', user_1.getEmailData);
+router.post("/get-email-data/", user_1.getEmailData);

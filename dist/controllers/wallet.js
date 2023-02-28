@@ -59,7 +59,10 @@ const createWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     try {
         const { defixId, seedPhrase, email } = req.body;
         const mnemonic = (0, crypto_1.decrypt)(seedPhrase);
-        if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ") || !mnemonic)
+        if (!defixId ||
+            !defixId.includes(".defix3") ||
+            defixId.includes(" ") ||
+            !mnemonic)
             return res.status(400).send();
         const DefixId = defixId.toLowerCase();
         const exists = yield (0, utils_1.validateDefixId)(defixId.toLowerCase());
@@ -72,7 +75,7 @@ const createWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             credentials.push(yield (0, bsc_services_1.createWalletBNB)(mnemonic));
             const wallet = {
                 defixId: DefixId,
-                credentials: credentials
+                credentials: credentials,
             };
             const nearId = yield (0, near_services_1.getIdNear)(mnemonic);
             const save = yield saveUser(nearId, wallet);
@@ -104,7 +107,10 @@ const importWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         if (!user)
             return res.status(400).send();
         const defixId = user.defix_id.toLowerCase();
-        const addressNear = yield addresses_entity_1.Address.findOneBy({ user: { defix_id: user.defix_id }, name: "NEAR" });
+        const addressNear = yield addresses_entity_1.Address.findOneBy({
+            user: { defix_id: user.defix_id },
+            name: "NEAR",
+        });
         if (!addressNear)
             return res.status(400).send();
         const nearAddress = addressNear.address;
@@ -116,12 +122,15 @@ const importWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         credentials.push(yield (0, bsc_services_1.createWalletBNB)(mnemonic));
         const wallet = {
             defixId: defixId,
-            credentials: credentials
+            credentials: credentials,
         };
-        const addressTRON = yield addresses_entity_1.Address.findOneBy({ user: { defix_id: user.defix_id }, name: "TRX" });
+        const addressTRON = yield addresses_entity_1.Address.findOneBy({
+            user: { defix_id: user.defix_id },
+            name: "TRX",
+        });
         // Crypto news
         if (!addressTRON) {
-            const addresstron = credentials.find(element => element.name === 'TRX');
+            const addresstron = credentials.find((element) => element.name === "TRX");
             if (addresstron) {
                 const address = new addresses_entity_1.Address();
                 address.user = user;
@@ -130,9 +139,12 @@ const importWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 yield address.save();
             }
         }
-        const addressBNB = yield addresses_entity_1.Address.findOneBy({ user: { defix_id: user.defix_id }, name: "BNB" });
+        const addressBNB = yield addresses_entity_1.Address.findOneBy({
+            user: { defix_id: user.defix_id },
+            name: "BNB",
+        });
         if (!addressBNB) {
-            const addressbnb = credentials.find(element => element.name === 'BNB');
+            const addressbnb = credentials.find((element) => element.name === "BNB");
             if (addressbnb) {
                 const address = new addresses_entity_1.Address();
                 address.user = user;
@@ -154,7 +166,10 @@ const importFromMnemonic = (req, res) => __awaiter(void 0, void 0, void 0, funct
     try {
         const { defixId, seedPhrase } = req.body;
         const mnemonic = (0, crypto_1.decrypt)(seedPhrase);
-        if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ") || !mnemonic)
+        if (!defixId ||
+            !defixId.includes(".defix3") ||
+            defixId.includes(" ") ||
+            !mnemonic)
             return res.status(400).send();
         const DefixId = defixId.toLowerCase();
         const exists = yield (0, utils_1.validateDefixId)(defixId.toLowerCase());
@@ -167,7 +182,7 @@ const importFromMnemonic = (req, res) => __awaiter(void 0, void 0, void 0, funct
             credentials.push(yield (0, bsc_services_1.createWalletBNB)(mnemonic));
             const wallet = {
                 defixId: DefixId,
-                credentials: credentials
+                credentials: credentials,
             };
             const nearId = yield (0, near_services_1.getIdNear)(mnemonic);
             const save = yield saveUser(nearId, wallet);
@@ -234,7 +249,6 @@ const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     catch (error) {
         res.status(400).send(error);
     }
-    ;
 });
 exports.getUsers = getUsers;
 // UTILS
@@ -243,25 +257,25 @@ const validateAddress = (req, res) => __awaiter(void 0, void 0, void 0, function
         const { address, coin } = req.body;
         if (!address || !coin)
             return res.status(400).send();
-        if (coin === 'BTC') {
+        if (coin === "BTC") {
             return res.send(yield (0, btc_services_1.isAddressBTC)(address));
         }
-        else if (coin === 'NEAR') {
+        else if (coin === "NEAR") {
             return res.send(yield (0, near_services_1.isAddressNEAR)(address));
         }
-        else if (coin === 'ETH') {
+        else if (coin === "ETH") {
             return res.send(yield (0, eth_services_1.isAddressETH)(address));
         }
-        else if (coin === 'BNB') {
+        else if (coin === "BNB") {
             return res.send(yield (0, bsc_services_1.isAddressBNB)(address));
         }
-        else if (coin === 'TRX') {
+        else if (coin === "TRX") {
             return res.send(yield (0, tron_services_1.isAddressTRON)(address));
         }
         res.status(400).send();
     }
     catch (error) {
-        res.status(400).send({ "error": error });
+        res.status(400).send({ error: error });
     }
 });
 exports.validateAddress = validateAddress;

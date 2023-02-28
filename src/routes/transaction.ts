@@ -4,7 +4,7 @@ import {
   getTransactionHistory,
   getFrequent,
   deleteFrequent,
-} from "../controllers/transaction";
+} from "../controllers/transaction.controller";
 
 const router = Router();
 

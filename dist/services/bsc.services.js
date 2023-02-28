@@ -29,7 +29,7 @@ const createWalletBNB = (mnemonic) => __awaiter(void 0, void 0, void 0, function
     const credential = {
         name: "BNB",
         address: wallet.address,
-        privateKey: wallet.privateKey
+        privateKey: wallet.privateKey,
     };
     return credential;
 });
@@ -49,7 +49,6 @@ const getBalanceBNB = (address) => __awaiter(void 0, void 0, void 0, function* (
             if (!balanceTotal) {
                 balanceTotal = 0;
             }
-            ;
             return balanceTotal;
         }
         else {
@@ -60,7 +59,6 @@ const getBalanceBNB = (address) => __awaiter(void 0, void 0, void 0, function* (
         console.error(error);
         return 0;
     }
-    ;
 });
 exports.getBalanceBNB = getBalanceBNB;
 const getBalanceTokenBSC = (address, srcContract, decimals) => __awaiter(void 0, void 0, void 0, function* () {
@@ -90,7 +88,7 @@ function transactionBNB(fromAddress, privateKey, toAddress, coin, amount) {
         try {
             const balance = yield getBalanceBNB(fromAddress);
             if (balance < amount) {
-                console.log('Error: No tienes suficientes fondos para realizar la transferencia');
+                console.log("Error: No tienes suficientes fondos para realizar la transferencia");
                 return false;
             }
             const gasPrice = yield web3BSC.eth.getGasPrice();
@@ -99,18 +97,18 @@ function transactionBNB(fromAddress, privateKey, toAddress, coin, amount) {
             const rawTransaction = {
                 from: fromAddress,
                 to: toAddress,
-                value: web3BSC.utils.toHex(web3BSC.utils.toWei(amount.toString(), 'ether')),
+                value: web3BSC.utils.toHex(web3BSC.utils.toWei(amount.toString(), "ether")),
                 gasPrice: web3BSC.utils.toHex(gasPrice),
                 gasLimit: web3BSC.utils.toHex(gasLimit),
-                nonce: nonce
+                nonce: nonce,
             };
             const signedTransaction = yield web3BSC.eth.accounts.signTransaction(rawTransaction, privateKey);
             if (!signedTransaction.rawTransaction)
                 return false;
             const transactionHash = yield web3BSC.eth.sendSignedTransaction(signedTransaction.rawTransaction);
-            const response = yield axios_1.default.get('https://api.bscscan.com/api?module=gastracker&action=gasoracle&apikey=3SU1MAWAPX8X39UD6U8JBGTQ5C67EVVRSM');
+            const response = yield axios_1.default.get("https://api.bscscan.com/api?module=gastracker&action=gasoracle&apikey=3SU1MAWAPX8X39UD6U8JBGTQ5C67EVVRSM");
             let wei = response.data.result.SafeGasPrice;
-            let fee = Number(web3BSC.utils.fromWei(String(21000 * wei), 'gwei'));
+            let fee = Number(web3BSC.utils.fromWei(String(21000 * wei), "gwei"));
             const resp_comision = yield (0, utils_1.GET_COMISION)(coin);
             const vault_address = yield (0, utils_1.ADDRESS_VAULT)(coin);
             const comision = resp_comision.transfer / 100;
@@ -134,7 +132,7 @@ function transactionTokenBNB(fromAddress, privateKey, toAddress, amount, srcToke
         try {
             const balance = yield getBalanceTokenBSC(fromAddress, srcToken.contract, srcToken.decimals);
             if (balance && balance < amount) {
-                console.log('Error: No tienes suficientes fondos para realizar la transferencia');
+                console.log("Error: No tienes suficientes fondos para realizar la transferencia");
                 return false;
             }
             let provider = ethers_1.ethers.getDefaultProvider(String(ETHERSCAN));
@@ -145,9 +143,9 @@ function transactionTokenBNB(fromAddress, privateKey, toAddress, amount, srcToke
             let value = Math.pow(10, srcToken.decimals);
             let srcAmount = amount * value;
             const tx = yield contract.transfer(toAddress, String(srcAmount));
-            const response = yield axios_1.default.get('https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6');
+            const response = yield axios_1.default.get("https://api.bscscan.com/api?module=gastracker&action=gasoracle&apikey=3SU1MAWAPX8X39UD6U8JBGTQ5C67EVVRSM");
             let wei = response.data.result.SafeGasPrice;
-            let fee = Number(web3BSC.utils.fromWei(String(55000 * wei), 'gwei'));
+            let fee = Number(web3BSC.utils.fromWei(String(55000 * wei), "gwei"));
             const resp_comision = yield (0, utils_1.GET_COMISION)(srcToken.coin);
             const vault_address = yield (0, utils_1.ADDRESS_VAULT)(srcToken.coin);
             const comision = resp_comision.transfer / 100;
@@ -176,10 +174,10 @@ function payCommissionBNB(fromAddress, privateKey, toAddress, amount) {
             const rawTransaction = {
                 from: fromAddress,
                 to: toAddress,
-                value: web3BSC.utils.toHex(web3BSC.utils.toWei(amount.toString(), 'ether')),
+                value: web3BSC.utils.toHex(web3BSC.utils.toWei(amount.toString(), "ether")),
                 gasPrice: web3BSC.utils.toHex(gasPrice),
                 gasLimit: web3BSC.utils.toHex(gasLimit),
-                nonce: nonce
+                nonce: nonce,
             };
             const signedTransaction = yield web3BSC.eth.accounts.signTransaction(rawTransaction, privateKey);
             if (!signedTransaction.rawTransaction)
@@ -205,20 +203,34 @@ const swapPreviewBNB = (fromCoin, toCoin, amount, blockchain) => __awaiter(void 
             destToken: toToken.contract,
             amount: String(srcAmount),
         });
-        const response = yield axios_1.default.get('https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6');
+        const response = yield axios_1.default.get("https://api.bscscan.com/api?module=gastracker&action=gasoracle&apikey=3SU1MAWAPX8X39UD6U8JBGTQ5C67EVVRSM");
         let wei = response.data.result.SafeGasPrice;
         const comision = yield (0, utils_1.GET_COMISION)(blockchain);
-        var fee;
-        if (comision.swap === 0 || comision.swap === 0.0) {
-            fee = 0;
+        let feeTransfer = "0";
+        let porcentFee = 0;
+        if (comision.swap) {
+            porcentFee = comision.swap / 100;
+            if (comision.swap && fromCoin === "BNB") {
+                feeTransfer = web3BSC.utils.fromWei(String(21000 * wei), "gwei");
+            }
+            else {
+                feeTransfer = web3BSC.utils.fromWei(String(55000 * wei), "gwei");
+            }
         }
-        else if ((comision.swap !== 0 || comision.swap !== 0.0) && fromCoin === "BNB") {
-            fee = web3BSC.utils.fromWei(String(21000 * wei), 'gwei');
-        }
-        else {
-            fee = web3BSC.utils.fromWei(String(55000 * wei), 'gwei');
-        }
-        return priceRoute;
+        const feeGas = web3BSC.utils.fromWei(String(Number(priceRoute.gasCost) * wei), "gwei");
+        const srcFee = String(Number(feeTransfer) + Number(feeGas));
+        let feeDefix = String(Number(srcFee) * porcentFee);
+        const dataSwap = {
+            exchange: priceRoute.bestRoute[0].swaps[0].swapExchanges[0].exchange,
+            fromAmount: priceRoute.srcAmount,
+            fromDecimals: fromToken.decimals,
+            toAmount: priceRoute.destAmount,
+            toDecimals: toToken.decimals,
+            feeSwap: srcFee,
+            feeDefix: feeDefix,
+            feeTotal: String(Number(srcFee) + Number(feeDefix)),
+        };
+        return { dataSwap, priceRoute };
     }
     catch (error) {
         console.log(error);
@@ -226,7 +238,7 @@ const swapPreviewBNB = (fromCoin, toCoin, amount, blockchain) => __awaiter(void 
     }
 });
 exports.swapPreviewBNB = swapPreviewBNB;
-function swapTokenBSC(fromCoin, privateKey, priceRoute) {
+function swapTokenBSC(blockchain, privateKey, priceRoute) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const paraSwap = (0, sdk_1.constructSimpleSDK)({ chainId: 1, axios: axios_1.default });
@@ -237,7 +249,7 @@ function swapTokenBSC(fromCoin, privateKey, priceRoute) {
                 srcAmount: priceRoute.srcAmount,
                 destAmount: priceRoute.destAmount,
                 priceRoute: priceRoute,
-                userAddress: signer.address
+                userAddress: signer.address,
             });
             const txSigned = yield signer.signTransaction(txParams);
             if (!txSigned.rawTransaction)
@@ -247,10 +259,10 @@ function swapTokenBSC(fromCoin, privateKey, priceRoute) {
             const transactionHash = result.transactionHash;
             if (!transactionHash)
                 return false;
-            const resp_comision = yield (0, utils_1.GET_COMISION)(fromCoin);
-            const vault_address = yield (0, utils_1.ADDRESS_VAULT)(fromCoin);
+            const resp_comision = yield (0, utils_1.GET_COMISION)(blockchain);
+            const vault_address = yield (0, utils_1.ADDRESS_VAULT)(blockchain);
             const comision = resp_comision.swap / 100;
-            let amount_vault = (Number(priceRoute.gasCostUSD) * comision);
+            let amount_vault = Number(priceRoute.gasCostUSD) * comision;
             if (amount_vault !== 0 && vault_address) {
                 yield payCommissionBNB(signer.address, privateKey, vault_address, amount_vault);
             }
@@ -274,7 +286,7 @@ const getTokenContractSwap = (token, blockchain) => __awaiter(void 0, void 0, vo
             if (token === "BNB") {
                 return {
                     decimals: 18,
-                    contract: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+                    contract: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
                 };
             }
             return false;

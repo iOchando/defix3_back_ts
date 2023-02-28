@@ -38,7 +38,8 @@ function saveTransaction(fromDefix, toDefix, coin, blockchain, amount, fromAddre
             transaction.tipo = tipo;
             transaction.date_year = year;
             transaction.date_month = month;
-            const response = yield transaction.save()
+            const response = yield transaction
+                .save()
                 .then((resp) => {
                 return resp;
             })
@@ -56,7 +57,10 @@ exports.saveTransaction = saveTransaction;
 function getAddressUser(defixId, blockchain) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const address = yield addresses_entity_1.Address.findOneBy({ user: { defix_id: defixId }, name: blockchain });
+            const address = yield addresses_entity_1.Address.findOneBy({
+                user: { defix_id: defixId },
+                name: blockchain,
+            });
             if (!address)
                 return false;
             return address.address;
@@ -102,23 +106,23 @@ const validateEmail = (email) => {
 exports.validateEmail = validateEmail;
 function CONFIG(keyStores) {
     switch (NETWORK) {
-        case 'mainnet':
+        case "mainnet":
             return {
-                networkId: 'mainnet',
-                nodeUrl: 'https://rpc.mainnet.near.org',
+                networkId: "mainnet",
+                nodeUrl: "https://rpc.mainnet.near.org",
                 keyStore: keyStores,
-                walletUrl: 'https://wallet.near.org',
-                helperUrl: 'https://helper.mainnet.near.org',
-                explorerUrl: 'https://explorer.mainnet.near.org'
+                walletUrl: "https://wallet.near.org",
+                helperUrl: "https://helper.mainnet.near.org",
+                explorerUrl: "https://explorer.mainnet.near.org",
             };
-        case 'testnet':
+        case "testnet":
             return {
-                networkId: 'testnet',
+                networkId: "testnet",
                 keyStore: keyStores,
-                nodeUrl: 'https://rpc.testnet.near.org',
-                walletUrl: 'https://wallet.testnet.near.org',
-                helperUrl: 'https://helper.testnet.near.org',
-                explorerUrl: 'https://explorer.testnet.near.org'
+                nodeUrl: "https://rpc.testnet.near.org",
+                walletUrl: "https://wallet.testnet.near.org",
+                helperUrl: "https://helper.testnet.near.org",
+                explorerUrl: "https://explorer.testnet.near.org",
             };
         default:
             throw new Error(`Unconfigured environment '${NETWORK}'`);
@@ -127,15 +131,15 @@ function CONFIG(keyStores) {
 exports.CONFIG = CONFIG;
 function ADDRESS_VAULT(coin) {
     switch (coin) {
-        case 'BTC':
+        case "BTC":
             return process.env.VAULT_BTC;
-        case 'NEAR':
+        case "NEAR":
             return process.env.VAULT_NEAR;
-        case 'ETH':
+        case "ETH":
             return process.env.VAULT_ETH;
-        case 'TRX':
+        case "TRX":
             return process.env.VAULT_TRON;
-        case 'BNB':
+        case "BNB":
             return process.env.VAULT_BNB;
         default:
             throw new Error(`Unconfigured environment '${coin}'`);
@@ -146,7 +150,8 @@ function GET_COMISION(coin) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const url = process.env.URL_DJANGO + "api/v1/get-comision/" + coin;
-            const result = axios_1.default.get(url)
+            const result = axios_1.default
+                .get(url)
                 .then(function (response) {
                 return response.data;
             })
@@ -177,6 +182,5 @@ const getCryptosFn = () => __awaiter(void 0, void 0, void 0, function* () {
         console.log(error);
         return [];
     }
-    ;
 });
 exports.getCryptosFn = getCryptosFn;

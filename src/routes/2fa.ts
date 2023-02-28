@@ -4,7 +4,7 @@ import {
   activar2fa,
   desactivar2fa,
   status2fa,
-} from "../controllers/2fa";
+} from "../controllers/2fa.controller";
 
 const router = Router();
 

@@ -36,7 +36,7 @@ exports.router = router;
  *        '500':
  *          description: Bad Request.
  */
-router.post('/generar-2fa/', _2fa_1.generar2fa);
+router.post("/generar-2fa/", _2fa_1.generar2fa);
 /**
  * Post track
  * @swagger
@@ -71,7 +71,7 @@ router.post('/generar-2fa/', _2fa_1.generar2fa);
  *        '500':
  *          description: Bad Request.
  */
-router.post('/activar-2fa/', _2fa_1.activar2fa);
+router.post("/activar-2fa/", _2fa_1.activar2fa);
 /**
  * Post track
  * @swagger
@@ -103,7 +103,7 @@ router.post('/activar-2fa/', _2fa_1.activar2fa);
  *        '500':
  *          description: Bad Request.
  */
-router.post('/desactivar-2fa/', _2fa_1.desactivar2fa);
+router.post("/desactivar-2fa/", _2fa_1.desactivar2fa);
 /**
  * Post track
  * @swagger
@@ -132,4 +132,4 @@ router.post('/desactivar-2fa/', _2fa_1.desactivar2fa);
  *        '500':
  *          description: Bad Request.
  */
-router.post('/status-2fa/', _2fa_1.status2fa);
+router.post("/status-2fa/", _2fa_1.status2fa);

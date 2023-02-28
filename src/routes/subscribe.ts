@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { setEmailSubscribe } from "../controllers/subscribe";
+import { setEmailSubscribe } from "../controllers/subscribe.controller";
 
 const router = Router();
 

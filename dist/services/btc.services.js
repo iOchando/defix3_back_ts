@@ -69,7 +69,7 @@ const createWalletBTC = (mnemonic) => __awaiter(void 0, void 0, void 0, function
     const credential = {
         name: "BTC",
         address: btcAddress || "",
-        privateKey: node.toWIF()
+        privateKey: node.toWIF(),
     };
     return credential;
 });
@@ -81,23 +81,24 @@ const isAddressBTC = (address) => __awaiter(void 0, void 0, void 0, function* ()
 exports.isAddressBTC = isAddressBTC;
 const getBalanceBTC = (address) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const method = 'get';
+        const method = "get";
         const url = "https://blockchain.info/q/addressbalance/" + address;
         const balance = yield axios_1.default[method](url, {
             headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
             },
-        }).then((response) => __awaiter(void 0, void 0, void 0, function* () {
+        })
+            .then((response) => __awaiter(void 0, void 0, void 0, function* () {
             if (response.data || response.data === 0) {
                 const satoshi = response.data;
                 const value_satoshi = 100000000;
-                const balance = (satoshi / value_satoshi) || 0;
+                const balance = satoshi / value_satoshi || 0;
                 return balance;
             }
-            ;
             const item = yield getBalanceBTC_Cypher(address);
             return item;
-        })).catch((error) => __awaiter(void 0, void 0, void 0, function* () {
+        }))
+            .catch((error) => __awaiter(void 0, void 0, void 0, function* () {
             const item = yield getBalanceBTC_Cypher(address);
             return item;
         }));
@@ -112,21 +113,27 @@ const getBalanceBTC = (address) => __awaiter(void 0, void 0, void 0, function* (
 exports.getBalanceBTC = getBalanceBTC;
 const getBalanceBTC_Cypher = (address) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const method = 'get';
-        const url = 'https://api.blockcypher.com/v1/btc/' + process.env.BLOCKCYPHER + '/addrs/' + address + '/balance?token=' + "efe763283ba84fef88d23412be0c5970";
+        const method = "get";
+        const url = "https://api.blockcypher.com/v1/btc/" +
+            process.env.BLOCKCYPHER +
+            "/addrs/" +
+            address +
+            "/balance?token=" +
+            "efe763283ba84fef88d23412be0c5970";
         const balance = yield axios_1.default[method](url, {
             headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
             },
-        }).then((response) => {
+        })
+            .then((response) => {
             if (response.data) {
                 const satoshi = response.data.balance;
                 const value_satoshi = 100000000;
-                return (satoshi / value_satoshi) || 0;
+                return satoshi / value_satoshi || 0;
             }
-            ;
             return 0;
-        }).catch((error) => {
+        })
+            .catch((error) => {
             return 0;
         });
         return balance;
@@ -135,7 +142,6 @@ const getBalanceBTC_Cypher = (address) => __awaiter(void 0, void 0, void 0, func
         console.log(error);
         return 0;
     }
-    ;
 });
 exports.getBalanceBTC_Cypher = getBalanceBTC_Cypher;
 function transactionBTC(fromAddress, privateKey, toAddress, coin, amount) {
@@ -157,7 +163,7 @@ function transactionBTC(fromAddress, privateKey, toAddress, coin, amount) {
             const value_satoshi = 100000000;
             const amountSatoshi = amount * value_satoshi;
             const vaultSatoshi = parseInt(String(for_vault * value_satoshi));
-            const tinysecp = require('tiny-secp256k1');
+            const tinysecp = require("tiny-secp256k1");
             const ECPair = (0, ecpair_1.ECPairFactory)(tinysecp);
             var keys = ECPair.fromWIF(privateKey, network);
             var data;
@@ -165,53 +171,45 @@ function transactionBTC(fromAddress, privateKey, toAddress, coin, amount) {
                 data = {
                     inputs: [
                         {
-                            addresses: [
-                                fromAddress
-                            ]
-                        }
+                            addresses: [fromAddress],
+                        },
                     ],
                     outputs: [
                         {
-                            addresses: [
-                                toAddress
-                            ],
-                            value: parseInt(String(amountSatoshi))
+                            addresses: [toAddress],
+                            value: parseInt(String(amountSatoshi)),
                         },
                         {
-                            addresses: [
-                                vault_address
-                            ],
-                            value: parseInt(String(vaultSatoshi))
-                        }
-                    ]
+                            addresses: [vault_address],
+                            value: parseInt(String(vaultSatoshi)),
+                        },
+                    ],
                 };
             }
             else {
                 data = {
                     inputs: [
                         {
-                            addresses: [
-                                fromAddress
-                            ]
-                        }
+                            addresses: [fromAddress],
+                        },
                     ],
                     outputs: [
                         {
-                            addresses: [
-                                toAddress
-                            ],
-                            value: parseInt(String(amountSatoshi))
-                        }
-                    ]
+                            addresses: [toAddress],
+                            value: parseInt(String(amountSatoshi)),
+                        },
+                    ],
                 };
             }
             var config = {
-                method: 'post',
-                url: 'https://api.blockcypher.com/v1/btc/' + process.env.BLOCKCYPHER + '/txs/new',
+                method: "post",
+                url: "https://api.blockcypher.com/v1/btc/" +
+                    process.env.BLOCKCYPHER +
+                    "/txs/new",
                 headers: {
-                    'Content-Type': 'application/json'
+                    "Content-Type": "application/json",
                 },
-                data: data
+                data: data,
             };
             let txHash = null;
             yield (0, axios_1.default)(config)
@@ -221,11 +219,17 @@ function transactionBTC(fromAddress, privateKey, toAddress, coin, amount) {
                     console.log(tmptx.data);
                     tmptx.data.pubkeys = [];
                     tmptx.data.signatures = tmptx.data.tosign.map(function (tosign, n) {
-                        tmptx.data.pubkeys.push(keys.publicKey.toString('hex'));
-                        return bitcoinjs_lib_1.script.signature.encode(keys.sign(Buffer.from(tosign, "hex")), 0x01).toString("hex").slice(0, -2);
+                        tmptx.data.pubkeys.push(keys.publicKey.toString("hex"));
+                        return bitcoinjs_lib_1.script.signature
+                            .encode(keys.sign(Buffer.from(tosign, "hex")), 0x01)
+                            .toString("hex")
+                            .slice(0, -2);
                     });
                     console.log("AQUI");
-                    const result = axios_1.default.post('https://api.blockcypher.com/v1/btc/' + process.env.BLOCKCYPHER + '/txs/send', tmptx.data)
+                    const result = axios_1.default
+                        .post("https://api.blockcypher.com/v1/btc/" +
+                        process.env.BLOCKCYPHER +
+                        "/txs/send", tmptx.data)
                         .then(function (finaltx) {
                         txHash = finaltx.data.tx.hash;
                         console.log("hash", finaltx.data.tx.hash);

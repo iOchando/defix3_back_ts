@@ -7,7 +7,13 @@ exports.encrypt = exports.decrypt = void 0;
 const crypto_1 = __importDefault(require("crypto"));
 const decrypt = (encryption) => {
     try {
-        const decoded = crypto_1.default.privateDecrypt({ key: process.env.PRIVATE_KEY, passphrase: process.env.PASSWORD_DB, padding: crypto_1.default.constants.RSA_PKCS1_OAEP_PADDING }, Buffer.from(encryption, 'hex')).toString();
+        const decoded = crypto_1.default
+            .privateDecrypt({
+            key: process.env.PRIVATE_KEY,
+            passphrase: process.env.PASSWORD_DB,
+            padding: crypto_1.default.constants.RSA_PKCS1_OAEP_PADDING,
+        }, Buffer.from(encryption, "hex"))
+            .toString();
         return decoded;
     }
     catch (error) {
@@ -17,8 +23,11 @@ const decrypt = (encryption) => {
 exports.decrypt = decrypt;
 const encrypt = (text) => {
     try {
-        const encrypted = crypto_1.default.publicEncrypt({ key: process.env.PUBLIC_KEY, padding: crypto_1.default.constants.RSA_PKCS1_OAEP_PADDING }, Buffer.from(text));
-        return encrypted.toString('hex');
+        const encrypted = crypto_1.default.publicEncrypt({
+            key: process.env.PUBLIC_KEY,
+            padding: crypto_1.default.constants.RSA_PKCS1_OAEP_PADDING,
+        }, Buffer.from(text));
+        return encrypted.toString("hex");
     }
     catch (error) {
         console.log(error);

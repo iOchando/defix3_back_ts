@@ -335,7 +335,7 @@ const swapPreviewETH = async (
 };
 
 async function swapTokenETH(
-  fromCoin: string,
+  blockchain: string,
   privateKey: string,
   priceRoute: OptimalRate
 ) {
@@ -365,8 +365,8 @@ async function swapTokenETH(
 
     if (!transactionHash) return false;
 
-    const resp_comision = await GET_COMISION(fromCoin);
-    const vault_address = await ADDRESS_VAULT(fromCoin);
+    const resp_comision = await GET_COMISION(blockchain);
+    const vault_address = await ADDRESS_VAULT(blockchain);
 
     const comision = resp_comision.swap / 100;
 

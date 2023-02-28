@@ -31,6 +31,9 @@ exports.router = router;
  *                  },
  *                  blockchain: {
  *                    type: "string"
+ *                  },
+ *                  address: {
+ *                    type: "string"
  *                  }
  *                }
  *      responses:
@@ -41,7 +44,7 @@ exports.router = router;
  *        '500':
  *          description: Bad Request.
  */
-router.post('/swap-preview/', swap_1.swapPreview);
+router.post("/swap-preview/", swap_1.swapPreview);
 /**
  * @swagger
  * /swap-token/:
@@ -87,5 +90,5 @@ router.post('/swap-preview/', swap_1.swapPreview);
  *        '500':
  *          description: Bad Request.
  */
-router.post('/swap-token/', swap_1.swapToken);
-router.post('/swap-tron/', swap_1.swapTron);
+router.post("/swap-token/", swap_1.swapToken);
+router.post("/swap-tron/", swap_1.swapTron);

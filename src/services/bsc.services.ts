@@ -323,7 +323,7 @@ const swapPreviewBNB = async (
 };
 
 async function swapTokenBSC(
-  fromCoin: string,
+  blockchain: string,
   privateKey: string,
   priceRoute: OptimalRate
 ) {
@@ -353,8 +353,8 @@ async function swapTokenBSC(
 
     if (!transactionHash) return false;
 
-    const resp_comision = await GET_COMISION(fromCoin);
-    const vault_address = await ADDRESS_VAULT(fromCoin);
+    const resp_comision = await GET_COMISION(blockchain);
+    const vault_address = await ADDRESS_VAULT(blockchain);
 
     const comision = resp_comision.swap / 100;
 

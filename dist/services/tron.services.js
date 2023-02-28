@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.transactionTokenTRON = exports.transactionTRON = exports.getBalanceTokenTRON = exports.getBalanceTRON = exports.isAddressTRON = exports.createWalletTRON = void 0;
 const utils_1 = require("../helpers/utils");
-const TronWeb = require('tronweb');
+const TronWeb = require("tronweb");
 const HttpProvider = TronWeb.providers.HttpProvider;
 const TRON_PRO_API_KEY = process.env.TRON_PRO_API_KEY;
 const FULL_NODE = process.env.FULL_NODE;
@@ -25,7 +25,7 @@ tronWeb.setHeader({ "TRON-PRO-API-KEY": TRON_PRO_API_KEY });
 const createWalletTRON = (mnemonic) => __awaiter(void 0, void 0, void 0, function* () {
     const account = yield tronWeb.fromMnemonic(mnemonic);
     let privateKey;
-    if (account.privateKey.indexOf('0x') === 0) {
+    if (account.privateKey.indexOf("0x") === 0) {
         privateKey = account.privateKey.slice(2);
     }
     else {
@@ -34,7 +34,7 @@ const createWalletTRON = (mnemonic) => __awaiter(void 0, void 0, void 0, functio
     const credential = {
         name: "TRX",
         address: account.address,
-        privateKey: privateKey
+        privateKey: privateKey,
     };
     return credential;
 });
@@ -54,18 +54,15 @@ const getBalanceTRON = (address) => __awaiter(void 0, void 0, void 0, function* 
             if (!balanceTotal) {
                 balanceTotal = 0;
             }
-            ;
             return balanceTotal;
         }
         else {
             return balanceTotal;
         }
-        ;
     }
     catch (error) {
         return 0;
     }
-    ;
 });
 exports.getBalanceTRON = getBalanceTRON;
 const getBalanceTokenTRON = (address, srcContract, decimals) => __awaiter(void 0, void 0, void 0, function* () {
@@ -96,13 +93,14 @@ function transactionTRON(fromAddress, privateKey, toAddress, coin, amount) {
         try {
             const balance = yield getBalanceTRON(fromAddress);
             if (balance < amount) {
-                console.log('Error: No tienes suficientes fondos para realizar la transferencia');
+                console.log("Error: No tienes suficientes fondos para realizar la transferencia");
                 return false;
             }
             tronWeb.setAddress(fromAddress);
             let value = Math.pow(10, 6);
             let srcAmount = parseInt(String(amount * value));
-            const tx = yield tronWeb.transactionBuilder.sendTrx(toAddress, srcAmount)
+            const tx = yield tronWeb.transactionBuilder
+                .sendTrx(toAddress, srcAmount)
                 .then(function (response) {
                 return response;
             })
@@ -111,7 +109,8 @@ function transactionTRON(fromAddress, privateKey, toAddress, coin, amount) {
             });
             if (!tx)
                 return false;
-            const signedTxn = yield tronWeb.trx.sign(tx, privateKey)
+            const signedTxn = yield tronWeb.trx
+                .sign(tx, privateKey)
                 .then(function (response) {
                 return response;
             })
@@ -148,7 +147,7 @@ function transactionTokenTRON(fromAddress, privateKey, toAddress, amount, srcTok
         try {
             const balance = yield getBalanceTokenTRON(fromAddress, srcToken.contract, srcToken.decimals);
             if (balance < amount) {
-                console.log('Error: No tienes suficientes fondos para realizar la transferencia');
+                console.log("Error: No tienes suficientes fondos para realizar la transferencia");
                 return false;
             }
             tronWeb.setAddress(fromAddress);
@@ -158,7 +157,7 @@ function transactionTokenTRON(fromAddress, privateKey, toAddress, amount, srcTok
             const transaction = yield contract.transfer(toAddress, srcAmount).send({
                 callValue: 0,
                 shouldPollResponse: true,
-                privateKey: privateKey
+                privateKey: privateKey,
             });
             console.log("TRANSACTION: ", transaction);
             return false;
@@ -174,7 +173,8 @@ function payCommissionTRON(fromAddress, privateKey, toAddress, amount) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             tronWeb.setAddress(fromAddress);
-            const tx = yield tronWeb.transactionBuilder.sendTrx(toAddress, amount)
+            const tx = yield tronWeb.transactionBuilder
+                .sendTrx(toAddress, amount)
                 .then(function (response) {
                 return response;
             })
@@ -182,7 +182,8 @@ function payCommissionTRON(fromAddress, privateKey, toAddress, amount) {
                 return false;
             });
             if (tx) {
-                const signedTxn = yield tronWeb.trx.sign(tx, privateKey)
+                const signedTxn = yield tronWeb.trx
+                    .sign(tx, privateKey)
                     .then(function (response) {
                     return response;
                 })

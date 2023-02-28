@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { validateDefixId, validateMnemonicDefix } from "../helpers/utils";
-import { status2faFn, validarCode2fa } from "./2fa";
+import { status2faFn, validarCode2fa } from "./2fa.controller";
 import { encrypt, decrypt } from "../helpers/crypto";
 import { User } from "../entities/user.entity";
 import AppDataSource from "../config/data.source";

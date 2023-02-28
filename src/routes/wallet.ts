@@ -9,7 +9,7 @@ import {
   importFromMnemonic,
   validateAddress,
   getUsers,
-} from "../controllers/wallet";
+} from "../controllers/wallet.controller";
 
 const router = Router();
 

@@ -33,4 +33,4 @@ exports.router = router;
  *        '500':
  *          description: Bad Request.
  */
-router.post('/set-email-subscribe/', subscribe_1.setEmailSubscribe);
+router.post("/set-email-subscribe/", subscribe_1.setEmailSubscribe);

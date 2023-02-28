@@ -38,7 +38,9 @@ const setEmailData = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                                 }
                                 break;
                             default:
-                                res.status(500).json({ respuesta: "Error interno del sistema" });
+                                res
+                                    .status(500)
+                                    .json({ respuesta: "Error interno del sistema" });
                                 break;
                         }
                     });
@@ -57,7 +59,7 @@ exports.setEmailData = setEmailData;
 function EjecutarsetEmailData(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { defixId, seedPhrase, email, flag_send, flag_receive, flag_dex, flag_fiat, name, last_name, legal_document, type_document } = req.body;
+            const { defixId, seedPhrase, email, flag_send, flag_receive, flag_dex, flag_fiat, name, last_name, legal_document, type_document, } = req.body;
             const mnemonic = (0, crypto_1.decrypt)(seedPhrase);
             if (!mnemonic)
                 return res.status(400).send();
@@ -81,7 +83,7 @@ function EjecutarsetEmailData(req, res) {
                 flag_send: flag_send,
                 flag_receive: flag_receive,
                 flag_dex: flag_dex,
-                flag_fiat: flag_fiat
+                flag_fiat: flag_fiat,
             });
             res.status(200).send();
         }
@@ -95,7 +97,19 @@ const getEmailData = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const { defixId } = req.body;
         const userData = yield data_source_1.default
             .createQueryBuilder(user_entity_1.User, "user")
-            .select(["user.defix_id", "user.email", "user.flag_send", "user.flag_receive", "user.flag_dex", "user.flag_fiat", "user.name", "user.lastname", "user.legal_document", "user.type_document", "user.dosfa"])
+            .select([
+            "user.defix_id",
+            "user.email",
+            "user.flag_send",
+            "user.flag_receive",
+            "user.flag_dex",
+            "user.flag_fiat",
+            "user.name",
+            "user.lastname",
+            "user.legal_document",
+            "user.type_document",
+            "user.dosfa",
+        ])
             .where("user.defix_id = :defixId", { defixId: defixId })
             .getOne();
         if (!userData)

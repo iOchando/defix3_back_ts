@@ -4,7 +4,7 @@ import {
   closeAllSessions,
   setEmailData,
   getEmailData,
-} from "../controllers/user";
+} from "../controllers/user.controller";
 
 const router = Router();
 

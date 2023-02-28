@@ -70,14 +70,14 @@ async function swapToken(req: Request, res: Response) {
 
     let swapHash: any;
     if (blockchain === "ETH") {
-      swapHash = await swapTokenETH(fromCoin, privateKey, priceRoute);
+      swapHash = await swapTokenETH(blockchain, privateKey, priceRoute);
     } else if (blockchain === "BNB") {
-      swapHash = await swapTokenBSC(fromCoin, privateKey, priceRoute);
+      swapHash = await swapTokenBSC(blockchain, privateKey, priceRoute);
     } else if (blockchain === "NEAR") {
       const address = await getAddressUser(fromDefix, blockchain);
       if (address) {
         swapHash = await swapTokenNEAR(
-          fromCoin,
+          blockchain,
           privateKey,
           priceRoute,
           address

@@ -9,4 +9,4 @@ const admin_1 = require("../controllers/admin");
 const admin_2 = __importDefault(require("../middleware/admin"));
 const router = (0, express_1.Router)();
 exports.router = router;
-router.get('/get-users-defix', admin_2.default, admin_1.getUsersDefix);
+router.get("/get-users-defix", admin_2.default, admin_1.getUsersDefix);

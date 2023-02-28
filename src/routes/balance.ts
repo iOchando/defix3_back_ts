@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { getCryptos, getBalance, getCryptosSwap } from "../controllers/balance";
+import { getCryptos, getBalance, getCryptosSwap } from "../controllers/balance.controller";
 
 const router = Router();
 

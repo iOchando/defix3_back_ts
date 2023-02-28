@@ -29,10 +29,6 @@ const fs_1 = require("fs");
 const PATH_ROUTER = `${__dirname}`;
 const router = (0, express_1.Router)();
 exports.router = router;
-/**
- *
- * @returns
- */
 const cleanFileName = (fileName) => {
     const file = fileName.split(".").shift();
     return file;

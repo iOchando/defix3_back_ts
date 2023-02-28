@@ -251,7 +251,7 @@ const swapPreviewNEAR = async (
 };
 
 async function swapTokenNEAR(
-  fromCoin: string,
+  blockchain: string,
   privateKey: string,
   priceRoute: any,
   address: string
@@ -285,7 +285,7 @@ async function swapTokenNEAR(
 
     let nearTransactions = [];
 
-    if (fromCoin === "NEAR") {
+    if (data.actions[0].token_in.includes("wrap.")) {
       const trx = await createTransactionFn(
         data.actions[0].token_in,
         [
@@ -343,34 +343,36 @@ async function swapTokenNEAR(
     let resultSwap: any;
     for (let trx of nearTransactions) {
       console.log("ENTRA");
+      console.log(trx.actions[0].functionCall.methodName);
       const result = await account.signAndSendTransaction(trx);
       console.log(result);
-      console.log(trx.actions[0].functionCall.methodName);
 
       if (trx.actions[0].functionCall.methodName === "ft_transfer_call") {
         resultSwap = result;
       }
     }
-    console.log("*************************************");
 
-    console.log(resultSwap);
-
-    console.log("*************************************");
     if (!resultSwap.transaction.hash) return false;
 
     const transactionHash = resultSwap.transaction.hash;
 
     if (!transactionHash) return false;
 
-    const resp_comision = await GET_COMISION(fromCoin);
-    const vault_address = await ADDRESS_VAULT(fromCoin);
+    const resp_comision = await GET_COMISION(blockchain);
+    const vault_address = await ADDRESS_VAULT(blockchain);
 
     const comision = resp_comision.swap / 100;
 
-    let amount_vault = Number(priceRoute.gasCostUSD) * comision;
+    let amount_vault = String(
+      Number(data.actions[0].min_amount_out / Math.pow(10, 24)) * comision
+    );
+    const amountYocto = utils.format.parseNearAmount(amount_vault);
 
-    if (amount_vault !== 0 && vault_address) {
-      // await payCommissionNEAR(address, privateKey, vault_address, amount_vault);
+    if (amount_vault && vault_address && amountYocto) {
+      await account.sendMoney(
+        vault_address, // receiver account
+        new BN(amountYocto) // amount in yoctoNEAR
+      );
     }
 
     const srcAmount = String(
@@ -379,8 +381,6 @@ async function swapTokenNEAR(
     const destAmount = String(
       Number(data.actions[0].amount_out) / Math.pow(10, tokenOut.decimals)
     );
-
-    console.log(data.actions[0].amount_out, tokenOut.decimals);
 
     return {
       transactionHash: transactionHash,

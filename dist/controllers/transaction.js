@@ -32,7 +32,12 @@ function transaction(req, res) {
             const { fromDefix, pkEncrypt, toDefix, coin, amount, blockchain, code } = req.body;
             let transactionHash, fromAddress, toAddress, tipoEnvio;
             const privateKey = (0, crypto_1.decrypt)(pkEncrypt);
-            if (!fromDefix || !privateKey || !toDefix || !coin || !amount || !blockchain)
+            if (!fromDefix ||
+                !privateKey ||
+                !toDefix ||
+                !coin ||
+                !amount ||
+                !blockchain)
                 return res.status(400).send();
             if (fromDefix.includes(".defix3")) {
                 fromAddress = yield (0, utils_1.getAddressUser)(fromDefix, blockchain);
@@ -88,17 +93,17 @@ function transaction(req, res) {
             }
             if (!transactionHash)
                 return res.status(500).send();
-            const resSend = yield (0, mail_1.getEmailFlagFN)(fromDefix, 'SEND');
-            const resReceive = yield (0, mail_1.getEmailFlagFN)(toDefix, 'RECEIVE');
+            const resSend = yield (0, mail_1.getEmailFlagFN)(fromDefix, "SEND");
+            const resReceive = yield (0, mail_1.getEmailFlagFN)(toDefix, "RECEIVE");
             const item = {
                 monto: amount,
                 moneda: coin,
                 receptor: toDefix,
                 emisor: fromDefix,
-                tipoEnvio: tipoEnvio
+                tipoEnvio: tipoEnvio,
             };
-            (0, mail_1.EnvioCorreo)(resSend, resReceive, 'envio', item);
-            const transaction = yield (0, utils_1.saveTransaction)(fromDefix, toDefix, coin, blockchain, amount, fromAddress, toAddress, transactionHash, 'TRANSFER');
+            (0, mail_1.EnvioCorreo)(resSend, resReceive, "envio", item);
+            const transaction = yield (0, utils_1.saveTransaction)(fromDefix, toDefix, coin, blockchain, amount, fromAddress, toAddress, transactionHash, "TRANSFER");
             yield saveFrequent(fromDefix, toDefix);
             return res.send(transaction);
         }
@@ -111,7 +116,10 @@ exports.transaction = transaction;
 function saveFrequent(defixId, frequentUser) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const userFrequent = yield frequent_entity_1.Frequent.findOneBy({ user: { defix_id: defixId }, frequent_user: frequentUser });
+            const userFrequent = yield frequent_entity_1.Frequent.findOneBy({
+                user: { defix_id: defixId },
+                frequent_user: frequentUser,
+            });
             if (userFrequent)
                 return false;
             const user = yield user_entity_1.User.findOneBy({ defix_id: defixId });
@@ -132,7 +140,9 @@ function getFrequent(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { defixId } = req.body;
-            const frequents = yield frequent_entity_1.Frequent.find({ where: { user: { defix_id: defixId } } });
+            const frequents = yield frequent_entity_1.Frequent.find({
+                where: { user: { defix_id: defixId } },
+            });
             res.send(frequents);
         }
         catch (error) {

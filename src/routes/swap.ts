@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { swapPreview, swapToken, swapTron } from "../controllers/swap";
+import { swapPreview, swapToken, swapTron } from "../controllers/swap.controller";
 
 const router = Router();
 
@@ -28,6 +28,9 @@ const router = Router();
  *                    type: "number"
  *                  },
  *                  blockchain: {
+ *                    type: "string"
+ *                  },
+ *                  address: {
  *                    type: "string"
  *                  }
  *                }

@@ -40,7 +40,6 @@ const getCryptos = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         // console.log(error)
         res.status(400).send();
     }
-    ;
 });
 exports.getCryptos = getCryptos;
 const getCryptosSwap = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -59,13 +58,14 @@ const getCryptosSwap = (req, res) => __awaiter(void 0, void 0, void 0, function*
         // console.log(error)
         res.status(400).send();
     }
-    ;
 });
 exports.getCryptosSwap = getCryptosSwap;
 const getBalance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { defixId } = req.body;
-        const addresses = yield addresses_entity_1.Address.find({ where: { user: { defix_id: defixId } } });
+        const addresses = yield addresses_entity_1.Address.find({
+            where: { user: { defix_id: defixId } },
+        });
         if (addresses.length === 0)
             return res.status(404).send();
         const cryptos = yield (0, utils_1.getCryptosFn)();
@@ -75,9 +75,9 @@ const getBalance = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 coin: crypto.coin,
                 blockchain: crypto.blockchain,
                 balance: 0,
-                tokens: []
+                tokens: [],
             };
-            const addressItem = addresses.find(element => element.name === crypto.coin);
+            const addressItem = addresses.find((element) => element.name === crypto.coin);
             if (!addressItem)
                 return res.status(404).send();
             const address = addressItem.address || "";
@@ -148,7 +148,7 @@ const getBalance = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     break;
                 }
                 default: {
-                    //statements; 
+                    //statements;
                     break;
                 }
             }
@@ -169,34 +169,50 @@ const balanceDataBaseFn = (defixId, balances) => __awaiter(void 0, void 0, void 
         if (!user)
             return false;
         for (let balance of balances) {
-            const balanceItem = yield balances_entity_1.Balances.findOneBy({ user: { defix_id: defixId }, blockchain: balance.blockchain, coin: balance.coin });
+            const balanceItem = yield balances_entity_1.Balances.findOneBy({
+                user: { defix_id: defixId },
+                blockchain: balance.blockchain,
+                coin: balance.coin,
+            });
             if (!balanceItem) {
                 yield balances_entity_1.Balances.create({
                     user: user,
                     blockchain: balance.blockchain,
                     coin: balance.coin,
-                    balance: balance.balance
+                    balance: balance.balance,
                 }).save();
             }
             else {
-                const update = yield balances_entity_1.Balances.findOneBy({ user: { defix_id: defixId }, blockchain: balance.blockchain, coin: balance.coin });
+                const update = yield balances_entity_1.Balances.findOneBy({
+                    user: { defix_id: defixId },
+                    blockchain: balance.blockchain,
+                    coin: balance.coin,
+                });
                 if (!update)
                     break;
                 update.balance = balance.balance;
                 update.save();
             }
             for (let token of balance.tokens) {
-                const balanceToken = yield balances_entity_1.Balances.findOneBy({ user: { id: user.id }, blockchain: balance.blockchain, coin: token.coin });
+                const balanceToken = yield balances_entity_1.Balances.findOneBy({
+                    user: { id: user.id },
+                    blockchain: balance.blockchain,
+                    coin: token.coin,
+                });
                 if (!balanceToken) {
                     yield balances_entity_1.Balances.create({
                         user: user,
                         blockchain: balance.blockchain,
                         coin: token.coin,
-                        balance: token.balance
+                        balance: token.balance,
                     }).save();
                 }
                 else {
-                    const update = yield balances_entity_1.Balances.findOneBy({ user: { defix_id: defixId }, blockchain: balance.blockchain, coin: token.coin });
+                    const update = yield balances_entity_1.Balances.findOneBy({
+                        user: { defix_id: defixId },
+                        blockchain: balance.blockchain,
+                        coin: token.coin,
+                    });
                     if (!update)
                         break;
                     update.balance = token.balance;
@@ -208,5 +224,4 @@ const balanceDataBaseFn = (defixId, balances) => __awaiter(void 0, void 0, void 
     catch (error) {
         console.log(error);
     }
-    ;
 });

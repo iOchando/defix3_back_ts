@@ -117,7 +117,7 @@ router.post("/create-wallet/", wallet_1.createWallet);
  *        '500':
  *          description: Bad Request.
  */
-router.post('/import-wallet/', wallet_1.importWallet);
+router.post("/import-wallet/", wallet_1.importWallet);
 /**
  * Post track
  * @swagger
@@ -146,7 +146,7 @@ router.post('/import-wallet/', wallet_1.importWallet);
  *        '500':
  *          description: Bad Request.
  */
-router.post('/validate-defix3/', wallet_1.validateDefixIdAPI);
+router.post("/validate-defix3/", wallet_1.validateDefixIdAPI);
 /**
  * Post track
  * @swagger
@@ -180,7 +180,7 @@ router.post('/validate-defix3/', wallet_1.validateDefixIdAPI);
  *        '500':
  *          description: Bad Request.
  */
-router.post('/import-from-mnemonic/', wallet_1.importFromMnemonic);
+router.post("/import-from-mnemonic/", wallet_1.importFromMnemonic);
 /**
  * Post track
  * @swagger
@@ -198,7 +198,7 @@ router.post('/import-from-mnemonic/', wallet_1.importFromMnemonic);
  *        '500':
  *          description: Bad Request.
  */
-router.get('/get-users', wallet_1.getUsers);
+router.get("/get-users", wallet_1.getUsers);
 /**
  * Post track
  * @swagger
@@ -230,4 +230,4 @@ router.get('/get-users', wallet_1.getUsers);
  *        '500':
  *          description: Bad Request.
  */
-router.post('/validate-address/', wallet_1.validateAddress);
+router.post("/validate-address/", wallet_1.validateAddress);

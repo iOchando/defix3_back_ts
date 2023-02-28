@@ -24,7 +24,7 @@ __decorate([
 ], Frequent.prototype, "user", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", String)
 ], Frequent.prototype, "frequent_user", void 0);

@@ -19,68 +19,68 @@ __decorate([
 ], Transaction.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", String)
 ], Transaction.prototype, "from_defix", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", String)
 ], Transaction.prototype, "from_address", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", String)
 ], Transaction.prototype, "to_defix", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", String)
 ], Transaction.prototype, "to_address", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", String)
 ], Transaction.prototype, "coin", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", String)
 ], Transaction.prototype, "blockchain", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true,
-        type: "float"
+        type: "float",
     }),
     __metadata("design:type", Number)
 ], Transaction.prototype, "value", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", String)
 ], Transaction.prototype, "hash", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", String)
 ], Transaction.prototype, "tipo", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", String)
 ], Transaction.prototype, "date_year", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true
+        nullable: true,
     }),
     __metadata("design:type", String)
 ], Transaction.prototype, "date_month", void 0);

@@ -20,7 +20,7 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true,
-        unique: true
+        unique: true,
     }),
     __metadata("design:type", String)
 ], Subscribe.prototype, "email", void 0);
