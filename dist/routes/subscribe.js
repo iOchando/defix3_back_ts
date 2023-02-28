@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.router = void 0;
 const express_1 = require("express");
-const subscribe_1 = require("../controllers/subscribe");
+const subscribe_controller_1 = require("../controllers/subscribe.controller");
 const router = (0, express_1.Router)();
 exports.router = router;
 /**
@@ -33,4 +33,4 @@ exports.router = router;
  *        '500':
  *          description: Bad Request.
  */
-router.post("/set-email-subscribe/", subscribe_1.setEmailSubscribe);
+router.post("/set-email-subscribe/", subscribe_controller_1.setEmailSubscribe);

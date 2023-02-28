@@ -2,12 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.router = void 0;
 const express_1 = require("express");
-const wallet_1 = require("../controllers/wallet");
+const wallet_controller_1 = require("../controllers/wallet.controller");
 const router = (0, express_1.Router)();
 exports.router = router;
-router.post("/encrypt/", wallet_1.encryptAPI);
-wallet_1.importFromPK;
-router.post("/import-from-pk/", wallet_1.importFromPK);
+router.post("/encrypt/", wallet_controller_1.encryptAPI);
+wallet_controller_1.importFromPK;
+router.post("/import-from-pk/", wallet_controller_1.importFromPK);
 /**
  * Post track
  * @swagger
@@ -49,7 +49,7 @@ router.post("/import-from-pk/", wallet_1.importFromPK);
  *        '500':
  *          description: Bad Request.
  */
-router.post("/generate-mnemonic/", wallet_1.generateMnemonicAPI);
+router.post("/generate-mnemonic/", wallet_controller_1.generateMnemonicAPI);
 /**
  * Post track
  * @swagger
@@ -86,7 +86,7 @@ router.post("/generate-mnemonic/", wallet_1.generateMnemonicAPI);
  *        '500':
  *          description: Bad Request.
  */
-router.post("/create-wallet/", wallet_1.createWallet);
+router.post("/create-wallet/", wallet_controller_1.createWallet);
 /**
  * Post track
  * @swagger
@@ -117,7 +117,7 @@ router.post("/create-wallet/", wallet_1.createWallet);
  *        '500':
  *          description: Bad Request.
  */
-router.post("/import-wallet/", wallet_1.importWallet);
+router.post("/import-wallet/", wallet_controller_1.importWallet);
 /**
  * Post track
  * @swagger
@@ -146,7 +146,7 @@ router.post("/import-wallet/", wallet_1.importWallet);
  *        '500':
  *          description: Bad Request.
  */
-router.post("/validate-defix3/", wallet_1.validateDefixIdAPI);
+router.post("/validate-defix3/", wallet_controller_1.validateDefixIdAPI);
 /**
  * Post track
  * @swagger
@@ -180,7 +180,7 @@ router.post("/validate-defix3/", wallet_1.validateDefixIdAPI);
  *        '500':
  *          description: Bad Request.
  */
-router.post("/import-from-mnemonic/", wallet_1.importFromMnemonic);
+router.post("/import-from-mnemonic/", wallet_controller_1.importFromMnemonic);
 /**
  * Post track
  * @swagger
@@ -198,7 +198,7 @@ router.post("/import-from-mnemonic/", wallet_1.importFromMnemonic);
  *        '500':
  *          description: Bad Request.
  */
-router.get("/get-users", wallet_1.getUsers);
+router.get("/get-users", wallet_controller_1.getUsers);
 /**
  * Post track
  * @swagger
@@ -230,4 +230,4 @@ router.get("/get-users", wallet_1.getUsers);
  *        '500':
  *          description: Bad Request.
  */
-router.post("/validate-address/", wallet_1.validateAddress);
+router.post("/validate-address/", wallet_controller_1.validateAddress);

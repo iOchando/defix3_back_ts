@@ -14,19 +14,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getEmailData = exports.setEmailData = exports.closeAllSessions = exports.getCloseAllSesions = void 0;
 const utils_1 = require("../helpers/utils");
-const _2fa_1 = require("./2fa");
+const _2fa_controller_1 = require("./2fa.controller");
 const crypto_1 = require("../helpers/crypto");
 const user_entity_1 = require("../entities/user.entity");
 const data_source_1 = __importDefault(require("../config/data.source"));
 const setEmailData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { defixId } = req.body;
     const DefixId = defixId.toLowerCase();
-    (0, _2fa_1.status2faFn)(DefixId).then((respStatus) => {
+    (0, _2fa_controller_1.status2faFn)(DefixId).then((respStatus) => {
         switch (respStatus) {
             case true:
                 {
                     const { code } = req.body;
-                    (0, _2fa_1.validarCode2fa)(code, DefixId).then((respValidacion) => {
+                    (0, _2fa_controller_1.validarCode2fa)(code, DefixId).then((respValidacion) => {
                         console.log(respValidacion);
                         switch (respValidacion) {
                             case true: {

@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.router = void 0;
 const express_1 = require("express");
-const _2fa_1 = require("../controllers/2fa");
+const _2fa_controller_1 = require("../controllers/2fa.controller");
 const router = (0, express_1.Router)();
 exports.router = router;
 /**
@@ -36,7 +36,7 @@ exports.router = router;
  *        '500':
  *          description: Bad Request.
  */
-router.post("/generar-2fa/", _2fa_1.generar2fa);
+router.post("/generar-2fa/", _2fa_controller_1.generar2fa);
 /**
  * Post track
  * @swagger
@@ -71,7 +71,7 @@ router.post("/generar-2fa/", _2fa_1.generar2fa);
  *        '500':
  *          description: Bad Request.
  */
-router.post("/activar-2fa/", _2fa_1.activar2fa);
+router.post("/activar-2fa/", _2fa_controller_1.activar2fa);
 /**
  * Post track
  * @swagger
@@ -103,7 +103,7 @@ router.post("/activar-2fa/", _2fa_1.activar2fa);
  *        '500':
  *          description: Bad Request.
  */
-router.post("/desactivar-2fa/", _2fa_1.desactivar2fa);
+router.post("/desactivar-2fa/", _2fa_controller_1.desactivar2fa);
 /**
  * Post track
  * @swagger
@@ -132,4 +132,4 @@ router.post("/desactivar-2fa/", _2fa_1.desactivar2fa);
  *        '500':
  *          description: Bad Request.
  */
-router.post("/status-2fa/", _2fa_1.status2fa);
+router.post("/status-2fa/", _2fa_controller_1.status2fa);

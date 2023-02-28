@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.router = void 0;
 const express_1 = require("express");
-const user_1 = require("../controllers/user");
+const user_controller_1 = require("../controllers/user.controller");
 const router = (0, express_1.Router)();
 exports.router = router;
 /**
@@ -36,7 +36,7 @@ exports.router = router;
  *        '500':
  *          description: Bad Request.
  */
-router.post("/close-all-sessions/", user_1.closeAllSessions);
+router.post("/close-all-sessions/", user_controller_1.closeAllSessions);
 /**
  * Post track
  * @swagger
@@ -65,7 +65,7 @@ router.post("/close-all-sessions/", user_1.closeAllSessions);
  *        '500':
  *          description: Bad Request.
  */
-router.post("/get-close-all-sessions/", user_1.getCloseAllSesions);
+router.post("/get-close-all-sessions/", user_controller_1.getCloseAllSesions);
 // defixId, seedPhrase, email, flag_send, flag_receive, flag_dex, flag_fiat, name, last_name, legal_document, type_document
 /**
  * Post track
@@ -125,7 +125,7 @@ router.post("/get-close-all-sessions/", user_1.getCloseAllSesions);
  *        '500':
  *          description: Bad Request.
  */
-router.post("/set-email-data/", user_1.setEmailData);
+router.post("/set-email-data/", user_controller_1.setEmailData);
 /**
  * Post track
  * @swagger
@@ -154,4 +154,4 @@ router.post("/set-email-data/", user_1.setEmailData);
  *        '500':
  *          description: Bad Request.
  */
-router.post("/get-email-data/", user_1.getEmailData);
+router.post("/get-email-data/", user_controller_1.getEmailData);

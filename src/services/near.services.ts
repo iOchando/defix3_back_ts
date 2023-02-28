@@ -6,6 +6,7 @@ import {
   utils,
   ConnectedWalletAccount,
   WalletConnection,
+  Contract,
 } from "near-api-js";
 import axios from "axios";
 const nearSEED = require("near-seed-phrase");
@@ -115,6 +116,39 @@ const getBalanceNEAR = async (address: string) => {
     } else {
       return balanceTotal;
     }
+  } catch (error) {
+    return 0;
+  }
+};
+
+const getBalanceTokenNEAR = async (
+  address: string,
+  srcContract: string,
+  decimals: number
+) => {
+  try {
+    const keyStore = new keyStores.InMemoryKeyStore();
+    const near = new Near(CONFIG(keyStore));
+
+    const account = new Account(near.connection, address);
+
+    const contract = new Contract(account, srcContract, {
+      changeMethods: [],
+      viewMethods: ["get_users"],
+    });
+
+    console.log(contract);
+
+    // if (balance) {
+    //   let value = Math.pow(10, decimals);
+    //   balanceTotal = balance / value;
+    //   if (!balanceTotal) {
+    //     balanceTotal = 0;
+    //   }
+    //   return balanceTotal;
+    // } else {
+    //   return balanceTotal;
+    // }
   } catch (error) {
     return 0;
   }

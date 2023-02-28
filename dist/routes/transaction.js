@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.router = void 0;
 const express_1 = require("express");
-const transaction_1 = require("../controllers/transaction");
+const transaction_controller_1 = require("../controllers/transaction.controller");
 const router = (0, express_1.Router)();
 exports.router = router;
 /**
@@ -47,7 +47,7 @@ exports.router = router;
  *        '500':
  *          description: Bad Request.
  */
-router.post("/transaction/", transaction_1.transaction);
+router.post("/transaction/", transaction_controller_1.transaction);
 /**
  * @swagger
  * /transaction-history/:
@@ -90,7 +90,7 @@ router.post("/transaction/", transaction_1.transaction);
  *        '500':
  *          description: Bad Request.
  */
-router.post("/transaction-history/", transaction_1.getTransactionHistory);
+router.post("/transaction-history/", transaction_controller_1.getTransactionHistory);
 /**
  * @swagger
  * /get-frequent/:
@@ -118,7 +118,7 @@ router.post("/transaction-history/", transaction_1.getTransactionHistory);
  *        '500':
  *          description: Bad Request.
  */
-router.post("/get-frequent/", transaction_1.getFrequent);
+router.post("/get-frequent/", transaction_controller_1.getFrequent);
 /**
  * @swagger
  * /delete-frequent/:
@@ -146,4 +146,4 @@ router.post("/get-frequent/", transaction_1.getFrequent);
  *        '500':
  *          description: Bad Request.
  */
-router.post("/delete-frequent/", transaction_1.deleteFrequent);
+router.post("/delete-frequent/", transaction_controller_1.deleteFrequent);

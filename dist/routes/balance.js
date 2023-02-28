@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.router = void 0;
 const express_1 = require("express");
-const balance_1 = require("../controllers/balance");
+const balance_controller_1 = require("../controllers/balance.controller");
 const router = (0, express_1.Router)();
 exports.router = router;
 /**
@@ -22,7 +22,7 @@ exports.router = router;
  *        '500':
  *          description: Bad Request.
  */
-router.get("/get-cryptos", balance_1.getCryptos);
+router.get("/get-cryptos", balance_controller_1.getCryptos);
 /**
  * Post track
  * @swagger
@@ -40,7 +40,7 @@ router.get("/get-cryptos", balance_1.getCryptos);
  *        '500':
  *          description: Bad Request.
  */
-router.get("/get-cryptos-swap", balance_1.getCryptosSwap);
+router.get("/get-cryptos-swap", balance_controller_1.getCryptosSwap);
 /**
  * Post track
  * @swagger
@@ -69,4 +69,4 @@ router.get("/get-cryptos-swap", balance_1.getCryptosSwap);
  *        '500':
  *          description: Bad Request.
  */
-router.post("/get-balance/", balance_1.getBalance);
+router.post("/get-balance/", balance_controller_1.getBalance);

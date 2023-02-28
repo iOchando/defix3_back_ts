@@ -10,15 +10,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validation2FA = void 0;
-const _2fa_1 = require("../controllers/2fa");
+const _2fa_controller_1 = require("../controllers/2fa.controller");
 const validation2FA = (defixId, code) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const status = yield (0, _2fa_1.status2faFn)(defixId);
+        const status = yield (0, _2fa_controller_1.status2faFn)(defixId);
         if (!status)
             return true;
         if (!code)
             return false;
-        const validate = yield (0, _2fa_1.validarCode2fa)(code, defixId);
+        const validate = yield (0, _2fa_controller_1.validarCode2fa)(code, defixId);
         if (!validate)
             return false;
         return true;

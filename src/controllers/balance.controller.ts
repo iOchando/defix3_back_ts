@@ -86,6 +86,7 @@ const getBalance = async (req: Request, res: Response) => {
       const balanceCrypto: BalanceCrypto = {
         coin: crypto.coin,
         blockchain: crypto.blockchain,
+        icon: crypto.icon,
         balance: 0,
         tokens: [],
       };
@@ -113,6 +114,7 @@ const getBalance = async (req: Request, res: Response) => {
             const itemToken: Balance = {
               coin: token.coin,
               balance: 0,
+              icon: token.icon,
             };
 
             itemToken.balance = await getBalanceTokenETH(
@@ -149,6 +151,7 @@ const getBalance = async (req: Request, res: Response) => {
             const itemToken: Balance = {
               coin: token.coin,
               balance: 0,
+              icon: token.icon,
             };
 
             itemToken.balance = await getBalanceTokenBSC(
@@ -160,6 +163,22 @@ const getBalance = async (req: Request, res: Response) => {
             balanceCrypto.tokens.push(itemToken);
           }
           break;
+
+          // const keyStore = new keyStores.InMemoryKeyStore();
+
+          // const keyPair = KeyPair.fromString(SIGNER_PRIVATEKEY);
+          // keyStore.setKey(NETWORK, SIGNER_ID, keyPair);
+
+          // const near = new Near(CONFIG(keyStore));
+
+          // const account = new Account(near.connection, SIGNER_ID);
+
+          // const contract = new Contract(account, CONTRACT_NAME, {
+          //   viewMethods: ["get_users"],
+          //   sender: account,
+          // });
+
+          // const response = await contract.get_users();
         }
         case "TRX": {
           if (!address) {
@@ -171,6 +190,7 @@ const getBalance = async (req: Request, res: Response) => {
             const itemToken: Balance = {
               coin: token.coin,
               balance: 0,
+              icon: token.icon,
             };
 
             itemToken.balance = await getBalanceTokenTRON(

@@ -23,10 +23,13 @@ const decrypt = (encryption) => {
 exports.decrypt = decrypt;
 const encrypt = (text) => {
     try {
+        console.log(crypto_1.default.constants.RSA_PKCS1_OAEP_PADDING);
+        console.log(crypto_1.default.constants.RSA_PKCS1_OAEP_PADDING);
         const encrypted = crypto_1.default.publicEncrypt({
             key: process.env.PUBLIC_KEY,
             padding: crypto_1.default.constants.RSA_PKCS1_OAEP_PADDING,
         }, Buffer.from(text));
+        console.log(encrypted);
         return encrypted.toString("hex");
     }
     catch (error) {

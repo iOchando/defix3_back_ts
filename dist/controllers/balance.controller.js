@@ -74,6 +74,7 @@ const getBalance = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             const balanceCrypto = {
                 coin: crypto.coin,
                 blockchain: crypto.blockchain,
+                icon: crypto.icon,
                 balance: 0,
                 tokens: [],
             };
@@ -97,6 +98,7 @@ const getBalance = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                         const itemToken = {
                             coin: token.coin,
                             balance: 0,
+                            icon: token.icon,
                         };
                         itemToken.balance = yield (0, eth_services_1.getBalanceTokenETH)(address, token.contract, token.decimals);
                         balanceCrypto.tokens.push(itemToken);
@@ -125,6 +127,7 @@ const getBalance = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                         const itemToken = {
                             coin: token.coin,
                             balance: 0,
+                            icon: token.icon,
                         };
                         itemToken.balance = yield (0, bsc_services_1.getBalanceTokenBSC)(address, token.contract, token.decimals);
                         balanceCrypto.tokens.push(itemToken);
@@ -141,6 +144,7 @@ const getBalance = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                         const itemToken = {
                             coin: token.coin,
                             balance: 0,
+                            icon: token.icon,
                         };
                         itemToken.balance = yield (0, tron_services_1.getBalanceTokenTRON)(address, token.contract, token.decimals);
                         balanceCrypto.tokens.push(itemToken);

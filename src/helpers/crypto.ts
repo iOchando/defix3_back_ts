@@ -1,6 +1,6 @@
 import crypto from "crypto";
 
-const decrypt = (encryption: string) => {
+const decryptAPI = (encryption: string) => {
   try {
     const decoded = crypto
       .privateDecrypt(
@@ -18,6 +18,26 @@ const decrypt = (encryption: string) => {
   }
 };
 
+const decrypt = (encryption: string) => {
+  try {
+    const cipheredBytes = Buffer.from(encryption, "base64");
+    const decoded = crypto
+      .privateDecrypt(
+        {
+          key: process.env.PRIVATE_KEY as string,
+          passphrase: process.env.PASSWORD_DB,
+          padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+        },
+        cipheredBytes
+      )
+      .toString();
+    return decoded;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
 const encrypt = (text: string) => {
   try {
     const encrypted = crypto.publicEncrypt(
@@ -27,30 +47,11 @@ const encrypt = (text: string) => {
       },
       Buffer.from(text)
     );
-    return encrypted.toString("hex");
+    return encrypted.toString("base64");
   } catch (error) {
     console.log(error);
     return false;
   }
 };
-
-// import fs from 'fs';
-
-// Generación de claves
-// const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
-//   modulusLength: 2048,
-//   publicKeyEncoding: {
-//     type: 'spki',
-//     format: 'pem'
-//   },
-//   privateKeyEncoding: {
-//     type: 'pkcs8',
-//     format: 'pem',
-//     cipher: 'aes-256-cbc',
-//     passphrase: process.env.PASSWORD_DB
-//   }
-// });
-// fs.writeFileSync('clave_publica.pem', publicKey);
-// fs.writeFileSync('clave_privada.pem', privateKey);
 
 export { decrypt, encrypt };
