@@ -250,19 +250,20 @@ const validatePK = async (privateKey: string, blockchain: string) => {
   try {
     if (!privateKey || !blockchain) return false;
 
+    let credential;
+
     if (blockchain === "BTC") {
-      await validatePkBTC(privateKey);
+      credential = await validatePkBTC(privateKey);
     } else if (blockchain === "ETH") {
-      await isAddressETH(privateKey);
+      credential = await isAddressETH(privateKey);
     } else if (blockchain === "BNB") {
-      await isAddressBNB(privateKey);
+      credential = await isAddressBNB(privateKey);
     } else if (blockchain === "TRX") {
-      await isAddressTRON(privateKey);
+      credential = await isAddressTRON(privateKey);
     } else if (blockchain === "NEAR") {
-      await validatePkNEAR(privateKey);
-    } else {
-      return false;
+      credential = await validatePkNEAR(privateKey);
     }
+    return credential;
   } catch (error) {
     return false;
   }
@@ -278,14 +279,16 @@ const importFromPK = async (req: Request, res: Response) => {
 
     const cryptos = await getCryptosFn();
 
-    console.log(cryptos);
+    const credentials: Credential[] = [];
 
     for (let crypto of cryptos) {
       const validate = await validatePK(privateKey, crypto.coin);
-      console.log(validate);
+      if (validate) {
+        credentials.push(validate as Credential);
+      }
     }
 
-    res.send();
+    res.send(credentials);
 
     // const exists: boolean = await validateDefixId(defixId.toLowerCase());
 

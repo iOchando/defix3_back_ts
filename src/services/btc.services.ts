@@ -11,7 +11,7 @@ import BIP32Factory from "bip32";
 import * as ecc from "tiny-secp256k1";
 import { BIP32Interface } from "bip32";
 const bip32 = BIP32Factory(ecc);
-
+import crypto from "crypto";
 import { Credential } from "../interfaces/credential.interface";
 import { ADDRESS_VAULT, GET_COMISION } from "../helpers/utils";
 
@@ -61,22 +61,40 @@ const isAddressBTC = async (address: string) => {
 
 const validatePkBTC = async (privateKey: string) => {
   try {
-    console.log("ENTRO");
     let network;
     let path;
     if (NETWORK === "mainnet") {
       network = networks.bitcoin; //use networks.testnet networks.bitcoin for testnet
       path = `m/49'/0'/0'/0`; // Use m/49'/1'/0'/0 for testnet mainnet `m/49'/0'/0'/0
     } else {
-      network = networks.testnet;
+      network = networks.testnet; //use networks.testnet networks.bitcoin for testnet;
       path = `m/49'/1/0'/0`;
     }
 
-    var keys = ECPair.fromPrivateKey(Buffer.from(privateKey, "utf-8"));
+    const keyPair = ECPair.fromWIF(privateKey, network);
+    if (!keyPair.privateKey) return false;
 
-    console.log(keys);
+    const chainCode = Buffer.alloc(32);
+    const root: BIP32Interface = bip32.fromPrivateKey(
+      keyPair.privateKey,
+      chainCode
+    );
+
+    const { address } = payments.p2pkh({
+      pubkey: root.publicKey,
+      network: network,
+    });
+
+    if (!address) return false;
+
+    const credential: Credential = {
+      name: "BTC",
+      address: address,
+      privateKey: keyPair.toWIF(),
+    };
+
+    return credential;
   } catch (error) {
-    console.log(error);
     return false;
   }
 };

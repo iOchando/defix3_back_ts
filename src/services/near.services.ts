@@ -91,8 +91,22 @@ const isAddressNEAR = async (address: string) => {
 };
 
 const validatePkNEAR = async (privateKey: string) => {
-  const keyPair = KeyPair.fromString(privateKey);
-  console.log(keyPair.getPublicKey().toString());
+  try {
+    const keyPair = KeyPair.fromString(privateKey);
+    const implicitAccountId = Buffer.from(keyPair.getPublicKey().data).toString(
+      "hex"
+    );
+
+    const credential: Credential = {
+      name: "NEAR",
+      address: implicitAccountId,
+      privateKey: privateKey,
+    };
+
+    return credential;
+  } catch (error) {
+    return false;
+  }
 };
 
 const getBalanceNEAR = async (address: string) => {
