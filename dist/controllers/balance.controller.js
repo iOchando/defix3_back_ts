@@ -133,6 +133,16 @@ const getBalance = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                         balanceCrypto.tokens.push(itemToken);
                     }
                     break;
+                    // const keyStore = new keyStores.InMemoryKeyStore();
+                    // const keyPair = KeyPair.fromString(SIGNER_PRIVATEKEY);
+                    // keyStore.setKey(NETWORK, SIGNER_ID, keyPair);
+                    // const near = new Near(CONFIG(keyStore));
+                    // const account = new Account(near.connection, SIGNER_ID);
+                    // const contract = new Contract(account, CONTRACT_NAME, {
+                    //   viewMethods: ["get_users"],
+                    //   sender: account,
+                    // });
+                    // const response = await contract.get_users();
                 }
                 case "TRX": {
                     if (!address) {

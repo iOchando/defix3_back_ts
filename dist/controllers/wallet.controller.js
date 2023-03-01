@@ -88,7 +88,9 @@ const createWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             }
             return res.status(400).send();
         }
-        res.status(405).send();
+        else {
+            return res.status(405).send();
+        }
     }
     catch (err) {
         console.log(err);

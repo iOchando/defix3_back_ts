@@ -103,8 +103,9 @@ const createWallet = async (req: Request, res: Response) => {
         return res.send(wallet);
       }
       return res.status(400).send();
+    } else {
+      return res.status(405).send();
     }
-    res.status(405).send();
   } catch (err) {
     console.log(err);
     res.status(500).send({ err });

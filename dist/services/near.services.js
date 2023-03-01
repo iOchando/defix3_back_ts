@@ -103,6 +103,31 @@ const getBalanceNEAR = (address) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.getBalanceNEAR = getBalanceNEAR;
+const getBalanceTokenNEAR = (address, srcContract, decimals) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const keyStore = new near_api_js_1.keyStores.InMemoryKeyStore();
+        const near = new near_api_js_1.Near((0, utils_1.CONFIG)(keyStore));
+        const account = new near_api_js_1.Account(near.connection, address);
+        const contract = new near_api_js_1.Contract(account, srcContract, {
+            changeMethods: [],
+            viewMethods: ["get_users"],
+        });
+        console.log(contract);
+        // if (balance) {
+        //   let value = Math.pow(10, decimals);
+        //   balanceTotal = balance / value;
+        //   if (!balanceTotal) {
+        //     balanceTotal = 0;
+        //   }
+        //   return balanceTotal;
+        // } else {
+        //   return balanceTotal;
+        // }
+    }
+    catch (error) {
+        return 0;
+    }
+});
 function transactionNEAR(fromAddress, privateKey, toAddress, coin, amount) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
