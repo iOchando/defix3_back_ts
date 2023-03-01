@@ -8,7 +8,11 @@ import {
   isAddressBTC,
   validatePkBTC,
 } from "../services/btc.services";
-import { createWalletETH, isAddressETH } from "../services/eth.services";
+import {
+  createWalletETH,
+  isAddressETH,
+  validatePkETH,
+} from "../services/eth.services";
 import {
   createWalletNEAR,
   getIdNear,
@@ -255,7 +259,7 @@ const validatePK = async (privateKey: string, blockchain: string) => {
     if (blockchain === "BTC") {
       credential = await validatePkBTC(privateKey);
     } else if (blockchain === "ETH") {
-      credential = await isAddressETH(privateKey);
+      credential = await validatePkETH(privateKey);
     } else if (blockchain === "BNB") {
       credential = await isAddressBNB(privateKey);
     } else if (blockchain === "TRX") {

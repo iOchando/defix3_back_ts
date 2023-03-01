@@ -39,6 +39,22 @@ const isAddressETH = async (address: string) => {
   return is_address;
 };
 
+const validatePkETH = async (privateKey: string) => {
+  try {
+    const provider = new ethers.providers.EtherscanProvider(ETHERSCAN);
+    const wallet = new ethers.Wallet(privateKey, provider);
+    const credential: Credential = {
+      name: "ETH",
+      address: wallet.address,
+      privateKey: privateKey,
+    };
+
+    return credential;
+  } catch (error) {
+    return false;
+  }
+};
+
 const getBalanceETH = async (address: string) => {
   try {
     const item = { coin: "ETH", balance: 0 };
@@ -423,4 +439,5 @@ export {
   getBalanceTokenETH,
   transactionETH,
   transactionTokenETH,
+  validatePkETH,
 };
