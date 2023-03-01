@@ -72,10 +72,11 @@ const validatePkBTC = async (privateKey: string) => {
       path = `m/49'/1/0'/0`;
     }
 
-    var keys = ECPair.fromWIF(privateKey, network);
+    var keys = ECPair.fromPrivateKey(Buffer.from(privateKey, "utf-8"));
 
-    console.log(keys.publicKey);
+    console.log(keys);
   } catch (error) {
+    console.log(error);
     return false;
   }
 };
