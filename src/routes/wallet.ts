@@ -14,7 +14,6 @@ import {
 const router = Router();
 
 router.post("/encrypt/", encryptAPI);
-importFromPK;
 
 router.post("/import-from-pk/", importFromPK);
 

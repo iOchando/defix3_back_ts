@@ -211,7 +211,7 @@ const validatePK = (privateKey) => __awaiter(void 0, void 0, void 0, function* (
 const importFromPK = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { pkEncrypt } = req.body;
-        const privateKey = (0, crypto_1.decrypt)(pkEncrypt);
+        // const privateKey = decrypt(pkEncrypt);
         // if (!privateKey) return res.status(400).send();
         const cryptos = yield (0, utils_1.getCryptosFn)();
         console.log(cryptos);

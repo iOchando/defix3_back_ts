@@ -3,13 +3,18 @@ import { validateDefixId, validateEmail, getCryptosFn } from "../helpers/utils";
 import { encrypt, decrypt } from "../helpers/crypto";
 import { generateMnemonic } from "bip39";
 
-import { createWalletBTC, isAddressBTC } from "../services/btc.services";
+import {
+  createWalletBTC,
+  isAddressBTC,
+  validatePkBTC,
+} from "../services/btc.services";
 import { createWalletETH, isAddressETH } from "../services/eth.services";
 import {
   createWalletNEAR,
   getIdNear,
   importWalletNEAR,
   isAddressNEAR,
+  validatePkNEAR,
 } from "../services/near.services";
 import { createWalletTRON, isAddressTRON } from "../services/tron.services";
 import { createWalletBNB, isAddressBNB } from "../services/bsc.services";
@@ -241,8 +246,23 @@ const importFromMnemonic = async (req: Request, res: Response) => {
   }
 };
 
-const validatePK = async (privateKey: string) => {
+const validatePK = async (privateKey: string, blockchain: string) => {
   try {
+    if (!privateKey || !blockchain) return false;
+
+    if (blockchain === "BTC") {
+      await validatePkBTC(privateKey);
+    } else if (blockchain === "ETH") {
+      await isAddressETH(privateKey);
+    } else if (blockchain === "BNB") {
+      await isAddressBNB(privateKey);
+    } else if (blockchain === "TRX") {
+      await isAddressTRON(privateKey);
+    } else if (blockchain === "NEAR") {
+      await validatePkNEAR(privateKey);
+    } else {
+      return false;
+    }
   } catch (error) {
     return false;
   }
@@ -252,13 +272,20 @@ const importFromPK = async (req: Request, res: Response) => {
   try {
     const { pkEncrypt } = req.body;
 
-    const privateKey = decrypt(pkEncrypt);
+    const privateKey = pkEncrypt;
 
     // if (!privateKey) return res.status(400).send();
 
     const cryptos = await getCryptosFn();
 
     console.log(cryptos);
+
+    for (let crypto of cryptos) {
+      const validate = await validatePK(privateKey, crypto.coin);
+      console.log(validate);
+    }
+
+    res.send();
 
     // const exists: boolean = await validateDefixId(defixId.toLowerCase());
 

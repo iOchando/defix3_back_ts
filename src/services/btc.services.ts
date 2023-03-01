@@ -1,7 +1,7 @@
 import ecfacory, {
-	TinySecp256k1Interface,
-	ECPairAPI,
-	ECPairFactory,
+  TinySecp256k1Interface,
+  ECPairAPI,
+  ECPairFactory,
 } from "ecpair";
 import { networks, payments, script } from "bitcoinjs-lib";
 import { mnemonicToSeedSync } from "bip39";
@@ -15,251 +15,273 @@ const bip32 = BIP32Factory(ecc);
 import { Credential } from "../interfaces/credential.interface";
 import { ADDRESS_VAULT, GET_COMISION } from "../helpers/utils";
 
+const tinysecp: TinySecp256k1Interface = require("tiny-secp256k1");
+const ECPair: ECPairAPI = ECPairFactory(tinysecp);
+
 const NETWORK = process.env.NETWORK;
 
 const createWalletBTC = async (mnemonic: string) => {
-	// try {
-	let network;
-	let path;
-	if (NETWORK === "mainnet") {
-		network = networks.bitcoin; //use networks.testnet networks.bitcoin for testnet
-		path = `m/49'/0'/0'/0`; // Use m/49'/1'/0'/0 for testnet mainnet `m/49'/0'/0'/0
-	} else {
-		network = networks.testnet;
-		path = `m/49'/1/0'/0`;
-	}
+  // try {
+  let network;
+  let path;
+  if (NETWORK === "mainnet") {
+    network = networks.bitcoin; //use networks.testnet networks.bitcoin for testnet
+    path = `m/49'/0'/0'/0`; // Use m/49'/1'/0'/0 for testnet mainnet `m/49'/0'/0'/0
+  } else {
+    network = networks.testnet;
+    path = `m/49'/1/0'/0`;
+  }
 
-	const seed = mnemonicToSeedSync(mnemonic);
+  const seed = mnemonicToSeedSync(mnemonic);
 
-	const root: BIP32Interface = bip32.fromSeed(seed, network);
+  const root: BIP32Interface = bip32.fromSeed(seed, network);
 
-	const account = root.derivePath(path);
+  const account = root.derivePath(path);
 
-	const node = account.derive(0).derive(0);
+  const node = account.derive(0).derive(0);
 
-	const btcAddress = payments.p2pkh({
-		pubkey: node.publicKey,
-		network: network,
-	}).address;
+  const btcAddress = payments.p2pkh({
+    pubkey: node.publicKey,
+    network: network,
+  }).address;
 
-	const credential: Credential = {
-		name: "BTC",
-		address: btcAddress || "",
-		privateKey: node.toWIF(),
-	};
+  const credential: Credential = {
+    name: "BTC",
+    address: btcAddress || "",
+    privateKey: node.toWIF(),
+  };
 
-	return credential;
+  return credential;
 };
 
 const isAddressBTC = async (address: string) => {
-	const is_address: boolean = WAValidator.validate(address, "BTC");
-	return is_address;
+  const is_address: boolean = WAValidator.validate(address, "BTC");
+  return is_address;
+};
+
+const validatePkBTC = async (privateKey: string) => {
+  try {
+    console.log("ENTRO");
+    let network;
+    let path;
+    if (NETWORK === "mainnet") {
+      network = networks.bitcoin; //use networks.testnet networks.bitcoin for testnet
+      path = `m/49'/0'/0'/0`; // Use m/49'/1'/0'/0 for testnet mainnet `m/49'/0'/0'/0
+    } else {
+      network = networks.testnet;
+      path = `m/49'/1/0'/0`;
+    }
+
+    var keys = ECPair.fromWIF(privateKey, network);
+
+    console.log(keys.publicKey);
+  } catch (error) {
+    return false;
+  }
 };
 
 const getBalanceBTC = async (address: string) => {
-	try {
-		const method = "get";
-		const url = "https://blockchain.info/q/addressbalance/" + address;
+  try {
+    const method = "get";
+    const url = "https://blockchain.info/q/addressbalance/" + address;
 
-		const balance = await axios[method](url, {
-			headers: {
-				"Content-Type": "application/json",
-			},
-		})
-			.then(async (response) => {
-				if (response.data || response.data === 0) {
-					const satoshi = response.data;
-					const value_satoshi = 100000000;
-					const balance = satoshi / value_satoshi || 0;
-					return balance;
-				}
-				const item = await getBalanceBTC_Cypher(address);
-				return item;
-			})
-			.catch(async (error) => {
-				const item = await getBalanceBTC_Cypher(address);
-				return item;
-			});
-		return balance;
-	} catch (error) {
-		console.error(error);
-		const item = await getBalanceBTC_Cypher(address);
-		return item;
-	}
+    const balance = await axios[method](url, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then(async (response) => {
+        if (response.data || response.data === 0) {
+          const satoshi = response.data;
+          const value_satoshi = 100000000;
+          const balance = satoshi / value_satoshi || 0;
+          return balance;
+        }
+        const item = await getBalanceBTC_Cypher(address);
+        return item;
+      })
+      .catch(async (error) => {
+        const item = await getBalanceBTC_Cypher(address);
+        return item;
+      });
+    return balance;
+  } catch (error) {
+    console.error(error);
+    const item = await getBalanceBTC_Cypher(address);
+    return item;
+  }
 };
 
 const getBalanceBTC_Cypher = async (address: string) => {
-	try {
-		const method = "get";
-		const url =
-			"https://api.blockcypher.com/v1/btc/" +
-			process.env.BLOCKCYPHER +
-			"/addrs/" +
-			address +
-			"/balance?token=" +
-			"efe763283ba84fef88d23412be0c5970";
+  try {
+    const method = "get";
+    const url =
+      "https://api.blockcypher.com/v1/btc/" +
+      process.env.BLOCKCYPHER +
+      "/addrs/" +
+      address +
+      "/balance?token=" +
+      "efe763283ba84fef88d23412be0c5970";
 
-		const balance = await axios[method](url, {
-			headers: {
-				"Content-Type": "application/json",
-			},
-		})
-			.then((response) => {
-				if (response.data) {
-					const satoshi = response.data.balance;
-					const value_satoshi = 100000000;
-					return satoshi / value_satoshi || 0;
-				}
-				return 0;
-			})
-			.catch((error) => {
-				return 0;
-			});
-		return balance;
-	} catch (error) {
-		console.log(error);
-		return 0;
-	}
+    const balance = await axios[method](url, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (response.data) {
+          const satoshi = response.data.balance;
+          const value_satoshi = 100000000;
+          return satoshi / value_satoshi || 0;
+        }
+        return 0;
+      })
+      .catch((error) => {
+        return 0;
+      });
+    return balance;
+  } catch (error) {
+    console.log(error);
+    return 0;
+  }
 };
 
 async function transactionBTC(
-	fromAddress: string,
-	privateKey: string,
-	toAddress: string,
-	coin: string,
-	amount: number
+  fromAddress: string,
+  privateKey: string,
+  toAddress: string,
+  coin: string,
+  amount: number
 ) {
-	try {
-		let network;
-		if (NETWORK === "mainnet") {
-			network = networks.bitcoin; //use networks.testnet networks.bitcoin for testnet
-		} else {
-			network = networks.testnet; //use networks.testnet networks.bitcoin for testnet
-		}
+  try {
+    let network;
+    if (NETWORK === "mainnet") {
+      network = networks.bitcoin; //use networks.testnet networks.bitcoin for testnet
+    } else {
+      network = networks.testnet; //use networks.testnet networks.bitcoin for testnet
+    }
 
-		console.log("HOLAAA");
+    console.log("HOLAAA");
 
-		const resp_comision = await GET_COMISION(coin);
-		const vault_address = await ADDRESS_VAULT(coin);
+    const resp_comision = await GET_COMISION(coin);
+    const vault_address = await ADDRESS_VAULT(coin);
 
-		const comision = resp_comision.transfer / 100;
+    const comision = resp_comision.transfer / 100;
 
-		var for_vault = amount * comision;
+    var for_vault = amount * comision;
 
-		//var amount_final = amount - for_vault
+    //var amount_final = amount - for_vault
 
-		const value_satoshi = 100000000;
-		const amountSatoshi = amount * value_satoshi;
-		const vaultSatoshi = parseInt(String(for_vault * value_satoshi));
+    const value_satoshi = 100000000;
+    const amountSatoshi = amount * value_satoshi;
+    const vaultSatoshi = parseInt(String(for_vault * value_satoshi));
 
-		const tinysecp: TinySecp256k1Interface = require("tiny-secp256k1");
-		const ECPair: ECPairAPI = ECPairFactory(tinysecp);
+    var keys = ECPair.fromWIF(privateKey, network);
 
-		var keys = ECPair.fromWIF(privateKey, network);
+    var data;
 
-		var data;
+    if (vaultSatoshi !== 0) {
+      data = {
+        inputs: [
+          {
+            addresses: [fromAddress],
+          },
+        ],
+        outputs: [
+          {
+            addresses: [toAddress],
+            value: parseInt(String(amountSatoshi)),
+          },
+          {
+            addresses: [vault_address],
+            value: parseInt(String(vaultSatoshi)),
+          },
+        ],
+      };
+    } else {
+      data = {
+        inputs: [
+          {
+            addresses: [fromAddress],
+          },
+        ],
+        outputs: [
+          {
+            addresses: [toAddress],
+            value: parseInt(String(amountSatoshi)),
+          },
+        ],
+      };
+    }
+    var config = {
+      method: "post",
+      url:
+        "https://api.blockcypher.com/v1/btc/" +
+        process.env.BLOCKCYPHER +
+        "/txs/new",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: data,
+    };
 
-		if (vaultSatoshi !== 0) {
-			data = {
-				inputs: [
-					{
-						addresses: [fromAddress],
-					},
-				],
-				outputs: [
-					{
-						addresses: [toAddress],
-						value: parseInt(String(amountSatoshi)),
-					},
-					{
-						addresses: [vault_address],
-						value: parseInt(String(vaultSatoshi)),
-					},
-				],
-			};
-		} else {
-			data = {
-				inputs: [
-					{
-						addresses: [fromAddress],
-					},
-				],
-				outputs: [
-					{
-						addresses: [toAddress],
-						value: parseInt(String(amountSatoshi)),
-					},
-				],
-			};
-		}
-		var config = {
-			method: "post",
-			url:
-				"https://api.blockcypher.com/v1/btc/" +
-				process.env.BLOCKCYPHER +
-				"/txs/new",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			data: data,
-		};
+    let txHash = null;
 
-		let txHash = null;
+    await axios(config)
+      .then(async function (tmptx) {
+        console.log("hola");
+        console.log(tmptx.data);
+        tmptx.data.pubkeys = [];
+        tmptx.data.signatures = tmptx.data.tosign.map(function (
+          tosign: any,
+          n: any
+        ) {
+          tmptx.data.pubkeys.push(keys.publicKey.toString("hex"));
+          return script.signature
+            .encode(keys.sign(Buffer.from(tosign, "hex")), 0x01)
+            .toString("hex")
+            .slice(0, -2);
+        });
 
-		await axios(config)
-			.then(async function (tmptx) {
-				console.log("hola");
-				console.log(tmptx.data);
-				tmptx.data.pubkeys = [];
-				tmptx.data.signatures = tmptx.data.tosign.map(function (
-					tosign: any,
-					n: any
-				) {
-					tmptx.data.pubkeys.push(keys.publicKey.toString("hex"));
-					return script.signature
-						.encode(keys.sign(Buffer.from(tosign, "hex")), 0x01)
-						.toString("hex")
-						.slice(0, -2);
-				});
+        console.log("AQUI");
 
-				console.log("AQUI");
+        const result = axios
+          .post(
+            "https://api.blockcypher.com/v1/btc/" +
+              process.env.BLOCKCYPHER +
+              "/txs/send",
+            tmptx.data
+          )
+          .then(function (finaltx) {
+            txHash = finaltx.data.tx.hash;
+            console.log("hash", finaltx.data.tx.hash);
+            return true;
+          })
+          .catch(function (xhr) {
+            console.log("error");
+            return false;
+          });
+        return result;
+      })
+      .catch(function (error) {
+        console.log("error axios", error);
+        return false;
+      });
 
-				const result = axios
-					.post(
-						"https://api.blockcypher.com/v1/btc/" +
-							process.env.BLOCKCYPHER +
-							"/txs/send",
-						tmptx.data
-					)
-					.then(function (finaltx) {
-						txHash = finaltx.data.tx.hash;
-						console.log("hash", finaltx.data.tx.hash);
-						return true;
-					})
-					.catch(function (xhr) {
-						console.log("error");
-						return false;
-					});
-				return result;
-			})
-			.catch(function (error) {
-				console.log("error axios", error);
-				return false;
-			});
+    if (txHash) return txHash as string;
 
-		if (txHash) return txHash as string;
-
-		return false;
-	} catch (error) {
-		console.error(error);
-		return false;
-	}
+    return false;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
 }
 
 export {
-	createWalletBTC,
-	isAddressBTC,
-	getBalanceBTC,
-	getBalanceBTC_Cypher,
-	transactionBTC,
+  createWalletBTC,
+  isAddressBTC,
+  getBalanceBTC,
+  getBalanceBTC_Cypher,
+  transactionBTC,
+  validatePkBTC,
 };

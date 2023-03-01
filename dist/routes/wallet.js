@@ -6,7 +6,6 @@ const wallet_controller_1 = require("../controllers/wallet.controller");
 const router = (0, express_1.Router)();
 exports.router = router;
 router.post("/encrypt/", wallet_controller_1.encryptAPI);
-wallet_controller_1.importFromPK;
 router.post("/import-from-pk/", wallet_controller_1.importFromPK);
 /**
  * Post track

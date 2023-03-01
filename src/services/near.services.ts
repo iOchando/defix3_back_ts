@@ -90,6 +90,11 @@ const isAddressNEAR = async (address: string) => {
   return is_address;
 };
 
+const validatePkNEAR = async (privateKey: string) => {
+  const keyPair = KeyPair.fromString(privateKey);
+  console.log(keyPair.getPublicKey().toString());
+};
+
 const getBalanceNEAR = async (address: string) => {
   try {
     const response: boolean = await validateNearId(address);
@@ -542,4 +547,5 @@ export {
   isAddressNEAR,
   getBalanceNEAR,
   swapTokenNEAR,
+  validatePkNEAR,
 };
