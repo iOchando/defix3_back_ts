@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.transactionTokenETH = exports.transactionETH = exports.getBalanceTokenETH = exports.getBalanceETH = exports.isAddressETH = exports.createWalletETH = exports.swapPreviewETH = exports.swapTokenETH = void 0;
+exports.validatePkETH = exports.transactionTokenETH = exports.transactionETH = exports.getBalanceTokenETH = exports.getBalanceETH = exports.isAddressETH = exports.createWalletETH = exports.swapPreviewETH = exports.swapTokenETH = void 0;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const ethers_1 = require("ethers");
 const web3_1 = __importDefault(require("web3"));
@@ -42,6 +42,21 @@ const isAddressETH = (address) => __awaiter(void 0, void 0, void 0, function* ()
     return is_address;
 });
 exports.isAddressETH = isAddressETH;
+const validatePkETH = (privateKey) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const wallet = web3.eth.accounts.privateKeyToAccount(privateKey);
+        const credential = {
+            name: "ETH",
+            address: wallet.address,
+            privateKey: privateKey,
+        };
+        return credential;
+    }
+    catch (error) {
+        return false;
+    }
+});
+exports.validatePkETH = validatePkETH;
 const getBalanceETH = (address) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const item = { coin: "ETH", balance: 0 };

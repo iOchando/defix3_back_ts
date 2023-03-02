@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.transactionBTC = exports.getBalanceBTC_Cypher = exports.getBalanceBTC = exports.isAddressBTC = exports.createWalletBTC = void 0;
+exports.validatePkBTC = exports.transactionBTC = exports.getBalanceBTC_Cypher = exports.getBalanceBTC = exports.isAddressBTC = exports.createWalletBTC = void 0;
 const ecpair_1 = require("ecpair");
 const bitcoinjs_lib_1 = require("bitcoinjs-lib");
 const bip39_1 = require("bip39");
@@ -45,6 +45,8 @@ const bip32_1 = __importDefault(require("bip32"));
 const ecc = __importStar(require("tiny-secp256k1"));
 const bip32 = (0, bip32_1.default)(ecc);
 const utils_1 = require("../helpers/utils");
+const tinysecp = require("tiny-secp256k1");
+const ECPair = (0, ecpair_1.ECPairFactory)(tinysecp);
 const NETWORK = process.env.NETWORK;
 const createWalletBTC = (mnemonic) => __awaiter(void 0, void 0, void 0, function* () {
     // try {
@@ -79,6 +81,41 @@ const isAddressBTC = (address) => __awaiter(void 0, void 0, void 0, function* ()
     return is_address;
 });
 exports.isAddressBTC = isAddressBTC;
+const validatePkBTC = (privateKey) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let network;
+        let path;
+        if (NETWORK === "mainnet") {
+            network = bitcoinjs_lib_1.networks.bitcoin; //use networks.testnet networks.bitcoin for testnet
+            path = `m/49'/0'/0'/0`; // Use m/49'/1'/0'/0 for testnet mainnet `m/49'/0'/0'/0
+        }
+        else {
+            network = bitcoinjs_lib_1.networks.testnet; //use networks.testnet networks.bitcoin for testnet;
+            path = `m/49'/1/0'/0`;
+        }
+        const keyPair = ECPair.fromWIF(privateKey, network);
+        if (!keyPair.privateKey)
+            return false;
+        const chainCode = Buffer.alloc(32);
+        const root = bip32.fromPrivateKey(keyPair.privateKey, chainCode);
+        const { address } = bitcoinjs_lib_1.payments.p2pkh({
+            pubkey: root.publicKey,
+            network: network,
+        });
+        if (!address)
+            return false;
+        const credential = {
+            name: "BTC",
+            address: address,
+            privateKey: keyPair.toWIF(),
+        };
+        return credential;
+    }
+    catch (error) {
+        return false;
+    }
+});
+exports.validatePkBTC = validatePkBTC;
 const getBalanceBTC = (address) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const method = "get";
@@ -163,8 +200,6 @@ function transactionBTC(fromAddress, privateKey, toAddress, coin, amount) {
             const value_satoshi = 100000000;
             const amountSatoshi = amount * value_satoshi;
             const vaultSatoshi = parseInt(String(for_vault * value_satoshi));
-            const tinysecp = require("tiny-secp256k1");
-            const ECPair = (0, ecpair_1.ECPairFactory)(tinysecp);
             var keys = ECPair.fromWIF(privateKey, network);
             var data;
             if (vaultSatoshi !== 0) {

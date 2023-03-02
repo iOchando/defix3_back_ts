@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.transactionTokenBNB = exports.transactionBNB = exports.getBalanceTokenBSC = exports.getBalanceBNB = exports.isAddressBNB = exports.createWalletBNB = exports.swapPreviewBNB = exports.swapTokenBSC = void 0;
+exports.validatePkBSC = exports.transactionTokenBNB = exports.transactionBNB = exports.getBalanceTokenBSC = exports.getBalanceBNB = exports.isAddressBNB = exports.createWalletBNB = exports.swapPreviewBNB = exports.swapTokenBSC = void 0;
 const ethers_1 = require("ethers");
 const web3_1 = __importDefault(require("web3"));
 const axios_1 = __importDefault(require("axios"));
@@ -39,6 +39,21 @@ const isAddressBNB = (address) => __awaiter(void 0, void 0, void 0, function* ()
     return is_address;
 });
 exports.isAddressBNB = isAddressBNB;
+const validatePkBSC = (privateKey) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const wallet = web3BSC.eth.accounts.privateKeyToAccount(privateKey);
+        const credential = {
+            name: "BNB",
+            address: wallet.address,
+            privateKey: privateKey,
+        };
+        return credential;
+    }
+    catch (error) {
+        return false;
+    }
+});
+exports.validatePkBSC = validatePkBSC;
 const getBalanceBNB = (address) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let balanceTotal = 0;

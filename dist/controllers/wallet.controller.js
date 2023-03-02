@@ -201,8 +201,31 @@ const importFromMnemonic = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.importFromMnemonic = importFromMnemonic;
-const validatePK = (privateKey) => __awaiter(void 0, void 0, void 0, function* () {
+const validatePK = (privateKey, blockchain) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        if (!privateKey || !blockchain)
+            return false;
+        let credential;
+        if (blockchain === "BTC") {
+            credential = yield (0, btc_services_1.validatePkBTC)(privateKey);
+        }
+        else if (blockchain === "ETH") {
+            credential = yield (0, eth_services_1.validatePkETH)(privateKey);
+        }
+        else if (blockchain === "BNB") {
+            credential = yield (0, bsc_services_1.validatePkBSC)(privateKey);
+        }
+        else if (blockchain === "TRX") {
+            credential = yield (0, tron_services_1.validatePkTRON)(privateKey);
+        }
+        else if (blockchain === "NEAR") {
+            if (privateKey.includes("ed25519:")) {
+                credential = yield (0, near_services_1.validatePkNEAR)(privateKey);
+            }
+        }
+        if (!credential)
+            return false;
+        return credential;
     }
     catch (error) {
         return false;
@@ -211,31 +234,24 @@ const validatePK = (privateKey) => __awaiter(void 0, void 0, void 0, function* (
 const importFromPK = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { pkEncrypt } = req.body;
-        // const privateKey = decrypt(pkEncrypt);
-        // if (!privateKey) return res.status(400).send();
+        const privateKey = (0, crypto_1.decrypt)(pkEncrypt);
+        if (!privateKey)
+            return res.status(400).send();
         const cryptos = yield (0, utils_1.getCryptosFn)();
-        console.log(cryptos);
-        // const exists: boolean = await validateDefixId(defixId.toLowerCase());
-        // if (!exists) {
-        // 	const credentials: Array<Credential> = [];
-        // 	credentials.push(await createWalletBTC(mnemonic));
-        // 	credentials.push(await createWalletETH(mnemonic));
-        // 	credentials.push(await createWalletNEAR(mnemonic));
-        // 	credentials.push(await createWalletTRON(mnemonic));
-        // 	credentials.push(await createWalletBNB(mnemonic));
-        // 	const wallet: Wallet = {
-        // 		defixId: defixId,
-        // 		mnemonic: mnemonic,
-        // 		credentials: credentials
-        // 	};
-        // 	const nearId = await getIdNear(mnemonic)
-        // 	const save = await saveUser(nearId, wallet)
-        // 	if (save) {
-        // 		return res.send(wallet)
-        // 	}
-        // 	return res.status(400).send()
-        // }
-        // res.status(405).send()
+        const credentials = [];
+        for (let crypto of cryptos) {
+            const validate = yield validatePK(privateKey, crypto.coin);
+            if (validate) {
+                credentials.push(validate);
+            }
+        }
+        if (credentials.length === 0)
+            return res.status(400).send;
+        const wallet = {
+            defixId: credentials[0].address,
+            credentials: credentials,
+        };
+        res.send(wallet);
     }
     catch (err) {
         console.log(err);

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.transactionTokenTRON = exports.transactionTRON = exports.getBalanceTokenTRON = exports.getBalanceTRON = exports.isAddressTRON = exports.createWalletTRON = void 0;
+exports.validatePkTRON = exports.transactionTokenTRON = exports.transactionTRON = exports.getBalanceTokenTRON = exports.getBalanceTRON = exports.isAddressTRON = exports.createWalletTRON = void 0;
 const utils_1 = require("../helpers/utils");
 const TronWeb = require("tronweb");
 const HttpProvider = TronWeb.providers.HttpProvider;
@@ -44,6 +44,23 @@ const isAddressTRON = (address) => __awaiter(void 0, void 0, void 0, function* (
     return is_address;
 });
 exports.isAddressTRON = isAddressTRON;
+const validatePkTRON = (privateKey) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const address = tronWeb.address.fromPrivateKey(privateKey);
+        if (!address)
+            return false;
+        const credential = {
+            name: "TRX",
+            address: address,
+            privateKey: privateKey,
+        };
+        return credential;
+    }
+    catch (error) {
+        return false;
+    }
+});
+exports.validatePkTRON = validatePkTRON;
 const getBalanceTRON = (address) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let balanceTotal = 0;

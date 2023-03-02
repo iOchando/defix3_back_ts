@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.swapTokenNEAR = exports.getBalanceNEAR = exports.isAddressNEAR = exports.importWalletNEAR = exports.getIdNear = exports.createWalletNEAR = exports.transactionNEAR = exports.swapPreviewNEAR = void 0;
+exports.validatePkNEAR = exports.swapTokenNEAR = exports.getBalanceNEAR = exports.isAddressNEAR = exports.importWalletNEAR = exports.getIdNear = exports.createWalletNEAR = exports.transactionNEAR = exports.swapPreviewNEAR = void 0;
 const near_api_js_1 = require("near-api-js");
 const axios_1 = __importDefault(require("axios"));
 const nearSEED = require("near-seed-phrase");
@@ -75,6 +75,22 @@ const isAddressNEAR = (address) => __awaiter(void 0, void 0, void 0, function* (
     return is_address;
 });
 exports.isAddressNEAR = isAddressNEAR;
+const validatePkNEAR = (privateKey) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const keyPair = near_api_js_1.KeyPair.fromString(privateKey);
+        const implicitAccountId = Buffer.from(keyPair.getPublicKey().data).toString("hex");
+        const credential = {
+            name: "NEAR",
+            address: implicitAccountId,
+            privateKey: privateKey,
+        };
+        return credential;
+    }
+    catch (error) {
+        return false;
+    }
+});
+exports.validatePkNEAR = validatePkNEAR;
 const getBalanceNEAR = (address) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const response = yield validateNearId(address);

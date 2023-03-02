@@ -267,13 +267,9 @@ const validatePK = async (privateKey: string, blockchain: string) => {
     if (blockchain === "BTC") {
       credential = await validatePkBTC(privateKey);
     } else if (blockchain === "ETH") {
-      if (privateKey.includes("0x")) {
-        credential = await validatePkETH(privateKey);
-      }
+      credential = await validatePkETH(privateKey);
     } else if (blockchain === "BNB") {
-      if (privateKey.includes("0x")) {
-        credential = await validatePkBSC(privateKey);
-      }
+      credential = await validatePkBSC(privateKey);
     } else if (blockchain === "TRX") {
       credential = await validatePkTRON(privateKey);
     } else if (blockchain === "NEAR") {
@@ -292,9 +288,9 @@ const importFromPK = async (req: Request, res: Response) => {
   try {
     const { pkEncrypt } = req.body;
 
-    const privateKey = pkEncrypt;
+    const privateKey = decrypt(pkEncrypt);
 
-    // if (!privateKey) return res.status(400).send();
+    if (!privateKey) return res.status(400).send();
 
     const cryptos = await getCryptosFn();
 

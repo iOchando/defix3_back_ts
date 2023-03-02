@@ -15,6 +15,34 @@ const router = Router();
 
 router.post("/encrypt/", encryptAPI);
 
+/**
+ * Post track
+ * @swagger
+ * /import-from-pk/:
+ *    post:
+ *      tags:
+ *        - Wallet
+ *      summary: Inicicar sesion con private key
+ *      description: Si colocas una private key te devuelve la credencial de la blockchain
+ *      requestBody:
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: "object"
+ *                required: ["pkEncrypt"]
+ *                properties: {
+ *                  pkEncrypt: {
+ *                    type: "string"
+ *                  }
+ *                }
+ *      responses:
+ *        '200':
+ *          description: Te response la credencial de la blockchain
+ *        '400':
+ *          description: Bad Request.
+ *        '500':
+ *          description: Bad Request.
+ */
 router.post("/import-from-pk/", importFromPK);
 
 /**
