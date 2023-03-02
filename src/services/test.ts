@@ -15,7 +15,7 @@ import {
   LimitOrderToSend,
 } from "@paraswap/sdk";
 
-const buildLimitOrderFn = () => {
+const buildLimitOrderFn = async () => {
   try {
     console.log("Building");
     const account = "0x1DcfE2e21dD2a7a80d97b6cc3628240f87CFee46";
@@ -64,23 +64,18 @@ const buildLimitOrderFn = () => {
     };
     console.log(orderInput);
 
-    run(paraSwapLimitOrderSDK, orderInput);
-  } catch (error) {
-    console.log(error);
-    console.log("Error funcion 1");
-  }
-};
-
-const run = async (paraSwapLimitOrderSDK: any, orderInput: any) => {
-  try {
     const signableOrderData: SignableOrderData =
       await paraSwapLimitOrderSDK.buildLimitOrder(orderInput);
 
-    console.log(signableOrderData);
+    console.log(JSON.stringify(signableOrderData));
+
+    console.log("MAKN");
 
     const signature: string = await paraSwapLimitOrderSDK.signLimitOrder(
       signableOrderData
     );
+
+    console.log("SALIO");
 
     const orderToPostToApi: LimitOrderToSend = {
       ...signableOrderData.data,
@@ -93,7 +88,7 @@ const run = async (paraSwapLimitOrderSDK: any, orderInput: any) => {
     console.log(newOrder);
   } catch (error) {
     console.log(error);
-    console.log("Error funcion 2");
+    console.log("Error funcion 1");
   }
 };
 

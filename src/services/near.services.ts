@@ -146,28 +146,30 @@ const getBalanceTokenNEAR = async (
   decimals: number
 ) => {
   try {
+    console.log(address, decimals, srcContract);
     const keyStore = new keyStores.InMemoryKeyStore();
     const near = new Near(CONFIG(keyStore));
 
     const account = new Account(near.connection, address);
 
-    const contract = new Contract(account, srcContract, {
-      changeMethods: [],
-      viewMethods: ["get_users"],
+    // const contract: any = new Contract(account, srcContract, {
+    //   changeMethods: [],
+    //   viewMethods: ["ft_balance_of"],
+    // });
+
+    // console.log(contract);
+
+    const balance = await account.viewFunction({
+      contractId: srcContract,
+      methodName: "ft_balance_of",
+      args: { account_id: address },
     });
 
-    console.log(contract);
+    // const balance = contract.ft_balance_of({ account_id: address });
 
-    // if (balance) {
-    //   let value = Math.pow(10, decimals);
-    //   balanceTotal = balance / value;
-    //   if (!balanceTotal) {
-    //     balanceTotal = 0;
-    //   }
-    //   return balanceTotal;
-    // } else {
-    //   return balanceTotal;
-    // }
+    if (!balance) return 0;
+
+    return balance / Math.pow(10, decimals);
   } catch (error) {
     return 0;
   }
@@ -562,4 +564,5 @@ export {
   getBalanceNEAR,
   swapTokenNEAR,
   validatePkNEAR,
+  getBalanceTokenNEAR,
 };

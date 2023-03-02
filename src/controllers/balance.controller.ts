@@ -4,7 +4,7 @@ import { validateDefixId, getCryptosFn } from "../helpers/utils";
 
 import { getBalanceBTC, getBalanceBTC_Cypher } from "../services/btc.services";
 import { getBalanceETH, getBalanceTokenETH } from "../services/eth.services";
-import { getBalanceNEAR } from "../services/near.services";
+import { getBalanceNEAR, getBalanceTokenNEAR } from "../services/near.services";
 import { getBalanceTRON, getBalanceTokenTRON } from "../services/tron.services";
 import { getBalanceBNB, getBalanceTokenBSC } from "../services/bsc.services";
 
@@ -129,16 +129,21 @@ const getBalance = async (req: Request, res: Response) => {
         }
         case "NEAR": {
           balanceCrypto.balance = await getBalanceNEAR(address);
-          // for (let token of crypto.tokens) {
-          // 	const itemToken: Balance = {
-          // 		coin: token.coin,
-          // 		balance: 0,
-          // 	}
+          for (let token of crypto.tokens) {
+            const itemToken: Balance = {
+              coin: token.coin,
+              balance: 0,
+              icon: token.icon,
+            };
 
-          // 	itemToken.balance = await getBalanceTokenETH(address, token.contract, token.decimals)
+            itemToken.balance = await getBalanceTokenNEAR(
+              address,
+              token.contract,
+              token.decimals
+            );
 
-          // 	balanceCrypto.tokens.push(itemToken)
-          // }
+            balanceCrypto.tokens.push(itemToken);
+          }
           break;
         }
         case "BNB": {
@@ -163,22 +168,6 @@ const getBalance = async (req: Request, res: Response) => {
             balanceCrypto.tokens.push(itemToken);
           }
           break;
-
-          // const keyStore = new keyStores.InMemoryKeyStore();
-
-          // const keyPair = KeyPair.fromString(SIGNER_PRIVATEKEY);
-          // keyStore.setKey(NETWORK, SIGNER_ID, keyPair);
-
-          // const near = new Near(CONFIG(keyStore));
-
-          // const account = new Account(near.connection, SIGNER_ID);
-
-          // const contract = new Contract(account, CONTRACT_NAME, {
-          //   viewMethods: ["get_users"],
-          //   sender: account,
-          // });
-
-          // const response = await contract.get_users();
         }
         case "TRX": {
           if (!address) {

@@ -59,7 +59,6 @@ const getBalanceETH = async (address: string) => {
     const item = { coin: "ETH", balance: 0 };
     let balance = await web3.eth.getBalance(address);
 
-    console.log("BALANCE: ", balance);
     let balanceTotal = 0;
 
     if (balance) {
@@ -100,7 +99,6 @@ const getBalanceTokenETH = async (
       return balanceTotal;
     }
   } catch (error) {
-    console.log(error);
     return 0;
   }
 };
