@@ -32,6 +32,21 @@ const isAddressBNB = async (address: string) => {
   return is_address;
 };
 
+const validatePkBSC = async (privateKey: string) => {
+  try {
+    const wallet = web3BSC.eth.accounts.privateKeyToAccount(privateKey);
+    const credential: Credential = {
+      name: "BNB",
+      address: wallet.address,
+      privateKey: privateKey,
+    };
+
+    return credential;
+  } catch (error) {
+    return false;
+  }
+};
+
 const getBalanceBNB = async (address: string) => {
   try {
     let balanceTotal = 0;
@@ -412,4 +427,5 @@ export {
   getBalanceTokenBSC,
   transactionBNB,
   transactionTokenBNB,
+  validatePkBSC,
 };

@@ -41,6 +41,24 @@ const isAddressTRON = async (address: string) => {
   return is_address;
 };
 
+const validatePkTRON = async (privateKey: string) => {
+  try {
+    const address = tronWeb.address.fromPrivateKey(privateKey);
+
+    if (!address) return false;
+
+    const credential: Credential = {
+      name: "TRX",
+      address: address,
+      privateKey: privateKey,
+    };
+
+    return credential;
+  } catch (error) {
+    return false;
+  }
+};
+
 const getBalanceTRON = async (address: string) => {
   try {
     let balanceTotal = 0;
@@ -239,4 +257,5 @@ export {
   getBalanceTokenTRON,
   transactionTRON,
   transactionTokenTRON,
+  validatePkTRON,
 };

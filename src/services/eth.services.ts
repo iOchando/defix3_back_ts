@@ -41,8 +41,7 @@ const isAddressETH = async (address: string) => {
 
 const validatePkETH = async (privateKey: string) => {
   try {
-    const provider = new ethers.providers.EtherscanProvider(ETHERSCAN);
-    const wallet = new ethers.Wallet(privateKey, provider);
+    const wallet = web3.eth.accounts.privateKeyToAccount(privateKey);
     const credential: Credential = {
       name: "ETH",
       address: wallet.address,

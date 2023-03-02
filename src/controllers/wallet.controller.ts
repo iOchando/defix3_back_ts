@@ -20,8 +20,16 @@ import {
   isAddressNEAR,
   validatePkNEAR,
 } from "../services/near.services";
-import { createWalletTRON, isAddressTRON } from "../services/tron.services";
-import { createWalletBNB, isAddressBNB } from "../services/bsc.services";
+import {
+  createWalletTRON,
+  isAddressTRON,
+  validatePkTRON,
+} from "../services/tron.services";
+import {
+  createWalletBNB,
+  isAddressBNB,
+  validatePkBSC,
+} from "../services/bsc.services";
 
 import { Wallet } from "../interfaces/wallet.interface";
 import { Credential } from "../interfaces/credential.interface";
@@ -259,14 +267,21 @@ const validatePK = async (privateKey: string, blockchain: string) => {
     if (blockchain === "BTC") {
       credential = await validatePkBTC(privateKey);
     } else if (blockchain === "ETH") {
-      credential = await validatePkETH(privateKey);
+      if (privateKey.includes("0x")) {
+        credential = await validatePkETH(privateKey);
+      }
     } else if (blockchain === "BNB") {
-      credential = await isAddressBNB(privateKey);
+      if (privateKey.includes("0x")) {
+        credential = await validatePkBSC(privateKey);
+      }
     } else if (blockchain === "TRX") {
-      credential = await isAddressTRON(privateKey);
+      credential = await validatePkTRON(privateKey);
     } else if (blockchain === "NEAR") {
-      credential = await validatePkNEAR(privateKey);
+      if (privateKey.includes("ed25519:")) {
+        credential = await validatePkNEAR(privateKey);
+      }
     }
+    if (!credential) return false;
     return credential;
   } catch (error) {
     return false;
@@ -292,35 +307,14 @@ const importFromPK = async (req: Request, res: Response) => {
       }
     }
 
-    res.send(credentials);
+    if (credentials.length === 0) return res.status(400).send;
 
-    // const exists: boolean = await validateDefixId(defixId.toLowerCase());
+    const wallet: Wallet = {
+      defixId: credentials[0].address,
+      credentials: credentials,
+    };
 
-    // if (!exists) {
-    // 	const credentials: Array<Credential> = [];
-
-    // 	credentials.push(await createWalletBTC(mnemonic));
-    // 	credentials.push(await createWalletETH(mnemonic));
-    // 	credentials.push(await createWalletNEAR(mnemonic));
-    // 	credentials.push(await createWalletTRON(mnemonic));
-    // 	credentials.push(await createWalletBNB(mnemonic));
-
-    // 	const wallet: Wallet = {
-    // 		defixId: defixId,
-    // 		mnemonic: mnemonic,
-    // 		credentials: credentials
-    // 	};
-
-    // 	const nearId = await getIdNear(mnemonic)
-
-    // 	const save = await saveUser(nearId, wallet)
-
-    // 	if (save) {
-    // 		return res.send(wallet)
-    // 	}
-    // 	return res.status(400).send()
-    // }
-    // res.status(405).send()
+    res.send(wallet);
   } catch (err) {
     console.log(err);
     res.status(500).send({ err });
