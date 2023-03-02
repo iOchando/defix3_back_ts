@@ -61,7 +61,6 @@ const getBalanceETH = (address) => __awaiter(void 0, void 0, void 0, function* (
     try {
         const item = { coin: "ETH", balance: 0 };
         let balance = yield web3.eth.getBalance(address);
-        console.log("BALANCE: ", balance);
         let balanceTotal = 0;
         if (balance) {
             let value = Math.pow(10, 18);
@@ -98,7 +97,6 @@ const getBalanceTokenETH = (address, srcContract, decimals) => __awaiter(void 0,
         }
     }
     catch (error) {
-        console.log(error);
         return 0;
     }
 });

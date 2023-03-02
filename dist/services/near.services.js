@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validatePkNEAR = exports.swapTokenNEAR = exports.getBalanceNEAR = exports.isAddressNEAR = exports.importWalletNEAR = exports.getIdNear = exports.createWalletNEAR = exports.transactionNEAR = exports.swapPreviewNEAR = void 0;
+exports.getBalanceTokenNEAR = exports.validatePkNEAR = exports.swapTokenNEAR = exports.getBalanceNEAR = exports.isAddressNEAR = exports.importWalletNEAR = exports.getIdNear = exports.createWalletNEAR = exports.transactionNEAR = exports.swapPreviewNEAR = void 0;
 const near_api_js_1 = require("near-api-js");
 const axios_1 = __importDefault(require("axios"));
 const nearSEED = require("near-seed-phrase");
@@ -121,29 +121,30 @@ const getBalanceNEAR = (address) => __awaiter(void 0, void 0, void 0, function* 
 exports.getBalanceNEAR = getBalanceNEAR;
 const getBalanceTokenNEAR = (address, srcContract, decimals) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        console.log(address, decimals, srcContract);
         const keyStore = new near_api_js_1.keyStores.InMemoryKeyStore();
         const near = new near_api_js_1.Near((0, utils_1.CONFIG)(keyStore));
         const account = new near_api_js_1.Account(near.connection, address);
-        const contract = new near_api_js_1.Contract(account, srcContract, {
-            changeMethods: [],
-            viewMethods: ["get_users"],
+        // const contract: any = new Contract(account, srcContract, {
+        //   changeMethods: [],
+        //   viewMethods: ["ft_balance_of"],
+        // });
+        // console.log(contract);
+        const balance = yield account.viewFunction({
+            contractId: srcContract,
+            methodName: "ft_balance_of",
+            args: { account_id: address },
         });
-        console.log(contract);
-        // if (balance) {
-        //   let value = Math.pow(10, decimals);
-        //   balanceTotal = balance / value;
-        //   if (!balanceTotal) {
-        //     balanceTotal = 0;
-        //   }
-        //   return balanceTotal;
-        // } else {
-        //   return balanceTotal;
-        // }
+        // const balance = contract.ft_balance_of({ account_id: address });
+        if (!balance)
+            return 0;
+        return balance / Math.pow(10, decimals);
     }
     catch (error) {
         return 0;
     }
 });
+exports.getBalanceTokenNEAR = getBalanceTokenNEAR;
 function transactionNEAR(fromAddress, privateKey, toAddress, coin, amount) {
     return __awaiter(this, void 0, void 0, function* () {
         try {

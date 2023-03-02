@@ -107,14 +107,15 @@ const getBalance = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 }
                 case "NEAR": {
                     balanceCrypto.balance = yield (0, near_services_1.getBalanceNEAR)(address);
-                    // for (let token of crypto.tokens) {
-                    // 	const itemToken: Balance = {
-                    // 		coin: token.coin,
-                    // 		balance: 0,
-                    // 	}
-                    // 	itemToken.balance = await getBalanceTokenETH(address, token.contract, token.decimals)
-                    // 	balanceCrypto.tokens.push(itemToken)
-                    // }
+                    for (let token of crypto.tokens) {
+                        const itemToken = {
+                            coin: token.coin,
+                            balance: 0,
+                            icon: token.icon,
+                        };
+                        itemToken.balance = yield (0, near_services_1.getBalanceTokenNEAR)(address, token.contract, token.decimals);
+                        balanceCrypto.tokens.push(itemToken);
+                    }
                     break;
                 }
                 case "BNB": {
@@ -133,16 +134,6 @@ const getBalance = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                         balanceCrypto.tokens.push(itemToken);
                     }
                     break;
-                    // const keyStore = new keyStores.InMemoryKeyStore();
-                    // const keyPair = KeyPair.fromString(SIGNER_PRIVATEKEY);
-                    // keyStore.setKey(NETWORK, SIGNER_ID, keyPair);
-                    // const near = new Near(CONFIG(keyStore));
-                    // const account = new Account(near.connection, SIGNER_ID);
-                    // const contract = new Contract(account, CONTRACT_NAME, {
-                    //   viewMethods: ["get_users"],
-                    //   sender: account,
-                    // });
-                    // const response = await contract.get_users();
                 }
                 case "TRX": {
                     if (!address) {
